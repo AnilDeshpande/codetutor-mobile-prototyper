@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// Build prototype/storyboard.html: every captured screen × state, grouped by window class and theme.
-// Screenshots are expected at screenshots/<window>/<theme>/<scenario>--<screen>--<state>.png
-// (the naming used in references/verification-with-playwright-mcp.md).
+// Build prototype/storyboard.html: every captured screen × state, grouped by platform, window and theme.
+// Screenshots are expected at screenshots/<platform>/<window>/<theme>/<scenario>--<screen>--<state>.png
+// (the naming used in references/verification-with-playwright-mcp.md); the older
+// screenshots/<window>/<theme>/… layout (no platform folder) is read as Android.
 //
 //   node storyboard.mjs [--dir prototype]
 
@@ -21,10 +22,11 @@ const items = [];
     if (e.isDirectory()) walk(p);
     else if (/\.(png|jpe?g|webp)$/i.test(e.name)) {
       const relPath = path.relative(dir, p).split(path.sep).join('/');
-      const parts = path.relative(shots, p).split(path.sep);
-      const [window = 'other', theme = 'light'] = parts.length >= 3 ? parts : ['other', 'light'];
+      const parts = path.relative(shots, p).split(path.sep).slice(0, -1);
+      const [platform, window = 'other', theme = 'light'] = parts.length >= 3 ? parts
+        : parts.length === 2 ? ['android', ...parts] : ['other', 'other', 'light'];
       const [scenario = '', screen = '', state = ''] = path.basename(e.name, path.extname(e.name)).split('--');
-      items.push({ src: relPath, window, theme, scenario, screen: screen || scenario, state: state || '' });
+      items.push({ src: relPath, platform, window, theme, scenario, screen: screen || scenario, state: state || '' });
     }
   }
 })(shots);
@@ -34,8 +36,8 @@ if (!items.length) {
   process.exit(1);
 }
 
-const order = { compact: 0, medium: 1, expanded: 2 };
-items.sort((a, b) => (order[a.window] ?? 9) - (order[b.window] ?? 9) || a.theme.localeCompare(b.theme)
+const order = { compact: 0, medium: 1, expanded: 2, iphone: 0, 'iphone-se': 1, ipad: 2 };
+items.sort((a, b) => a.platform.localeCompare(b.platform) || (order[a.window] ?? 9) - (order[b.window] ?? 9) || a.theme.localeCompare(b.theme)
   || a.screen.localeCompare(b.screen) || a.state.localeCompare(b.state) || a.scenario.localeCompare(b.scenario));
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -44,7 +46,7 @@ const select = (k, label) => `<label>${label} <select data-filter="${k}"><option
 
 const groups = new Map();
 for (const it of items) {
-  const key = `${it.window} · ${it.theme}`;
+  const key = `${it.platform} · ${it.window} · ${it.theme}`;
   if (!groups.has(key)) groups.set(key, []);
   groups.get(key).push(it);
 }
@@ -78,12 +80,12 @@ const html = `<!doctype html>
 <body>
 <header>
   <h1>Storyboard <small style="font-weight:400;color:var(--muted)">${items.length} captures · ${new Date().toISOString().slice(0, 16).replace('T', ' ')}</small></h1>
-  ${select('window', 'Window')} ${select('theme', 'Theme')} ${select('screen', 'Screen')} ${select('scenario', 'Scenario')}
+  ${uniq('platform').length > 1 ? select('platform', 'Platform') : ''} ${select('window', 'Window')} ${select('theme', 'Theme')} ${select('screen', 'Screen')} ${select('scenario', 'Scenario')}
 </header>
 ${[...groups].map(([key, list]) => `<section data-group="${esc(key)}">
 <h2>${esc(key)}</h2>
-<div class="grid${/expanded|medium/.test(key) ? ' wide' : ''}">
-${list.map((it) => `<figure data-window="${esc(it.window)}" data-theme="${esc(it.theme)}" data-screen="${esc(it.screen)}" data-scenario="${esc(it.scenario)}">
+<div class="grid${/expanded|medium|ipad/.test(key) ? ' wide' : ''}">
+${list.map((it) => `<figure data-platform="${esc(it.platform)}" data-window="${esc(it.window)}" data-theme="${esc(it.theme)}" data-screen="${esc(it.screen)}" data-scenario="${esc(it.scenario)}">
   <img src="${esc(it.src)}" alt="${esc(`${it.screen} – ${it.state}`)}" loading="lazy">
   <figcaption><b>${esc(it.screen)}</b> · ${esc(it.state || '—')}<br>${esc(it.scenario)}</figcaption>
 </figure>`).join('\n')}

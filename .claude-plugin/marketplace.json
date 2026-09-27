@@ -8,7 +8,7 @@
     {
       "name": "mobile-prototyper",
       "source": "./",
-      "description": "Spec + architecture + design docs -> verified, clickable Android UX prototype (bundles Playwright MCP).",
+      "description": "Spec + architecture + design docs -> verified, clickable Android / iOS UX prototype (bundles Playwright MCP).",
       "version": "0.1.0"
     }
   ]

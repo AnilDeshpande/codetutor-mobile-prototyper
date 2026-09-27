@@ -3,6 +3,9 @@
 The prototype runs in a browser but must behave like an Android app. These conventions follow
 Material 3 and Android's adaptive-layout guidance. CSS pixels are used as a proxy for dp.
 
+For iOS see `../ios/conventions.md`. When both platforms are in scope the flow, screens and states
+are shared; these rules decide how the Android version looks and behaves.
+
 ## Window size classes
 
 | Class | Width | Test viewport | Navigation | Layout |

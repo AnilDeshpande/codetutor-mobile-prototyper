@@ -25,6 +25,11 @@
    classes from base.css and the platform stylesheets, and only the neutral tokens
    (--color-*, --text-*, --space-*) in inline styles. Branch on ctx.platform only for copy or
    behaviour that really differs (for example what "open settings" means).
+
+   requestPermission(name, { rationale, prompt, usage }) resolves 'granted' | 'denied' | 'blocked'.
+   Android asks again after one denial and blocks after the second; iOS asks once, so a single
+   denial is 'blocked'. usage is the iOS purpose string (the system alert's message; required
+   for everything except notifications). Handle all three results.
 */
 (function () {
   const { html, UI } = App;

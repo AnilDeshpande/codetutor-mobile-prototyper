@@ -1,0 +1,192 @@
+/* iOS design tokens — system semantic colours, Dynamic Type text styles and sizes (--ios-*),
+   used by platform/ios.css. On iOS the brand colour is the tint (accent) for interactive
+   elements; backgrounds, labels and separators stay the system's semantic colours, which adapt
+   to dark mode. The tint below is a neutral baseline (teal, matching the Android baseline so a
+   two-platform prototype reads as one product); replace it with the brand's accent when V1 is
+   known. Text colours use Apple's accessible (Increase Contrast) variants where the standard
+   system colour falls below 4.5:1.
+   The "neutral roles" block maps the platform-neutral tokens that base.css and screen code use
+   (--color-*, --text-*) onto these; every tokens/<platform>.css defines the same names. */
+
+:root {
+  /* Tint (brand accent) */
+  --ios-tint: #006a60;
+  --ios-on-tint: #ffffff;
+  --ios-tint-fill: #d3eeea;          /* tinted background (bordered buttons, selected rows) */
+  --ios-on-tint-fill: #00413a;
+
+  /* System semantic colours — light */
+  --ios-bg: #ffffff;                  /* systemBackground */
+  --ios-bg-secondary: #f2f2f7;        /* secondarySystemBackground */
+  --ios-grouped-bg: #f2f2f7;          /* systemGroupedBackground */
+  --ios-grouped-bg-secondary: #ffffff;/* secondarySystemGroupedBackground (cells, cards) */
+  --ios-label: #000000;
+  --ios-label-secondary: rgb(60 60 67 / 0.78);   /* Apple uses 0.6 (3.4:1); raised to meet 4.5:1 */
+  --ios-label-tertiary: rgb(60 60 67 / 0.3);
+  --ios-separator: rgb(60 60 67 / 0.29);
+  --ios-separator-opaque: #c6c6c8;
+  --ios-fill: rgb(120 120 128 / 0.2);
+  --ios-fill-secondary: rgb(120 120 128 / 0.16);
+  --ios-fill-tertiary: rgb(118 118 128 / 0.12);
+  --ios-red: #d70015;                 /* accessible systemRed, for text and destructive fills */
+  --ios-on-red: #ffffff;
+  --ios-red-fill: #ffe4e3;
+  --ios-on-red-fill: #8a000e;
+  --ios-green: #1f7a35;               /* darker than accessible systemGreen, for text (4.5:1) */
+  --ios-switch-on: #34c759;           /* systemGreen, switch track only */
+  --ios-blue: #007aff;                /* systemBlue: the default tint when a product has no brand */
+  --ios-tab-inactive: #6d6d72;
+  --ios-bar-bg: rgb(249 249 249 / 0.86);   /* bar material */
+  --ios-alert-bg: rgb(242 242 242 / 0.97);
+  --ios-toast-bg: rgb(40 40 42 / 0.94);
+  --ios-toast-fg: #ffffff;
+  --ios-toast-action: #7fe0d3;
+  --ios-scrim: rgb(0 0 0 / 0.2);
+  --ios-wallpaper: linear-gradient(160deg, #7fc8c0, #3d6f86 60%, #2a3e5c);
+
+  /* Dynamic Type text styles at the default (Large) size, in rem so ?fontScale= scales them
+     like Dynamic Type. --ios-large-title is the navigation bar's bold large title. */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", system-ui, "Helvetica Neue", Arial, sans-serif;
+  --ios-large-title: 700 min(2.125rem, 44px)/1.2 var(--font);   /* capped, as iOS caps large titles */
+  --ios-title1: 400 1.75rem/2.125rem var(--font);
+  --ios-title2: 400 1.375rem/1.75rem var(--font);
+  --ios-title3: 400 1.25rem/1.5625rem var(--font);
+  --ios-headline: 600 1.0625rem/1.375rem var(--font);
+  --ios-body: 400 1.0625rem/1.375rem var(--font);
+  --ios-callout: 400 1rem/1.3125rem var(--font);
+  --ios-subheadline: 400 0.9375rem/1.25rem var(--font);
+  --ios-footnote: 400 0.8125rem/1.125rem var(--font);
+  --ios-caption1: 400 0.75rem/1rem var(--font);
+  --ios-caption2: 500 0.625rem/0.75rem var(--font);
+
+  /* Shape */
+  --shape-xs: 6px;
+  --shape-sm: 8px;
+  --shape-md: 12px;     /* inset grouped lists, cards, fields */
+  --shape-lg: 16px;
+  --shape-xl: 20px;     /* sheets */
+  --shape-alert: 14px;
+  --shape-full: 999px;
+
+  /* Spacing (shared scale) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Sizes (pt ≈ CSS px) */
+  --touch-min: 44px;
+  --status-bar-h: 54px;       /* with the Dynamic Island */
+  --nav-bar-h: 44px;
+  --tab-bar-h: 49px;
+  --home-indicator-h: 34px;
+  --sidebar-w: 260px;
+  --content-max: 700px;
+
+  /* Motion */
+  --motion-short: 200ms;
+  --motion-medium: 350ms;
+  --ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Neutral roles for base.css and screen code (same names in every tokens/<platform>.css) */
+  --color-primary: var(--ios-tint);
+  --color-on-primary: var(--ios-on-tint);
+  --color-primary-container: var(--ios-tint-fill);
+  --color-on-primary-container: var(--ios-on-tint-fill);
+  --color-surface: var(--ios-grouped-bg);
+  --color-on-surface: var(--ios-label);
+  --color-surface-raised: var(--ios-grouped-bg-secondary);
+  --color-muted: var(--ios-label-secondary);
+  --color-outline: var(--ios-separator);
+  --color-error: var(--ios-red);
+  --color-on-error: var(--ios-on-red);
+  --color-error-container: var(--ios-red-fill);
+  --color-on-error-container: var(--ios-on-red-fill);
+  --color-success: var(--ios-green);
+  --text-headline: 700 1.375rem/1.75rem var(--font);   /* title2, bold */
+  --text-title: 600 1.25rem/1.5625rem var(--font);     /* title3, semibold */
+  --text-subtitle: var(--ios-headline);
+  --text-body: var(--ios-body);
+  --text-secondary: var(--ios-subheadline);
+  --text-caption: var(--ios-footnote);
+  --text-label: var(--ios-headline);
+
+  color-scheme: light;
+}
+
+/* Dark. Applies with the OS/browser setting (browser_emulate_media) unless ?theme=light forces
+   light; ?theme=dark forces dark. Keep the two dark blocks identical. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ios-tint: #4cc2b3;
+    --ios-on-tint: #00201c;
+    --ios-tint-fill: #12423c;
+    --ios-on-tint-fill: #b4efe6;
+    --ios-bg: #000000;
+    --ios-bg-secondary: #1c1c1e;
+    --ios-grouped-bg: #000000;
+    --ios-grouped-bg-secondary: #1c1c1e;
+    --ios-label: #ffffff;
+    --ios-label-secondary: rgb(235 235 245 / 0.6);
+    --ios-label-tertiary: rgb(235 235 245 / 0.3);
+    --ios-separator: rgb(84 84 88 / 0.65);
+    --ios-separator-opaque: #38383a;
+    --ios-fill: rgb(120 120 128 / 0.36);
+    --ios-fill-secondary: rgb(120 120 128 / 0.32);
+    --ios-fill-tertiary: rgb(118 118 128 / 0.24);
+    --ios-red: #ff6961;
+    --ios-on-red: #3b0004;
+    --ios-red-fill: #3d1614;
+    --ios-on-red-fill: #ffb4ae;
+    --ios-green: #30db5b;
+    --ios-switch-on: #30d158;
+    --ios-blue: #0a84ff;
+    --ios-tab-inactive: #98989f;
+    --ios-bar-bg: rgb(22 22 24 / 0.86);
+    --ios-alert-bg: rgb(44 44 46 / 0.97);
+    --ios-toast-bg: rgb(58 58 60 / 0.96);
+    --ios-toast-fg: #ffffff;
+    --ios-toast-action: #7fe0d3;
+    --ios-scrim: rgb(0 0 0 / 0.48);
+    --ios-wallpaper: linear-gradient(160deg, #1f4a45, #182b3a 60%, #0d1420);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ios-tint: #4cc2b3;
+  --ios-on-tint: #00201c;
+  --ios-tint-fill: #12423c;
+  --ios-on-tint-fill: #b4efe6;
+  --ios-bg: #000000;
+  --ios-bg-secondary: #1c1c1e;
+  --ios-grouped-bg: #000000;
+  --ios-grouped-bg-secondary: #1c1c1e;
+  --ios-label: #ffffff;
+  --ios-label-secondary: rgb(235 235 245 / 0.6);
+  --ios-label-tertiary: rgb(235 235 245 / 0.3);
+  --ios-separator: rgb(84 84 88 / 0.65);
+  --ios-separator-opaque: #38383a;
+  --ios-fill: rgb(120 120 128 / 0.36);
+  --ios-fill-secondary: rgb(120 120 128 / 0.32);
+  --ios-fill-tertiary: rgb(118 118 128 / 0.24);
+  --ios-red: #ff6961;
+  --ios-on-red: #3b0004;
+  --ios-red-fill: #3d1614;
+  --ios-on-red-fill: #ffb4ae;
+  --ios-green: #30db5b;
+  --ios-switch-on: #30d158;
+  --ios-blue: #0a84ff;
+  --ios-tab-inactive: #98989f;
+  --ios-bar-bg: rgb(22 22 24 / 0.86);
+  --ios-alert-bg: rgb(44 44 46 / 0.97);
+  --ios-toast-bg: rgb(58 58 60 / 0.96);
+  --ios-toast-fg: #ffffff;
+  --ios-toast-action: #7fe0d3;
+  --ios-scrim: rgb(0 0 0 / 0.48);
+  --ios-wallpaper: linear-gradient(160deg, #1f4a45, #182b3a 60%, #0d1420);
+  color-scheme: dark;
+}

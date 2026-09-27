@@ -1,6 +1,6 @@
 # Handoff — {{APP_NAME}}
 
-Approved by: <name> on <date> · Prototype: `prototype/index.html` · Storyboard: `prototype/storyboard.html`
+Approved by: <name> on <date> · Platforms: <android / ios> (min OS: <…>) · Prototype: `prototype/index.html` · Storyboard: `prototype/storyboard.html`
 
 ## 1. Summary
 
@@ -16,8 +16,8 @@ Approved by: <name> on <date> · Prototype: `prototype/index.html` · Storyboard
 ```
 <text diagram>
 ```
-| From | Back goes to | Up goes to | Confirmation needed? |
-|---|---|---|---|
+| From | Back goes to | Up goes to | Confirmation needed? | Platform differences |
+|---|---|---|---|---|
 
 ## 5. State model per screen
 ```
@@ -26,17 +26,21 @@ Approved by: <name> on <date> · Prototype: `prototype/index.html` · Storyboard
 | Screen | State | Trigger | What the user sees |
 |---|---|---|---|
 
-## 6. Component mapping (Material 3)
+## 6. Component mapping
+### Android (Material 3)
 | Prototype element | M3 component | Variant / notes |
+|---|---|---|
+### iOS (SwiftUI)
+| Prototype element | SwiftUI component | Variant / notes (custom? SF Symbol) |
 |---|---|---|
 
 ## 7. Tokens
-| Role / token | Light | Dark |
-|---|---|---|
+| Platform | Role / token | Light | Dark |
+|---|---|---|---|
 
 ## 8. Copy
-| Screen | Key | Text | Status (approved / draft) |
-|---|---|---|---|
+| Screen | Key | Text | iOS variant (if different) | Status (approved / draft) |
+|---|---|---|---|---|
 
 ## 9. Decisions
 ### Assumptions to confirm before build
@@ -51,8 +55,8 @@ Approved by: <name> on <date> · Prototype: `prototype/index.html` · Storyboard
 |---|---|---|
 
 ## 11. Verification
-| Scenario | compact | medium | expanded | dark |
-|---|---|---|---|---|
+| Scenario | Android: compact | medium | expanded | iOS: iphone | iphone-se | ipad | dark |
+|---|---|---|---|---|---|---|---|
 Not verified:
 
 ## 12. Visual references

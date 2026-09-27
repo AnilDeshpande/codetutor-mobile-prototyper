@@ -1,16 +1,25 @@
 # Mobile Prototyper
 
 An agent skill that turns your **spec, architecture and design documents** into a **clickable,
-verified HTML prototype of an Android app** — working with you like a UX designer would.
+verified HTML prototype of a native mobile app — Android, iOS or both** — working with you like a
+UX designer would.
 
 - It finds which documents you have, and **proposes the answers they already contain for your approval**.
 - It **asks you only what's left**: conflicts between documents and gaps that change the experience,
   a few questions at a time, each with a recommendation.
-- It builds the prototype in an Android device shell (system back, bottom navigation / rail, dialogs,
-  sheets, snackbars, simulated permission prompts) with every state reachable by URL.
-- It **verifies every journey with the Playwright MCP server** across phone, tablet and dark theme,
-  runs an accessibility audit, and builds a storyboard of every screen and state.
-- It stops at an approved UX and a **handoff package** for native (Jetpack Compose) implementation.
+- It asks which platform you're building for, and builds the prototype in a device shell that
+  **behaves like that platform**:
+  - **Android**: system back, bottom navigation / rail, dialogs, bottom sheets, snackbars, and
+    permissions that block after the second denial.
+  - **iOS**: large titles, back button and edge swipe, tab bar / iPad sidebar, alerts, action
+    sheets, and permissions that are final after one denial.
+  - **Both**: one prototype with a platform switch. Screens are written once.
+- Every state is reachable by URL.
+- It **verifies every journey with the Playwright MCP server** on each platform, at phone and
+  tablet sizes, in light and dark, at large text sizes. It runs an accessibility audit and builds
+  a storyboard of every screen and state.
+- It stops at an approved UX and a **handoff package** for native implementation, with component
+  mappings for Material 3 (Compose) and SwiftUI.
 
 Works with **Claude Code**, **Codex**, and any agent that reads `SKILL.md` folders (the open Agent
 Skills format) and can run MCP servers.
@@ -19,15 +28,16 @@ Skills format) and can run MCP servers.
 Spec · Architecture · Design · API docs
                 │
    0 Preflight: Playwright MCP present? (configure it if not)
-   1 Discover inputs ──────────────► you confirm the availability table
-   2 Answer from the documents ────► you approve / correct the proposals   (gate A)
+   1 Discover inputs + platforms ──► you confirm the availability table
+   2 Answer from the documents ────► you approve / correct the proposals,  (gate A)
+                                     including Android / iOS / both
    3 Ask what's left, ≤ 4 at a time ► you answer                           (gate B)
    4 Journeys, states, flow ───────► you confirm the flow                  (gate C)
-   5 Build (Android shell + mock scenarios)
-   6 Verify with Playwright MCP: journeys × window classes × themes, back, audit, screenshots
+   5 Build (Android and/or iOS shell + mock scenarios)
+   6 Verify with Playwright MCP: journeys × platforms × windows × themes, back, audit, screenshots
    7 Review & iterate (max 3 rounds)
    8 Storyboard + phone preview ───► you approve                           (gate D)
-   9 HANDOFF.md → stop (no Compose code)
+   9 HANDOFF.md → stop (no Compose or SwiftUI code)
 ```
 
 ## Requirements
@@ -126,6 +136,8 @@ Put your documents anywhere in the project (for example `docs/` and `design/`), 
 
 > Check which of my docs are available and start a mobile prototype for the readings list.
 
+> Prototype the onboarding for both Android and iOS.
+
 > Resume my mobile prototype.
 
 Everything the skill produces lives in `prototype/`:
@@ -134,7 +146,7 @@ Everything the skill produces lives in `prototype/`:
 prototype/
 ├── index.html, screens.js, mock-data.js, …   the prototype (plain HTML/CSS/JS, no build step)
 ├── scenarios/*.md                            Given / When / Then per journey
-├── screenshots/<window>/<theme>/*.png        Playwright MCP captures
+├── screenshots/<platform>/<window>/<theme>/  Playwright MCP captures
 ├── storyboard.html                           every screen × state in one grid
 ├── HANDOFF.md                                for the native implementation
 └── notes/                                    STATE, INPUTS, CLARIFICATIONS, DECISIONS, VERIFICATION
@@ -142,7 +154,8 @@ prototype/
 
 Open it yourself with `node skills/mobile-prototype/scripts/serve.mjs --dir prototype` (the path
 depends on where the skill is installed); it prints a local URL and a LAN URL for your phone. Add
-`?debug=1` to switch scenarios, latency, theme and font size by hand.
+`?debug=1` to switch platform, scenarios, latency, theme and font size by hand. On a real phone
+the simulated status bar and system bars hide themselves.
 
 ## Repository layout
 
@@ -154,19 +167,23 @@ depends on where the skill is installed); it prints a local URL and a LAN URL fo
 install.mjs            installer for any agent (skill + MCP configuration)
 skills/mobile-prototype/
 ├── SKILL.md           the workflow
-├── references/        intake, question bank, clarification protocol, Android conventions,
-│                      Playwright MCP setup and verification, review rubric, handoff
+├── references/        intake, question bank, clarification protocol, platform conventions
+│                      (platforms/android, platforms/ios), Playwright MCP setup and
+│                      verification, review rubric, handoff
 ├── scripts/           check-playwright-mcp, discover-inputs, scaffold, serve, storyboard
-└── assets/            prototype template (Android shell) + notes/scenario/handoff templates
+└── assets/            prototype template (shared core + Android and iOS shells) +
+                       notes/scenario/handoff templates
 evals/                 evals.json + a fixture project with a spec, architecture, ADR and design notes
 ```
 
 ## Evals
 
-`evals/evals.json` describes eight cases: input discovery, proposals for approval, surfacing a
-document conflict, a missing spec, a missing Playwright MCP, verification, handoff, and a prompt
-that should *not* trigger the skill. They run against `evals/fixtures/glucose-companion`, which
-contains a deliberate conflict between the PRD and an architecture decision record.
+`evals/evals.json` describes eleven cases: input discovery (with the platform suggestion),
+proposals for approval, surfacing a document conflict, a missing spec, a missing Playwright MCP,
+verification, handoff, an iOS target on an Android-specific architecture, verifying both
+platforms, a two-platform handoff, and a prompt that should *not* trigger the skill. They run
+against `evals/fixtures/glucose-companion`, which contains a deliberate conflict between the PRD
+and an architecture decision record.
 
 ## License
 

@@ -15,6 +15,17 @@ How to find, confirm, read and register the user's documents (Phase 1).
 `scripts/discover-inputs.mjs` classifies by file name, folder and the first headings of text files.
 It is a starting point: the user confirms the final list.
 
+## Platform signals
+
+The same script reports which platform(s) the project points to, from build files
+(`AndroidManifest.xml` and Android Gradle files → Android; `.xcodeproj`, `Package.swift`,
+`Podfile` → iOS; Kotlin Multiplatform, Flutter or React Native → both) and from what the spec,
+architecture and design documents mention ("Jetpack Compose", "SwiftUI", "iPhone"…). It prints a
+suggestion. Treat it like any document fact: record it (for example `F03 | Architecture names
+Android Companion Device Manager | ARCHITECTURE.md § Connectivity | Arch`) and propose the answer
+to **P5** in Phase 2 with those citations. Signals that disagree (an Android codebase and a PRD
+that promises an iPhone app) are class C. No signals at all means P5 is class D: ask.
+
 ## The availability table
 
 Show it like this and ask for confirmation in the same message:
@@ -26,6 +37,7 @@ Inputs found
   Design        ~ design/onboarding.png, design/home.png (images only — no written flows)
   API           ✗ none found
   Other         docs/research/interviews.md
+  Platform      Android suggested — ARCHITECTURE.md mentions "Android Companion Device Manager"
 
 Please confirm: are these the authoritative versions? Anything to ignore, or
 anything missing (another folder, a Figma link, an API contract)?
@@ -39,7 +51,7 @@ Use ✔ (found), ~ (partial), ✗ (none).
 |---|---|---|
 | Spec | nothing defines the product | ask the user for a short written description of the feature, its users and its main journey; write it to `notes/INPUTS.md` as the working spec and get it approved before Phase 2 |
 | Architecture | behaviour under latency, offline and failure is unknown | move question-bank topics T1–T5 and S3–S7 into Phase 3 (usually class D) |
-| Design | no visual direction | use the Material 3 baseline in `tokens/android.css` with a neutral palette; record it as class E; ask V1–V2 only if the user cares about the look for this round |
+| Design | no visual direction | use the platform baseline (`tokens/android.css`: Material 3 neutral palette; `tokens/ios.css`: system colours with a neutral tint); record it as class E; ask V1–V2 only if the user cares about the look for this round |
 | API | mock data must be invented | derive entities from the spec; make mock data realistic (real-looking names, dates, units, lengths); record it as an assumption |
 
 ## Reading rules

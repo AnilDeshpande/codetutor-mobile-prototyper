@@ -42,7 +42,7 @@
         <div class="snackbar" id="snackbar" role="status" aria-live="polite" data-testid="snackbar" hidden></div>
       </div>
 
-      <div class="system-nav" role="toolbar" aria-label="System navigation">
+      <div class="system-nav" role="toolbar" aria-label="System navigation" data-system-ui>
         <button type="button" id="system-back" aria-label="System back" data-testid="system-back">${svg(SYS.back)}</button>
         <button type="button" id="system-home" aria-label="System home" data-testid="system-home">${svg(SYS.home)}</button>
         <button type="button" aria-label="Recent apps" disabled>${svg(SYS.recent)}</button>
@@ -106,8 +106,10 @@
     /**
      * Android runtime permission: rationale (when given and after a denial, or always if
      * rationale.always) → system prompt. The second denial becomes 'blocked'.
+     * prompt: the system dialog's wording, as a string or { android, ios }.
      */
     async requestPermission(name, { prompt, rationale } = {}, { permissions, dialog, appName }) {
+      if (prompt && typeof prompt === 'object') prompt = prompt.android;
       const state = permissions[name] || 'ask';
       if (state === 'granted' || state === 'blocked') return state;
       if (rationale && (state === 'denied' || rationale.always)) {

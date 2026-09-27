@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Find the documents a mobile prototype can be built from: spec, architecture, design, API and other.
-// Classification is a first guess from file names, folders and headings; the user confirms it.
+// Find the documents a mobile prototype can be built from: spec, architecture, design, API and other,
+// and the signals for which platform(s) the app targets (build files and what the documents say).
+// Classification and the platform suggestion are first guesses; the user confirms them.
 //
 //   node discover-inputs.mjs [--root .] [--depth 5] [--json] [extra/path.md other/dir ...]
 //
@@ -37,6 +38,23 @@ const RULES = [
   { cat: 'api', re: /\b(openapi|swagger|api|contracts?|graphql|schema|endpoints?|proto)\b/i },
 ];
 
+// Platform signals: project files, and mentions in the documents.
+const BUILD_MARKERS = [
+  { re: /^AndroidManifest\.xml$/, platform: 'android' },
+  { re: /^(build|settings)\.gradle(\.kts)?$/, platform: 'android', check: (t) => /com\.android\.|android\s*\{/.test(t), cross: (t) => /kotlin\(["']multiplatform["']\)|org\.jetbrains\.kotlin\.multiplatform|compose\.multiplatform/.test(t) },
+  { re: /\.(xcodeproj|xcworkspace)$/, platform: 'ios', dir: true },
+  { re: /^(Package\.swift|Podfile|Info\.plist)$/, platform: 'ios' },
+  { re: /^pubspec\.yaml$/, platform: 'both', label: 'Flutter' },
+  { re: /^package\.json$/, platform: 'both', label: 'React Native', check: (t) => /"react-native"\s*:/.test(t) },
+];
+const MENTIONS = {
+  android: /\b(android|jetpack compose|material ?3|play store|google play|gradle)\b/gi,
+  ios: /\b(ios|ipados|swiftui|uikit|iphone|ipad|app store|xcode|testflight)\b/gi,
+  swift: /\bSwift\b/g,                       // case-sensitive: "a swift reply" isn't a platform
+  both: /\b(kotlin multiplatform|compose multiplatform|kmp|flutter|react native|cross[- ]platform)\b/gi,
+};
+const signals = [];
+
 const files = [];
 walk(root, 0);
 for (const p of explicit) {
@@ -57,8 +75,12 @@ const figma = relevant.flatMap((r) => r.figmaLinks || []);
 const byCat = { spec: [], architecture: [], design: [], api: [], other: [], missing: [] };
 for (const r of relevant) byCat[r.category].push(r);
 
+const found = new Set(signals.map((x) => x.platform));
+const suggestion = found.has('both') || (found.has('android') && found.has('ios')) ? 'both' : found.has('android') ? 'android' : found.has('ios') ? 'ios' : null;
+const platforms = { suggestion, signals };
+
 if (asJson) {
-  console.log(JSON.stringify({ root, categories: byCat, figmaLinks: [...new Set(figma)] }, null, 2));
+  console.log(JSON.stringify({ root, categories: byCat, figmaLinks: [...new Set(figma)], platforms }, null, 2));
 } else {
   const label = { spec: 'Spec', architecture: 'Architecture', design: 'Design', api: 'API', other: 'Other' };
   console.log(`Inputs found under ${root}\n`);
@@ -71,7 +93,11 @@ if (asJson) {
   }
   if (byCat.missing.length) console.log(`\n  Not found: ${byCat.missing.map((r) => r.path).join(', ')}`);
   if (figma.length) console.log(`\n  Figma links mentioned: ${[...new Set(figma)].join(', ')}`);
-  console.log('\n✔ found   ~ images only   ✗ none. This is a guess from names and headings: confirm it with the user.');
+  console.log('\n  Platform signals');
+  if (!signals.length) console.log('      none found: ask the user (question P5)');
+  for (const x of signals) console.log(`      ${x.platform.padEnd(8)} ${x.source}  (${x.evidence})`);
+  console.log(`      Suggested: ${suggestion || 'unknown'}`);
+  console.log('\n✔ found   ~ images only   ✗ none. This is a guess from names, headings and build files: confirm it with the user.');
 }
 
 // ---------------------------------------------------------------------------
@@ -83,8 +109,31 @@ function walk(dir, depth, force = false) {
   for (const e of entries) {
     if (e.name.startsWith('.') && !force) continue;
     const p = path.join(dir, e.name);
-    if (e.isDirectory()) { if (!SKIP_DIRS.has(e.name) || force) walk(p, depth + 1, force); }
+    const marker = BUILD_MARKERS.find((m) => m.re.test(e.name) && !!m.dir === e.isDirectory());
+    if (marker) buildSignal(marker, p);
+    if (e.isDirectory()) { if ((!SKIP_DIRS.has(e.name) || force) && !marker) walk(p, depth + 1, force); }
     else if (e.isFile()) add(p, force);
+  }
+}
+
+function buildSignal(marker, p) {
+  let text = '';
+  if (marker.check || marker.cross) { try { text = fs.readFileSync(p, 'utf8').slice(0, 100_000); } catch { return; } }
+  if (marker.cross?.(text)) { signals.push({ platform: 'both', source: rel(p), evidence: 'Kotlin Multiplatform build' }); return; }
+  if (marker.check && !marker.check(text)) return;
+  signals.push({ platform: marker.platform, source: rel(p), evidence: marker.label ? `${marker.label} project` : 'build file' });
+}
+
+function mentionSignals(relPath, text) {
+  const byPlatform = {};
+  for (const [key, re] of Object.entries(MENTIONS)) {
+    const platform = key === 'swift' ? 'ios' : key;
+    (byPlatform[platform] ||= []).push(...[...text.matchAll(re)].map((m) => m[0]));
+  }
+  for (const [platform, hits] of Object.entries(byPlatform)) {
+    if (!hits.length) continue;
+    const top = [...new Set(hits.map((h) => h.toLowerCase()))].slice(0, 3).map((h) => hits.find((x) => x.toLowerCase() === h));
+    signals.push({ platform, source: relPath, evidence: `mentions ${top.map((h) => `“${h}”`).join(', ')}${hits.length > 3 ? ` (${hits.length}×)` : ''}` });
   }
 }
 
@@ -128,7 +177,10 @@ function classify({ path: p, ext, force }) {
     if (out.title && re.test(out.title)) score[cat] += 2;
   }
   const best = Object.entries(score).sort((a, b) => b[1] - a[1])[0];
-  if (best[1] > 0) return { ...out, category: best[0] };
+  if (best[1] > 0) {
+    if (kind === 'text' && best[0] !== 'api') mentionSignals(relPath, head);
+    return { ...out, category: best[0] };
+  }
   // Images count only where their name or folder says design (or the user passed them explicitly).
   if (kind === 'image') return { ...out, category: force ? 'design' : 'skip' };
   if (kind === 'text' && out.words < 80 && !force) return { ...out, category: 'skip' };

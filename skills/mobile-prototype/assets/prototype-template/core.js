@@ -12,7 +12,8 @@
      screen=<id>&state=<state>&params=<json>   open a screen directly, optionally forcing a state
      theme=<light|dark> force a theme (otherwise follows the browser / browser_emulate_media)
      fontScale=<n>      text size multiplier, e.g. 2 for 200 %
-     chrome=off         hide the simulated status and system bars
+     chrome=off|on      hide or show the simulated status and system bars (default: shown, except
+                        on a touch device such as a real phone, which has its own)
      debug=1            show the debug panel
 
    This file is loaded in <head>, after the platform stylesheets, so it can pick the platform
@@ -29,7 +30,7 @@
     latency: LATENCY[query.get('latency')] ?? (Number(query.get('latency')) || LATENCY.normal),
     theme: query.get('theme'),
     fontScale: Number(query.get('fontScale')) || 1,
-    chrome: query.get('chrome') !== 'off',
+    chrome: query.has('chrome') ? query.get('chrome') !== 'off' : !matchMedia('(pointer: coarse)').matches,
     debug: query.get('debug') === '1',
     screen: query.get('screen'),
     state: query.get('state'),
@@ -316,6 +317,7 @@
     P.renderBar({
       top: els.app.dataset.top === 'true',
       hidden: screen.appBar === false,
+      focused: !!screen.focused,
       title: titleOf(stack[stack.length - 1], ctx) || '',
       previousTitle: prev ? titleOf(prev) || '' : '',
       actions: screen.topActions ? screen.topActions(ctx) : [],
@@ -442,7 +444,8 @@
     for (const d of [els.dialog, els.sheet]) {
       d.addEventListener('click', (e) => {
         const b = e.target.closest('[data-value]');
-        if (b) closeOverlay(d, b.dataset.value === 'true' ? true : b.dataset.value === 'false' ? false : b.dataset.value);
+        const v = b?.dataset.value;
+        if (b) closeOverlay(d, v === 'true' ? true : v === 'false' ? false : v === '__null' ? null : v);
       });
     }
 
@@ -523,7 +526,8 @@
     const interactive = scope.flatMap((root) => [...root.querySelectorAll('button, a[href], input, select, textarea, [role=button], [role=switch], [role=tab], [tabindex]:not([tabindex="-1"])')])
       .filter((el) => visible(el) && !el.disabled && !el.closest('[hidden]') && !(el.tagName === 'A' && el.closest('p')));
 
-    const smallTargets = interactive.filter((el) => {
+    // Simulated OS chrome (marked data-system-ui) isn't app UI, so its sizes aren't the app's to fix.
+    const smallTargets = interactive.filter((el) => !el.closest('[data-system-ui]')).filter((el) => {
       const r = el.getBoundingClientRect();
       const a = getComputedStyle(el, '::after');
       let w = r.width, h = r.height;
@@ -557,12 +561,21 @@
       return clips && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1);
     }).map(describe);
 
+    // Content that spills out of its own box (and so is drawn over its neighbours), typically a
+    // flex row whose text column was squeezed at a large font scale.
+    const overlapping = [...document.querySelectorAll('#screen *')].filter((el) => {
+      if (!visible(el) || el.classList.contains('allow-overlap') || el.closest('svg') || !el.textContent.trim()) return false;
+      const s = getComputedStyle(el);
+      if (s.display === 'inline' || !['visible'].includes(s.overflowX) || !el.clientWidth) return false;
+      return el.scrollWidth > el.clientWidth + 1;
+    }).map(describe);
+
     const main = document.getElementById('screen');
     const missingState = [];
     if (!main.dataset.screen) missingState.push('main[data-screen] is empty');
     if (!main.dataset.state) missingState.push('main[data-state] is empty');
 
-    return { platform: platformName, screen: main.dataset.screen, state: main.dataset.state, smallTargets, unnamedControls, overflow: overflow.slice(0, 20), clippedText, missingState };
+    return { platform: platformName, screen: main.dataset.screen, state: main.dataset.state, smallTargets, unnamedControls, overflow: overflow.slice(0, 20), clippedText, overlapping, missingState };
   };
 
   window.App = {

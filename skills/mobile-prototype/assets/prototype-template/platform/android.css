@@ -123,11 +123,12 @@ main#screen.enter { animation: screen-in var(--motion-medium) var(--ease-standar
   .app[data-chrome="off"] { grid-template-rows: 0 minmax(0, 1fr) 0; }
   .nav {
     flex-direction: column; justify-content: flex-start; gap: var(--space-3);
-    width: var(--nav-rail-w); height: auto;
+    width: max-content; min-width: var(--nav-rail-w); height: auto;   /* widens for large text */
+    padding-inline: var(--space-1);
     padding-top: var(--space-5);
     background: var(--md-surface);
   }
-  .nav-item { flex: none; height: 56px; }
+  .nav-item { flex: none; min-height: 56px; }
   .app[data-nav-state="hidden"] .nav { display: flex; }   /* the rail stays visible on deeper screens */
   .app[data-focused="true"] .nav { display: none; }
 }

@@ -1,7 +1,7 @@
 {
   "name": "mobile-prototyper",
   "version": "0.1.0",
-  "description": "Turn a spec, architecture and design docs into a verified, clickable HTML prototype of an Android app. Answers what the documents already answer (with your approval), asks you the rest, and verifies every journey with the Playwright MCP server.",
+  "description": "Turn a spec, architecture and design docs into a verified, clickable HTML prototype of a native mobile app (Android, iOS or both). Answers what the documents already answer (with your approval), asks you the rest, and verifies every journey with the Playwright MCP server.",
   "author": {
     "name": "Anil Deshpande"
   },
@@ -11,6 +11,7 @@
   "keywords": [
     "prototype",
     "android",
+    "ios",
     "mobile",
     "ux",
     "playwright",

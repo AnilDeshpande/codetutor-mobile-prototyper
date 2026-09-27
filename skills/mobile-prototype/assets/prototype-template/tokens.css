@@ -1,0 +1,169 @@
+/* Design tokens — Material 3 roles, type scale and shape.
+   Change the colour roles here (brand), never in screen code. Values below are a neutral
+   baseline generated from a teal seed; replace them with the brand's M3 scheme when V1 is known. */
+
+:root {
+  /* Colour roles — light */
+  --md-primary: #006a60;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #9ef2e4;
+  --md-on-primary-container: #00201c;
+  --md-secondary: #4a635f;
+  --md-on-secondary: #ffffff;
+  --md-secondary-container: #cce8e2;
+  --md-on-secondary-container: #05201c;
+  --md-tertiary: #456179;
+  --md-on-tertiary: #ffffff;
+  --md-tertiary-container: #cce5ff;
+  --md-on-tertiary-container: #001e31;
+  --md-error: #ba1a1a;
+  --md-on-error: #ffffff;
+  --md-error-container: #ffdad6;
+  --md-on-error-container: #410002;
+  --md-surface: #f5fbf8;
+  --md-on-surface: #171d1b;
+  --md-surface-variant: #dae5e1;
+  --md-on-surface-variant: #3f4946;
+  --md-surface-container-lowest: #ffffff;
+  --md-surface-container-low: #eff5f2;
+  --md-surface-container: #e9efec;
+  --md-surface-container-high: #e3eae6;
+  --md-surface-container-highest: #dee4e1;
+  --md-outline: #6f7976;
+  --md-outline-variant: #bec9c5;
+  --md-inverse-surface: #2b3230;
+  --md-inverse-on-surface: #ecf2ef;
+  --md-inverse-primary: #82d5c8;
+  --md-scrim: rgb(0 0 0 / 0.32);
+  --md-success: #2e7d32;       /* not an M3 role; used for "done" states only */
+
+  /* System chrome (status bar, navigation bar) */
+  --sys-bar-bg: var(--md-surface-container);
+  --sys-bar-fg: var(--md-on-surface);
+
+  /* Type scale (rem, so ?fontScale= scales text like Android's font size setting) */
+  --font: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display-small: 400 2.25rem/2.75rem var(--font);
+  --headline-large: 400 2rem/2.5rem var(--font);
+  --headline-medium: 400 1.75rem/2.25rem var(--font);
+  --headline-small: 400 1.5rem/2rem var(--font);
+  --title-large: 400 1.375rem/1.75rem var(--font);
+  --title-medium: 500 1rem/1.5rem var(--font);
+  --title-small: 500 0.875rem/1.25rem var(--font);
+  --body-large: 400 1rem/1.5rem var(--font);
+  --body-medium: 400 0.875rem/1.25rem var(--font);
+  --body-small: 400 0.75rem/1rem var(--font);
+  --label-large: 500 0.875rem/1.25rem var(--font);
+  --label-medium: 500 0.75rem/1rem var(--font);
+  --label-small: 500 0.6875rem/1rem var(--font);
+
+  /* Shape */
+  --shape-xs: 4px;
+  --shape-sm: 8px;
+  --shape-md: 12px;
+  --shape-lg: 16px;
+  --shape-xl: 28px;
+  --shape-full: 999px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Sizes */
+  --touch-min: 48px;
+  --status-bar-h: 24px;
+  --system-nav-h: 48px;
+  --top-app-bar-h: 64px;
+  --nav-bar-h: 80px;
+  --nav-rail-w: 80px;
+  --content-max: 840px;
+
+  /* Elevation and motion */
+  --elev-1: 0 1px 2px rgb(0 0 0 / .3), 0 1px 3px 1px rgb(0 0 0 / .15);
+  --elev-2: 0 1px 2px rgb(0 0 0 / .3), 0 2px 6px 2px rgb(0 0 0 / .15);
+  --elev-3: 0 4px 8px 3px rgb(0 0 0 / .15), 0 1px 3px rgb(0 0 0 / .3);
+  --motion-short: 150ms;
+  --motion-medium: 300ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  color-scheme: light;
+}
+
+/* Colour roles — dark. Applies with the OS/browser setting (browser_emulate_media) unless
+   ?theme=light forces light; ?theme=dark forces dark. Keep the two dark blocks identical. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --md-primary: #82d5c8;
+    --md-on-primary: #003731;
+    --md-primary-container: #005048;
+    --md-on-primary-container: #9ef2e4;
+    --md-secondary: #b1ccc6;
+    --md-on-secondary: #1c3531;
+    --md-secondary-container: #334b47;
+    --md-on-secondary-container: #cce8e2;
+    --md-tertiary: #adcae5;
+    --md-on-tertiary: #143349;
+    --md-tertiary-container: #2d4961;
+    --md-on-tertiary-container: #cce5ff;
+    --md-error: #ffb4ab;
+    --md-on-error: #690005;
+    --md-error-container: #93000a;
+    --md-on-error-container: #ffdad6;
+    --md-surface: #0e1513;
+    --md-on-surface: #dee4e1;
+    --md-surface-variant: #3f4946;
+    --md-on-surface-variant: #bec9c5;
+    --md-surface-container-lowest: #090f0e;
+    --md-surface-container-low: #171d1b;
+    --md-surface-container: #1b2120;
+    --md-surface-container-high: #252b2a;
+    --md-surface-container-highest: #303635;
+    --md-outline: #899390;
+    --md-outline-variant: #3f4946;
+    --md-inverse-surface: #dee4e1;
+    --md-inverse-on-surface: #2b3230;
+    --md-inverse-primary: #006a60;
+    --md-success: #81c784;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --md-primary: #82d5c8;
+  --md-on-primary: #003731;
+  --md-primary-container: #005048;
+  --md-on-primary-container: #9ef2e4;
+  --md-secondary: #b1ccc6;
+  --md-on-secondary: #1c3531;
+  --md-secondary-container: #334b47;
+  --md-on-secondary-container: #cce8e2;
+  --md-tertiary: #adcae5;
+  --md-on-tertiary: #143349;
+  --md-tertiary-container: #2d4961;
+  --md-on-tertiary-container: #cce5ff;
+  --md-error: #ffb4ab;
+  --md-on-error: #690005;
+  --md-error-container: #93000a;
+  --md-on-error-container: #ffdad6;
+  --md-surface: #0e1513;
+  --md-on-surface: #dee4e1;
+  --md-surface-variant: #3f4946;
+  --md-on-surface-variant: #bec9c5;
+  --md-surface-container-lowest: #090f0e;
+  --md-surface-container-low: #171d1b;
+  --md-surface-container: #1b2120;
+  --md-surface-container-high: #252b2a;
+  --md-surface-container-highest: #303635;
+  --md-outline: #899390;
+  --md-outline-variant: #3f4946;
+  --md-inverse-surface: #dee4e1;
+  --md-inverse-on-surface: #2b3230;
+  --md-inverse-primary: #006a60;
+  --md-success: #81c784;
+  color-scheme: dark;
+}

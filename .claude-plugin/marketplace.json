@@ -1,0 +1,15 @@
+{
+  "name": "codetutor",
+  "description": "Agentic mobile prototyping skills.",
+  "owner": {
+    "name": "Anil Deshpande"
+  },
+  "plugins": [
+    {
+      "name": "mobile-prototyper",
+      "source": "./",
+      "description": "Spec + architecture + design docs -> verified, clickable Android UX prototype (bundles Playwright MCP).",
+      "version": "0.1.0"
+    }
+  ]
+}

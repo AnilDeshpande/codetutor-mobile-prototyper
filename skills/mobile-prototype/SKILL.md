@@ -215,7 +215,8 @@ major issue, then re-run only the affected scenarios plus one full regression pa
 ## Phase 9 — Optional design phase (only if the user chooses it)
 
 Read `references/design-phase.md` and follow it: level (visual direction or design system) and
-provider, three plain-language choices (density, expressiveness, motion), two directions filled
+provider (ui-ux-pro-max, installed on first use with `scripts/design-provider.mjs` and a clear
+notice; the built-in baseline when that isn't possible), three plain-language choices (density, expressiveness, motion), two directions filled
 into the `DESIGN.md` contract, style tiles on every platform in scope for the user to pick from
 (gate E1), `scripts/theme.mjs` to turn the pick into platform tokens with a contrast check, visual
 refinements only (no UX changes), a full re-verification, and the user's approval of the look

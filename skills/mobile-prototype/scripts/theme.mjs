@@ -73,10 +73,11 @@ const ENUMS = {
   density: ['spacious', 'balanced', 'dense'],
   motion: ['minimal', 'standard'],
   shape: ['square', 'rounded', 'soft'],
+  contrast: ['standard', 'high'],
   'android.scheme': ['auto', 'tonal-spot', 'neutral', 'vibrant', 'expressive', 'fidelity', 'content'],
 };
 const DEFAULTS = {
-  brand: null, accent: 'auto', expressiveness: 'balanced', density: 'balanced', motion: 'standard', shape: 'rounded',
+  brand: null, accent: 'auto', expressiveness: 'balanced', density: 'balanced', motion: 'standard', shape: 'rounded', contrast: 'standard',
   'font.display': 'platform', 'font.text': 'platform', 'android.scheme': 'auto', 'android.success': '#2e7d32', 'ios.tint': 'auto',
 };
 
@@ -89,6 +90,8 @@ else {
   design = parseDesign(fs.readFileSync(designFile, 'utf8'));
 }
 validate(design);
+// Text contrast target: WCAG AA (4.5:1) by default, AAA (7:1) with "contrast: high".
+const TEXT = design.contrast === 'high' ? 7 : 4.5;
 
 function parseDesign(text) {
   const block = text.match(/```theme\s*\n([\s\S]*?)```/);
@@ -163,19 +166,27 @@ function androidScheme(d, mcu) {
     const src = mcu.Hct.fromInt(mcu.argbFromHex(d.brand));
     const success = mcu.TonalPalette.fromInt(mcu.Blend.harmonize(mcu.argbFromHex(successSeed), mcu.argbFromHex(d.brand)));
     const scheme = (isDark) => {
-      let s = new Cls(src, isDark, 0);
+      const level = d.contrast === 'high' ? 1 : 0;
+      let s = new Cls(src, isDark, level);
       if (d.accent !== 'auto') {
-        s = new mcu.DynamicScheme({ sourceColorArgb: s.sourceColorArgb, variant: s.variant, contrastLevel: 0, isDark,
+        s = new mcu.DynamicScheme({ sourceColorArgb: s.sourceColorArgb, variant: s.variant, contrastLevel: level, isDark,
           primaryPalette: s.primaryPalette, secondaryPalette: s.secondaryPalette, tertiaryPalette: mcu.TonalPalette.fromInt(mcu.argbFromHex(d.accent)),
           neutralPalette: s.neutralPalette, neutralVariantPalette: s.neutralVariantPalette });
       }
       const roles = Object.fromEntries(MD_ROLES.map((k) => [k, mcu.hexFromArgb(mcu.MaterialDynamicColors[k].getArgb(s))]));
       roles.success = mcu.hexFromArgb(success.tone(isDark ? 80 : 40));
+      if (C.contrast(roles.success, roles.surface) < TEXT) {
+        for (let t = isDark ? 80 : 40; t >= 0 && t <= 100; t += isDark ? 2 : -2) {
+          const c = mcu.hexFromArgb(success.tone(t));
+          if (C.contrast(c, roles.surface) >= TEXT + 0.05) { roles.success = c; break; }
+        }
+      }
       return roles;
     };
     return { engine: `Material Color Utilities ${MCU.version}`, variant, light: scheme(false), dark: scheme(true) };
   }
   // Offline approximation: CIELAB palettes with Material's tones and roughly its chroma per variant.
+  if (d.contrast === 'high') fail('contrast: high needs Material Color Utilities, which could not be loaded. Connect to the internet, or use contrast: standard for now.');
   const src = C.toLch(C.parse(d.brand));
   const h = src.h, c = src.c;
   const rot = (x) => (h + x + 360) % 360;
@@ -219,7 +230,8 @@ function iosTheme(d, base) {
   const surfaces = (theme) => {
     const get = resolver(theme === 'light' ? base.light : { ...base.light, ...base.dark });
     const cell = C.parse(get('ios-grouped-bg-secondary'));
-    return [C.parse(get('ios-grouped-bg')), cell, C.over(C.parse(get('ios-fill-tertiary')), cell)].map(C.hex);
+    const page = C.parse(get('ios-grouped-bg'));
+    return [page, cell, C.over(C.parse(get('ios-fill-tertiary')), cell), C.over(C.parse(get('ios-fill-tertiary')), page)].map(C.hex);
   };
   // Darkening a tint is limited by the darkest light background; lifting it by the lightest dark one.
   const byLum = (list, pick) => list.reduce((a, b) => (pick(C.luminance(C.parse(b)), C.luminance(C.parse(a))) ? b : a));
@@ -228,24 +240,24 @@ function iosTheme(d, base) {
   const worstLight = byLum(lightBgs, (x, y) => x < y), worstDark = byLum(darkBgs, (x, y) => x > y);
   let tint = lightGiven || d.brand;
   const notes = [];
-  if (minContrast(tint, lightBgs) < 4.5) {
-    const suggestion = C.nearestPassing(tint, worstLight, 4.6, 'darker');
-    if (d['ios.tint'] === 'adjust') { notes.push(`iOS light tint darkened from ${tint} to ${suggestion} to reach 4.5:1 (ios.tint: adjust).`); tint = suggestion; }
+  if (minContrast(tint, lightBgs) < TEXT) {
+    const suggestion = C.nearestPassing(tint, worstLight, TEXT + 0.1, 'darker');
+    if (d['ios.tint'] === 'adjust') { notes.push(`iOS light tint darkened from ${tint} to ${suggestion} to reach ${TEXT}:1 (ios.tint: adjust).`); tint = suggestion; }
     else {
-      return { error: `Brand ${tint} as the iOS tint has ${minContrast(tint, lightBgs).toFixed(2)}:1 on light backgrounds (needs 4.5:1 for tinted text and buttons). `
+      return { error: `Brand ${tint} as the iOS tint has ${minContrast(tint, lightBgs).toFixed(2)}:1 on light backgrounds (needs ${TEXT}:1 for tinted text and buttons). `
         + `Nearest passing colour with the same hue: ${suggestion}. Set "ios.tint: ${suggestion}" (keeps the brand for fills and illustrations) or "ios.tint: adjust" in DESIGN.md.` };
     }
   }
   let tintDark = darkGiven;
   if (!tintDark) {
-    tintDark = minContrast(d.brand, darkBgs) >= 4.5 ? d.brand : C.nearestPassing(d.brand, worstDark, 4.6, 'lighter');
-    if (tintDark !== d.brand) notes.push(`iOS dark tint ${tintDark}: the brand colour lifted to reach 4.5:1 on dark backgrounds, as iOS system colours do.`);
+    tintDark = minContrast(d.brand, darkBgs) >= TEXT ? d.brand : C.nearestPassing(d.brand, worstDark, TEXT + 0.1, 'lighter');
+    if (tintDark !== d.brand) notes.push(`iOS dark tint ${tintDark}: the brand colour lifted to reach ${TEXT}:1 on dark backgrounds, as iOS system colours do.`);
   }
   const L = C.toLch(C.parse(tint)), D = C.toLch(C.parse(tintDark));
   const fillTone = { restrained: [96, 14], balanced: [92, 20], bold: [86, 26] }[d.expressiveness];
   const fillChroma = { restrained: 12, balanced: 20, bold: 32 }[d.expressiveness];
-  const onColor = (bg, darkText) => (C.contrast('#ffffff', bg) >= 4.5 ? '#ffffff' : darkText);
-  return {
+  const onColor = (bg, darkText) => (C.contrast('#ffffff', bg) >= TEXT ? '#ffffff' : darkText);
+  const theme = {
     notes,
     light: {
       'ios-tint': tint,
@@ -257,13 +269,36 @@ function iosTheme(d, base) {
     },
     dark: {
       'ios-tint': tintDark,
-      'ios-on-tint': C.contrast('#000000', tintDark) >= 4.5 ? C.hex(C.fromTone(10, D.h, Math.min(D.c, 40))) : '#ffffff',
+      'ios-on-tint': C.contrast('#000000', tintDark) >= TEXT ? C.hex(C.fromTone(10, D.h, Math.min(D.c, 40))) : '#ffffff',
       'ios-tint-fill': C.hex(C.fromTone(fillTone[1], D.h, Math.min(D.c, fillChroma))),
       'ios-on-tint-fill': C.hex(C.fromTone(88, D.h, Math.min(D.c, 30))),
       'ios-toast-action': C.hex(C.fromTone(84, D.h, Math.min(D.c, 40))),
       'ios-wallpaper': `linear-gradient(160deg, ${C.hex(C.fromTone(32, D.h, Math.min(D.c, 24)))}, ${C.hex(C.fromTone(18, D.h, 16))} 60%, ${C.hex(C.fromTone(7, (D.h + 40) % 360, 12))})`,
     },
   };
+  if (d.contrast === 'high') {
+    // AAA: the app's own text colours go beyond Apple's defaults (as with Increase Contrast).
+    for (const [theme_, bgs, dir] of [['light', lightBgs, 'darker'], ['dark', darkBgs, 'lighter']]) {
+      const get = resolver(theme_ === 'light' ? base.light : { ...base.light, ...base.dark });
+      const worst = byLum(bgs, dir === 'darker' ? (x, y) => x < y : (x, y) => x > y);
+      const t = theme[theme_];
+      for (const name of ['ios-red', 'ios-green']) {
+        const c = C.hex(C.over(C.parse(get(name)), C.parse(worst)));
+        if (minContrast(c, bgs) < TEXT) t[name] = C.nearestPassing(c, worst, TEXT + 0.1, dir);
+      }
+      t['ios-on-red'] = C.contrast('#ffffff', t['ios-red'] || get('ios-red')) >= TEXT ? '#ffffff' : '#000000';
+      const sec = C.parse(get('ios-label-secondary'));
+      for (let a = sec.a; a <= 1.001; a += 0.02) {
+        if (bgs.every((b) => C.contrast({ ...sec, a }, C.parse(b)) >= TEXT + 0.05)) { t['ios-label-secondary'] = `rgb(${sec.r} ${sec.g} ${sec.b} / ${Math.min(1, a).toFixed(2)})`; break; }
+      }
+      const barBg = C.over(C.parse(get('ios-bar-bg')), C.parse(get('ios-grouped-bg')));
+      if (C.contrast(get('ios-tab-inactive'), barBg) < TEXT) t['ios-tab-inactive'] = C.nearestPassing(get('ios-tab-inactive'), barBg, TEXT + 0.1, dir);
+      const toastBg = C.over(C.parse(get('ios-toast-bg')), C.parse(get('ios-grouped-bg')));
+      if (C.contrast(t['ios-toast-action'], toastBg) < TEXT) t['ios-toast-action'] = C.nearestPassing(t['ios-toast-action'], toastBg, TEXT + 0.1, 'lighter');
+    }
+    notes.push(`contrast: high — iOS secondary label, red, green, inactive tab labels and the toast action were strengthened to reach ${TEXT}:1.`);
+  }
+  return theme;
 }
 
 // ---------- type, shape, spacing, motion (both platforms) ----------
@@ -344,7 +379,9 @@ const PAIRS = {
     ['ios-tint', 'ios-grouped-bg-secondary', 4.5, 'tinted text in cells'],
     ['ios-on-tint', 'ios-tint', 4.5, 'prominent button text'],
     ['ios-on-tint-fill', 'ios-tint-fill', 4.5, 'tinted button text, info banner'],
-    ['ios-tint', ['ios-fill-tertiary', 'ios-grouped-bg-secondary'], 4.5, 'bordered button text'],
+    ['ios-tint', ['ios-fill-tertiary', 'ios-grouped-bg-secondary'], 4.5, 'bordered button text in cells'],
+    ['ios-tint', ['ios-fill-tertiary', 'ios-grouped-bg'], 4.5, 'bordered button text on the background'],
+    ['ios-tab-inactive', ['ios-bar-bg', 'ios-grouped-bg'], 4.5, 'inactive tab labels'],
     ['ios-red', 'ios-grouped-bg-secondary', 4.5, 'destructive text'],
     ['ios-on-red', 'ios-red', 4.5, 'destructive button text'],
     ['ios-green', 'ios-grouped-bg-secondary', 4.5, 'success text'],
@@ -359,10 +396,11 @@ function checkPairs(platform, effective) {
     for (const [fgVar, bgSpec, min, use] of PAIRS[platform]) {
       const layers = (Array.isArray(bgSpec) ? bgSpec : [bgSpec]).map((n) => C.parse(get(n)));
       const fg = C.parse(get(fgVar));
-      if (!fg || layers.some((l) => !l)) { rows.push({ platform, theme, pair: `${fgVar} on ${[bgSpec].flat().join(' over ')}`, use, ratio: null, min, pass: false }); continue; }
+      if (!fg || layers.some((l) => !l)) { rows.push({ platform, theme, pair: `${fgVar} on ${[bgSpec].flat().join(' over ')}`, use, ratio: null, min: min === 4.5 ? TEXT : min, pass: false }); continue; }
       const bg = layers.reduceRight((under, top) => (under ? C.over(top, under) : { ...top, a: 1 }), null);
+      const need = min === 4.5 ? TEXT : min;
       const ratio = C.contrast(fg, bg);
-      rows.push({ platform, theme, pair: `${fgVar} on ${[bgSpec].flat().join(' over ')}`, use, fg: C.hex(fg.a < 1 ? C.over(fg, bg) : fg), bg: C.hex(bg), ratio: Math.round(ratio * 100) / 100, min, pass: ratio >= min });
+      rows.push({ platform, theme, pair: `${fgVar} on ${[bgSpec].flat().join(' over ')}`, use, fg: C.hex(fg.a < 1 ? C.over(fg, bg) : fg), bg: C.hex(bg), ratio: Math.round(ratio * 100) / 100, min: need, pass: ratio >= need });
     }
   }
   return rows;
@@ -376,11 +414,16 @@ async function fetchFonts(families, fontDir) {
     return faces;
   }
   for (const family of families) {
-    const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family).replace(/%20/g, '+')}:wght@400;500;600;700&display=swap`;
+    const name = encodeURIComponent(family).replace(/%20/g, '+');
     try {
-      const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' }, signal: AbortSignal.timeout(20_000) });
-      if (!res.ok) throw new Error(res.status === 400 ? 'not on Google Fonts' : `HTTP ${res.status}`);
-      const css = await res.text();
+      // Ask for the weights the tokens use; families that lack some of them get what they have.
+      let css = null, status = 0;
+      for (const weights of [':wght@400;500;600;700', ':wght@400;700', '']) {
+        const res = await fetch(`https://fonts.googleapis.com/css2?family=${name}${weights}&display=swap`, { headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' }, signal: AbortSignal.timeout(20_000) });
+        status = res.status;
+        if (res.ok) { css = await res.text(); break; }
+      }
+      if (!css) throw new Error(status === 400 ? 'not on Google Fonts' : `HTTP ${status}`);
       const blocks = [...css.matchAll(/\/\*\s*latin\s*\*\/\s*@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]);
       const seen = new Map();
       for (const b of blocks) {
@@ -463,6 +506,8 @@ const reportMd = [
   `Source: ${source} · Generated: ${new Date().toISOString().slice(0, 16).replace('T', ' ')} · Platforms: ${platforms.join(', ')}`,
   perPlatform.android ? `Android: ${perPlatform.android.info.engine}, scheme ${perPlatform.android.info.variant}` : null,
   perPlatform.ios ? `iOS: tint ${perPlatform.ios.info.tint.light} (light) / ${perPlatform.ios.info.tint.dark} (dark); system backgrounds and labels` : null,
+  '',
+  `Contrast target: ${design.contrast === 'high' ? 'WCAG AAA — 7:1 for text' : 'WCAG AA — 4.5:1 for text'}, 3:1 for UI components`,
   '',
   `Direction: brand ${design.brand}${design.accent !== 'auto' ? `, accent ${design.accent}` : ''} · expressiveness ${design.expressiveness} · density ${design.density} · motion ${design.motion} · shape ${design.shape} · fonts ${design['font.display']} / ${design['font.text']}`,
   '',

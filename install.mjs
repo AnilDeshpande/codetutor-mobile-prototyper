@@ -8,6 +8,7 @@
 //   node install.mjs --dir ~/.my-agent/skills      any other agent that reads SKILL.md folders
 //   node install.mjs --link                        symlink instead of copy (for developing the skill)
 //   node install.mjs --skip-mcp                    don't touch MCP configuration
+//   node install.mjs --with-design                 also install the optional design skill ui-ux-pro-max (needs Python 3)
 //   node install.mjs --dry-run                     show what would happen
 //
 // Also works as: npx github:<owner>/codetutor-mobile-prototyper -- --agent codex
@@ -28,7 +29,7 @@ const args = process.argv.slice(2).filter((a) => a !== '--');
 const opt = (name) => { const i = args.findIndex((a) => a === `--${name}` || a.startsWith(`--${name}=`)); if (i < 0) return undefined; return args[i].includes('=') ? args[i].split('=')[1] : args[i + 1]; };
 const flag = (name) => args.includes(`--${name}`);
 if (flag('help') || flag('h')) {
-  console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 14).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
+  console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 15).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
   process.exit(0);
 }
 
@@ -76,6 +77,16 @@ for (const dest of destinations) {
   fs.rmSync(dest, { recursive: true, force: true });
   if (link) fs.symlinkSync(SOURCE, dest, 'dir');
   else fs.cpSync(SOURCE, dest, { recursive: true });
+}
+
+// Optional design provider. Otherwise the skill installs it the first time the user chooses the
+// design phase; without it (or without Python 3) the design phase uses its built-in provider.
+if (flag('with-design')) {
+  console.log('\nOptional design skill (--with-design)');
+  // Run the installed copy, so the "remove it" hint it prints points at a path that stays.
+  const provider = path.join(dryRun ? SOURCE : destinations[0], 'scripts', 'design-provider.mjs');
+  const where = customDir ? ['--dir', customDir] : ['--host', agents[0], '--scope', scope];
+  spawnSync(process.execPath, [provider, '--install', ...where, ...(dryRun ? ['--dry-run'] : [])], { stdio: 'inherit' });
 }
 
 if (flag('skip-mcp')) {

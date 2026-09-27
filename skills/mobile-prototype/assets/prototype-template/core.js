@@ -510,7 +510,8 @@
   }
 
   // ---------- audit for Playwright MCP: browser_evaluate(() => window.__prototypeAudit()) ----------
-  window.__prototypeAudit = function () {
+  // Pass { minContrast: 7 } when the product commits to WCAG AAA (DESIGN.md "contrast: high").
+  window.__prototypeAudit = function ({ minContrast = 4.5 } = {}) {
     const minTarget = P?.minTarget || 48;
     // Settle finite animations first, so a screen still sliding in isn't reported as overflow.
     for (const a of document.getAnimations()) {
@@ -570,8 +571,8 @@
       return el.scrollWidth > el.clientWidth + 1;
     }).map(describe);
 
-    // Text below 4.5:1 against what is actually behind it (3:1 for large text), in the app and in
-    // open dialogs. Backgrounds are composited up the tree; text over images or gradients is skipped.
+    // Text below 4.5:1 (or minContrast) against what is actually behind it (3:1 for large text; 4.5:1
+    // at AAA), in the app and in open dialogs. Backgrounds are composited up the tree; text over images or gradients is skipped.
     const parseColor = (s) => {
       const m = s.match(/^rgba?\(([^)]+)\)$/) || s.match(/^color\(srgb ([^)]+)\)$/);
       if (!m) return null;
@@ -607,7 +608,7 @@
         const [l1, l2] = [lum(fg), lum(bg)];
         const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
         const size = parseFloat(s.fontSize), large = size >= 24 || (size >= 18.66 && Number(s.fontWeight) >= 700);
-        if (ratio < (large ? 3 : 4.5) - 0.01) lowContrast.push(`${describe(el)} ${ratio.toFixed(2)}:1`);
+        if (ratio < (large ? (minContrast >= 7 ? 4.5 : 3) : minContrast) - 0.01) lowContrast.push(`${describe(el)} ${ratio.toFixed(2)}:1`);
       }
     }
 

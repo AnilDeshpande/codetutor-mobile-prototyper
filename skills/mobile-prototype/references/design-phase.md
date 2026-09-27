@@ -33,9 +33,20 @@ phase.
 | **Visual direction** | `prototype/notes/DESIGN.md`, `prototype/tokens/<platform>.theme.css` | a convincing look for reviews and user tests; disposable with the prototype |
 | **Design system** | `design-system/<app>/DESIGN.md` (master), `design-system/<app>/screens/<screen>.md` (overrides), `material-theme.json`, `ios-theme.json`, `THEME-REPORT.md` | a look the native build will implement; kept in the project, linked from the handoff |
 
-Provider: the **baseline** (`references/design-providers/baseline.md`), which reasons from the
-documents and the platform visual languages. Tell the user which provider you are using in one
-line. Record level and provider in `STATE.md`.
+Provider — whoever fills the `DESIGN.md` contract:
+
+1. `node scripts/design-provider.mjs --check --json`. If `usable`, use **ui-ux-pro-max**
+   (`references/design-providers/ui-ux-pro-max.md`).
+2. If it isn't installed, install it now — choosing the design phase is the user's consent:
+   `node scripts/design-provider.mjs --install --host <this agent> --json`, and show the user the
+   `notice` lines it returns (version, source, licence, destination, how to remove it). It works
+   straight away, no restart: queries go through `design-provider.mjs --run`.
+3. If Python 3 is missing or the install fails, say so in one line and use the **baseline**
+   (`references/design-providers/baseline.md`), which reasons from the documents and the
+   platform visual languages. Never install Python, and never let this block the phase.
+
+Tell the user which provider you are using in one line. Record level and provider in `STATE.md`.
+Whichever provider fills the contract, everything after it is the same.
 
 ## 9.2 Three choices (one question round)
 
@@ -48,7 +59,9 @@ change them in one round (the host's question tool, or a numbered list):
 | Expressiveness | restrained · balanced · bold | P1 context, domain, audience |
 | Motion | minimal · standard | audience, X1 |
 
-Also settle the brand colour if V1 is still open (from a brand guide, existing app or logo; if
+If an accessibility commitment (X1) or the provider asks for WCAG AAA, set `contrast: high`:
+`theme.mjs` then targets 7:1 for text and the audit runs with `{ minContrast: 7 }`. Also settle
+the brand colour if V1 is still open (from a brand guide, existing app or logo; if
 the user says "you choose", propose one and flag it). Fonts stay the platform's unless the brand
 guide names one. Complex choreography, parallax and scroll-driven animation are out of scope:
 they don't transfer to a native build as a design decision.
@@ -119,7 +132,8 @@ screen is **UX, not design**: record it as a clarification and get it approved b
 
 The look changes colours, fonts, spacing and sizes, so repeat the full Phase 6 run: every
 scenario × platform × window × theme, the font-scale passes, reduced motion, every state by URL,
-the audit on every screen and state (including `lowContrast`), and no console errors. Replace
+the audit on every screen and state (including `lowContrast`; pass `{ minContrast: 7 }` when
+`contrast: high`), and no console errors. Replace
 the screenshots, rebuild the storyboard, and score the rubric (section 9 covers the direction).
 
 ## 9.8 Approve the look → gate E2
@@ -132,7 +146,8 @@ A, approved <date>`) and continue to Phase 10.
 
 | Problem | What to do |
 |---|---|
-| The provider fails or isn't available | use the baseline provider and say so |
+| ui-ux-pro-max can't be installed (no Python 3, offline, integrity check failed) | use the baseline provider and say so; `design-provider.mjs` has changed nothing |
+| Its output is web-shaped or off-topic | drop that part (see its reference), retry once with a narrower query, else use the baseline for that field |
 | `theme.mjs` reports failing contrast | use its suggested colour or change the direction; never ship the failing pair |
 | Material Color Utilities can't be downloaded | the approximation is used and flagged; run again online before the handoff |
 | A font can't be downloaded | the platform font is shown; say so on the style tile review |

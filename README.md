@@ -66,6 +66,37 @@ design pass in one line; say no and you get the handoff straight away.
   write a theme with any text colour below 4.5:1, and suggests the nearest colour that passes.
 - **Style tiles**: each direction is shown in the prototype's own Android and iOS shells:
   palette with contrast ratios, type scale and every component, in light and dark.
+- **WCAG AA or AAA**: `contrast: high` targets 7:1 for text on both platforms, and the audit
+  checks the screens against it.
+
+### Design provider: ui-ux-pro-max (optional)
+
+Directions are filled by a *provider*. When you first choose the design phase, the skill
+installs [**ui-ux-pro-max**](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) by
+[Next Level Builder](https://github.com/nextlevelbuilder) (MIT): a searchable design dataset of
+product categories, palettes, font pairings and UX rules. It tells you exactly what it installs
+before it does:
+
+```
+Installing the design skill ui-ux-pro-max v2.15.0 (MIT, © 2024 Next Level Builder)
+  From: github.com/nextlevelbuilder/ui-ux-pro-max-skill, release v2.15.0 (commit a38d04c), integrity-checked
+  Into: ~/.claude/skills/ui-ux-pro-max — only this skill and its licence; the other skills in that repository are not installed
+  Needs Python 3: found 3.12.4 (python3)
+  It is a normal skill: your agent can also use it outside the prototype workflow.
+  Remove it any time: node …/design-provider.mjs --remove --host claude (or delete that folder)
+```
+
+- Only that one skill folder is installed, at a pinned release checked against a SHA-512 hash;
+  the upstream repository's other skills (including one that calls paid image APIs) are not.
+- It needs Python 3. Without Python, or offline, nothing is installed and a **built-in provider**
+  fills the same contract from your documents and the platform guidelines. The design phase
+  never depends on it.
+- Its output is web-leaning, so the skill uses its palette, font and mood reasoning and its UX
+  rules, and drops landing-page patterns, hover effects, web shadows and GSAP animation. Our
+  own `theme.mjs` still makes all the tokens and checks contrast.
+- To install it up front: `node install.mjs --with-design`. To check or remove it:
+  `node skills/mobile-prototype/scripts/design-provider.mjs --check` / `--remove --host <agent>`.
+- It isn't part of this repository and keeps its own licence (in the installed folder).
 
 ## Requirements
 
@@ -73,6 +104,8 @@ design pass in one line; say no and you get the handoff straight away.
 - An agent: Claude Code, Codex, or another Agent Skills–compatible agent with MCP support
 - **Playwright MCP** (`@playwright/mcp`) — installed automatically by the plugin installs, or
   configured by `install.mjs`; the skill also checks for it at the start of every run
+- Optional, for the design phase only: internet access the first time (Material Color Utilities,
+  fonts, ui-ux-pro-max) and Python 3 for ui-ux-pro-max. Neither is needed for the prototype itself.
 
 ## Install
 
@@ -120,6 +153,7 @@ configures Playwright MCP for each, after showing what it will change. Options:
 | `--dir <path>` | copy the skill into any other agent's skills folder |
 | `--link` | symlink instead of copy (for working on the skill) |
 | `--skip-mcp` | don't touch MCP configuration |
+| `--with-design` | also install the optional design provider ui-ux-pro-max now (otherwise it's installed when you first choose the design phase) |
 | `--dry-run` | show what would happen |
 
 Without cloning: `npx github:AnilDeshpande/codetutor-mobile-prototyper -- --agent codex`.
@@ -198,7 +232,8 @@ skills/mobile-prototype/
 ├── references/        intake, question bank, clarification protocol, platform conventions and
 │                      visual language (platforms/android, platforms/ios), Playwright MCP setup
 │                      and verification, review rubric, design phase and providers, handoff
-├── scripts/           check-playwright-mcp, discover-inputs, scaffold, serve, storyboard, theme
+├── scripts/           check-playwright-mcp, discover-inputs, scaffold, serve, storyboard, theme,
+│                      design-provider
 └── assets/            prototype template (shared core + Android and iOS shells), style tile,
                        notes/scenario/design/handoff templates
 evals/                 evals.json + a fixture project with a spec, architecture, ADR and design notes
@@ -206,15 +241,22 @@ evals/                 evals.json + a fixture project with a spec, architecture,
 
 ## Evals
 
-`evals/evals.json` describes fourteen cases: input discovery (with the platform suggestion),
+`evals/evals.json` describes fifteen cases: input discovery (with the platform suggestion),
 proposals for approval, surfacing a document conflict, a missing spec, a missing Playwright MCP,
 verification, handoff, an iOS target on an Android-specific architecture, verifying both
-platforms, a two-platform handoff, the design phase being offered but not forced, a design pass
-with the built-in provider, a brand colour that fails contrast, and a prompt that should *not*
-trigger the skill. They run
+platforms, a two-platform handoff, the design phase being offered but not forced, falling back
+to the built-in provider without Python, a brand colour that fails contrast, installing and using
+ui-ux-pro-max for a design system, and a prompt that should *not* trigger the skill. They run
 against `evals/fixtures/glucose-companion`, which contains a deliberate conflict between the PRD
 and an architecture decision record.
 
 ## License
 
 [MIT](LICENSE) © Anil Deshpande
+
+Downloaded on demand, not included in this repository:
+[Material Color Utilities](https://github.com/material-foundation/material-color-utilities)
+(Apache-2.0, © Google) for Android colour schemes, and
+[ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT, © 2024 Next Level
+Builder) as the optional design provider. Fonts chosen in a design direction come from Google
+Fonts under their own open licences.

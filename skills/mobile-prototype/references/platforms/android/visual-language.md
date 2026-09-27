@@ -72,6 +72,7 @@ when the product wants a bold, playful look and the target OS supports it.
 | motion | minimal: 100 / 150 ms; standard: 150 / 300 ms |
 | shape | corner scale and button shape, as above |
 | fonts | display font → display, headline, title-large; text font → everything else |
+| contrast | high → Material's high-contrast scheme (contrast level 1.0): every text role ≥ 7:1 |
 
 ## Handoff
 

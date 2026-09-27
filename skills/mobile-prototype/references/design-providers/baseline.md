@@ -18,6 +18,7 @@ direction and one real alternative.
 | density | V4. Data-heavy tools and experts → dense; first-time, anxious or older users → spacious. | balanced |
 | motion | Medical, anxious, vestibular-sensitive or older users, or "calm" in the brief → minimal. | standard |
 | shape | Professional, financial, enterprise → square; friendly consumer, children → soft. | rounded (platform default) |
+| contrast | `high` when X1 commits to WCAG AAA, or the users need it (low vision, older users, clinical use in bright light). | standard |
 | font.display / font.text | Only a font named by the brand guide, available for apps (Google Fonts, or a licence the product holds). Record the licence. | platform (Roboto / SF Pro) |
 | android.scheme | fidelity when the brand colour must appear exactly (brand guide says so); otherwise auto. | auto |
 | ios.tint | auto; if `theme.mjs` reports the brand is too light for text on iOS, use the colour it suggests as the tint and keep the brand for fills and illustrations. | auto |

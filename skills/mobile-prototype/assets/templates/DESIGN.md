@@ -27,6 +27,7 @@ expressiveness: balanced    # restrained | balanced | bold
 density: balanced           # spacious | balanced | dense
 motion: standard            # minimal | standard
 shape: rounded              # square | rounded | soft
+contrast: standard          # standard (WCAG AA, 4.5:1 text) | high (AAA, 7:1 text)
 font.display: platform      # platform, or a font family for headlines and titles
 font.text: platform         # platform, or a font family for everything else
 android.scheme: auto        # auto (from expressiveness) | tonal-spot | neutral | vibrant | expressive | fidelity | content
@@ -43,6 +44,7 @@ ios.tint: auto              # auto (the brand), adjust (darken until it passes),
 | density | | V4 |
 | motion | | |
 | shape | | |
+| contrast | | X1 / provider constraint |
 | fonts | licence: | |
 
 ## Colour use

@@ -66,6 +66,7 @@ at large accessibility sizes.
 | motion | minimal: 100 / 150 ms; standard: 200 / 350 ms |
 | shape | corner radii and capsule vs rounded-rectangle buttons |
 | fonts | display font → large title, titles 1–3; text font → everything else (SF Pro when `platform`) |
+| contrast | high → the tint, secondary labels, red, green and inactive tab labels reach 7:1 (like Increase Contrast, but always on) |
 
 ## Handoff
 

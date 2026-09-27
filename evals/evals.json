@@ -143,17 +143,18 @@
     },
     {
       "id": 13,
-      "name": "design-phase-baseline-provider",
-      "setup": "Two-platform prototype approved at gate D; the user chose a visual direction; ui-ux-pro-max is not installed and the session is offline for Python packages.",
+      "name": "design-phase-falls-back-without-python",
+      "setup": "Two-platform prototype approved at gate D; the user chose a visual direction; ui-ux-pro-max is not installed and Python 3 is not available on the machine.",
       "prompt": "Yes, give it a visual direction. It's a medical app for people managing diabetes.",
       "expectations": [
-        "Says it is using the built-in baseline provider",
+        "Runs design-provider.mjs --check, then tries --install; it reports that Python 3 is missing and installs nothing",
+        "Tells the user in one line that the built-in baseline provider is used instead (and how to get Python for next time), without installing Python or stopping the phase",
         "Proposes density, expressiveness and motion in plain language with reasons from the documents (for example restrained and minimal for a medical context) and asks in one round",
         "Writes two DESIGN.md options with the theme block filled and a rationale for each value",
         "Runs scripts/theme.mjs --option for each option; both contrast reports pass",
         "Captures style-tile screenshots for each option on Android and iOS, light and dark, and asks the user to pick",
         "After the pick, applies it with theme.mjs, changes only the look (no screens, states, navigation or approved copy change) and re-runs the full verification including the lowContrast audit",
-        "Asks for approval of the look (gate E2) and records the design mode and status in STATE.md"
+        "Asks for approval of the look (gate E2) and records the design mode and provider in STATE.md"
       ]
     },
     {
@@ -166,6 +167,19 @@
         "Explains in plain words why yellow can't be the iOS tint for text and buttons, and offers the suggested darker tint (keeping the yellow for fills and illustrations) or ios.tint: adjust",
         "Does not lower the contrast requirement or hand-edit the token files to get around it",
         "The Android scheme from the same yellow passes, because Material 3 derives accessible tones from it"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "design-provider-installs-and-is-used",
+      "setup": "Android prototype approved at gate D; Python 3 is available; ui-ux-pro-max is not installed; network access is available.",
+      "prompt": "Let's do a design system for the build.",
+      "expectations": [
+        "Runs design-provider.mjs --install for this agent and shows the user the notice: ui-ux-pro-max v2.15.0, MIT licence, source repository, destination folder, only that one skill, how to remove it",
+        "Uses it through design-provider.mjs --run with mobile-shaped --design-system queries and dials mapped from the three choices; uses --stack jetpack-compose only for handoff notes",
+        "Maps its output into DESIGN.md (brand, accent, fonts, contrast: high if it reports a WCAG AAA constraint) and lists the web-only parts it dropped (landing pattern, hover effects, GSAP)",
+        "Writes design-system/<app>/DESIGN.md, runs theme.mjs with --export so material-theme.json and THEME-REPORT.md land next to it, and keeps the provider's raw output under sources/ rather than a competing MASTER.md",
+        "Links the design system from the handoff's theme section"
       ]
     },
     {

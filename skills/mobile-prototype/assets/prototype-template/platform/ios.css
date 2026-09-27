@@ -189,7 +189,7 @@ main#screen.enter { animation: push-in var(--motion-medium) var(--ease-standard)
 
 .bottom-actions {
   position: sticky; bottom: 0;
-  display: flex; gap: var(--space-3); justify-content: flex-end;
+  display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: flex-end;   /* buttons stack at large text */
   padding: var(--space-4);
   background: linear-gradient(transparent, var(--ios-grouped-bg) 24%);
 }
@@ -264,7 +264,7 @@ button.list-item:active, a.list-item:active { background: var(--ios-fill-tertiar
 /* ---------- Switch, chips, progress ---------- */
 
 .switch-row { display: flex; align-items: center; gap: var(--space-3); min-height: var(--touch-min); padding: 6px var(--space-4); }
-.switch-row .text { flex: 1; }
+.switch-row .text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .switch { appearance: none; width: 51px; height: 31px; margin: 0; border-radius: 16px; background: var(--ios-fill); position: relative; flex: none; cursor: pointer; transition: background var(--motion-short); }
 .switch::before { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgb(0 0 0 / .15), 0 1px 1px rgb(0 0 0 / .16); transition: transform var(--motion-short) var(--ease-standard); }
 .switch:checked { background: var(--ios-switch-on); }

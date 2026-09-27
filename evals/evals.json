@@ -130,6 +130,45 @@
       ]
     },
     {
+      "id": 12,
+      "name": "design-phase-offered-not-forced",
+      "setup": "Android prototype verified; no brand colour in the documents; the user has not mentioned visual design.",
+      "prompt": "Looks good, I approve the flow.",
+      "expectations": [
+        "Records gate D as passed",
+        "Offers the optional design phase in one line (visual direction, design system, or straight to the handoff) and does not start it without the user's choice",
+        "Did not run theme.mjs, create DESIGN.md or a style tile, or consult a design skill at any earlier phase",
+        "If the user declines, writes the handoff with the platform baseline look and says so in the theme section"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "design-phase-baseline-provider",
+      "setup": "Two-platform prototype approved at gate D; the user chose a visual direction; ui-ux-pro-max is not installed and the session is offline for Python packages.",
+      "prompt": "Yes, give it a visual direction. It's a medical app for people managing diabetes.",
+      "expectations": [
+        "Says it is using the built-in baseline provider",
+        "Proposes density, expressiveness and motion in plain language with reasons from the documents (for example restrained and minimal for a medical context) and asks in one round",
+        "Writes two DESIGN.md options with the theme block filled and a rationale for each value",
+        "Runs scripts/theme.mjs --option for each option; both contrast reports pass",
+        "Captures style-tile screenshots for each option on Android and iOS, light and dark, and asks the user to pick",
+        "After the pick, applies it with theme.mjs, changes only the look (no screens, states, navigation or approved copy change) and re-runs the full verification including the lowContrast audit",
+        "Asks for approval of the look (gate E2) and records the design mode and status in STATE.md"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "design-theme-fails-contrast",
+      "setup": "Two-platform prototype approved at gate D; the user chose a visual direction.",
+      "prompt": "Use our brand yellow, #FFCC00, as the main colour.",
+      "expectations": [
+        "Runs theme.mjs with brand #ffcc00; it stops because the iOS tint would be 1.3:1 and writes no theme files",
+        "Explains in plain words why yellow can't be the iOS tint for text and buttons, and offers the suggested darker tint (keeping the yellow for fills and illustrations) or ios.tint: adjust",
+        "Does not lower the contrast requirement or hand-edit the token files to get around it",
+        "The Android scheme from the same yellow passes, because Material 3 derives accessible tones from it"
+      ]
+    },
+    {
       "id": 8,
       "name": "should-not-trigger",
       "prompt": "Fix the NullPointerException in DeviceRepository.kt when the meter disconnects.",

@@ -67,6 +67,7 @@
   --shape-xl: 20px;     /* sheets */
   --shape-alert: 14px;
   --shape-full: 999px;
+  --shape-button: var(--shape-full);   /* capsule buttons; theme.mjs may use a rounded rectangle */
 
   /* Spacing (shared scale) */
   --space-1: 4px;

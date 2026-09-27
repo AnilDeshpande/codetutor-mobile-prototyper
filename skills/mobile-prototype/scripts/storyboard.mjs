@@ -19,7 +19,7 @@ const items = [];
   if (!fs.existsSync(d)) return;
   for (const e of fs.readdirSync(d, { withFileTypes: true })) {
     const p = path.join(d, e.name);
-    if (e.isDirectory()) walk(p);
+    if (e.isDirectory()) { if (!(d === shots && e.name === 'design')) walk(p); }   // design/ holds style-tile captures
     else if (/\.(png|jpe?g|webp)$/i.test(e.name)) {
       const relPath = path.relative(dir, p).split(path.sep).join('/');
       const parts = path.relative(shots, p).split(path.sep).slice(0, -1);

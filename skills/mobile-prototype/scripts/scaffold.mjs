@@ -44,8 +44,9 @@ const vars = {
   '{{APP_NAME}}': appName,
   '{{DATE}}': new Date().toISOString().slice(0, 10),
   '{{PLATFORMS}}': platforms.join(', '),
+  // A theme applied by theme.mjs (tokens/<p>.theme.css) stays linked when index.html is rewritten.
   '{{PLATFORM_STYLES}}': platforms.map((p) =>
-    `  <link rel="stylesheet" href="tokens/${p}.css" data-platform="${p}">\n  <link rel="stylesheet" href="platform/${p}.css" data-platform="${p}">`).join('\n'),
+    `  <link rel="stylesheet" href="tokens/${p}.css" data-platform="${p}">\n${fs.existsSync(path.join(out, 'tokens', `${p}.theme.css`)) ? `  <link rel="stylesheet" href="tokens/${p}.theme.css" data-platform="${p}" data-theme-link>\n` : ''}  <link rel="stylesheet" href="platform/${p}.css" data-platform="${p}">`).join('\n'),
   '{{PLATFORM_SCRIPTS}}': platforms.map((p) => `  <script src="platform/${p}.js"></script>`).join('\n'),
 };
 
@@ -80,6 +81,10 @@ const r = (p) => { const x = path.relative(process.cwd(), p); return x.startsWit
 console.log(`Prototype workspace: ${r(out)} (platforms: ${platforms.join(', ')})`);
 if (created.length) console.log(`  created: ${created.map(r).join(', ')}`);
 if (kept.length) console.log(`  kept existing: ${kept.map(r).join(', ')}`);
+const unthemed = platforms.filter((p) => !fs.existsSync(path.join(out, 'tokens', `${p}.theme.css`)));
+if (unthemed.length && unthemed.length < platforms.length) {
+  console.log(`  A theme is applied to the other platform(s): run theme.mjs again to theme ${unthemed.join(', ')} too.`);
+}
 if (kept.some((k) => k.endsWith('index.html')) && !force) {
   console.log('  index.html was kept: if you added a platform, run again with --force to link it (notes are never replaced).');
 }

@@ -83,9 +83,10 @@ the flow is shared, but back, dialogs, sheets and permissions behave differently
      (dx > 60 px).
 8. Run the audit on each distinct screen and state reached:
    `browser_evaluate` `{function: "() => window.__prototypeAudit()"}`. It returns
-   `{ platform, screen, state, smallTargets, unnamedControls, overflow, clippedText, overlapping, missingState }`;
+   `{ platform, screen, state, smallTargets, unnamedControls, overflow, clippedText, overlapping, lowContrast, missingState }`;
    every list should be empty. Targets are checked against the platform's minimum (48 / 44 px);
-   `overlapping` lists text that spills out of its box onto its neighbours. Use `browser_snapshot` with `boxes: true` when you need to see sizes yourself.
+   `overlapping` lists text that spills out of its box onto its neighbours; `lowContrast` lists
+   text below 4.5:1 (3:1 for large text) against what is actually behind it, in both themes. Use `browser_snapshot` with `boxes: true` when you need to see sizes yourself.
 9. `browser_console_messages` — any error fails the run.
 10. Screenshot each distinct screen/state:
     `browser_take_screenshot` `{filename: "prototype/screenshots/<platform>/<window>/<theme>/<scenario>--<screen>--<state>.png"}`.

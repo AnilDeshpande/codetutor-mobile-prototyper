@@ -32,9 +32,14 @@ It must be complete enough that nobody needs to reverse-engineer the HTML. Use t
      `.confirmationDialog`, `.sheet` with `.presentationDetents`, ProgressView, `.refreshable`,
      `.swipeActions`. Mark anything that has no native equivalent (for example the undo toast
      that stands in for a snackbar) as **custom**, and give the intended SF Symbol for each icon.
-7. **Tokens**, per platform: the colour roles, type styles and shape values actually used from
-   `tokens/<platform>.css`, and any brand overrides — enough to define a theme (a Material 3
-   colour scheme; an iOS accent colour plus any custom colours).
+7. **Theme**, per platform: which look was approved (the platform baseline, a visual direction,
+   or a design system — link `design-system/<app>/`), then the values from
+   `notes/THEME-REPORT.md`: the full Material 3 colour scheme in light and dark with its seed and
+   variant, and whether dynamic colour is on; the iOS AccentColor in light and dark, any custom
+   colours, and the materials generation (classic or Liquid Glass); the type styles, fonts (with
+   licences), shape and spacing actually used. Enough to define the theme natively without
+   opening the prototype. At the design-system level, point to `material-theme.json` and
+   `ios-theme.json`.
 8. **Copy**: every user-facing string, grouped by screen, marked `approved` or `draft`, with
    platform variants side by side where they differ (button case, "Settings" wording). On iOS
    include each permission's purpose string.

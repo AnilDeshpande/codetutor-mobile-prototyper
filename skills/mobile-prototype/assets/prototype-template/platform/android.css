@@ -111,6 +111,8 @@ main#screen.enter { animation: screen-in var(--motion-medium) var(--ease-standar
   transition: background var(--motion-short);
 }
 .nav-item svg { width: 24px; height: 24px; fill: currentColor; }
+/* Labels stay on one line and truncate, as in the Material navigation bar: keep them short. */
+.nav-item > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-inline: 2px; }
 .nav-item[aria-current="page"] { color: var(--md-on-surface); font-weight: 700; }
 .nav-item[aria-current="page"] .indicator { background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
 
@@ -139,7 +141,7 @@ main#screen.enter { animation: screen-in var(--motion-medium) var(--ease-standar
   display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
   min-height: 40px; min-width: var(--touch-min);
   padding: 0 var(--space-5);
-  border-radius: var(--shape-full); border: 0;
+  border-radius: var(--shape-button); border: 0;
   font: var(--label-large);
   text-decoration: none;
   position: relative;
@@ -193,7 +195,7 @@ button.list-item:hover, a.list-item:hover { background: color-mix(in srgb, var(-
   font: var(--title-medium);
 }
 .list-item .leading svg { width: 24px; height: 24px; fill: currentColor; }
-.list-item .text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.list-item .text { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow-wrap: anywhere; }  /* long words wrap at large text sizes */
 .list-item .headline { font: var(--body-large); color: var(--md-on-surface); }
 .list-item .supporting { font: var(--body-medium); color: var(--md-on-surface-variant); }
 .list-item .trailing { font: var(--label-small); color: var(--md-on-surface-variant); flex: none; display: flex; align-items: center; }

@@ -125,7 +125,7 @@ when in scope.
 - The minimum iOS version (A5) decides the look: iOS 26 and later use **Liquid Glass**
   (translucent, floating bars and controls); earlier versions use the classic materials. The
   template's baseline (translucent bars, inset grouped lists, capsule buttons) reads correctly on
-  both; the design phase can go further.
+  both; the design phase can go further (`visual-language.md` in this folder).
 - Icons: SF Symbols can't be embedded in a web prototype (licence). The template uses simple open
   glyphs; record the intended SF Symbol for each icon in the handoff.
 - Font: the system font (SF Pro on Apple devices). It isn't bundled; other systems show their own

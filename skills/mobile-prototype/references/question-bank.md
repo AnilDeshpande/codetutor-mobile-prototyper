@@ -81,7 +81,7 @@ register first (Phase 2), and ask the user only if it remains class C or D (Phas
 
 | ID | Question | Blocking | Default if open |
 |---|---|---|---|
-| V1 | Brand colours, typeface, logo? | no | platform baseline: Material 3 neutral palette; iOS system colours with a neutral tint |
+| V1 | Brand colours, typeface, logo? | no | platform baseline: Material 3 neutral palette; iOS system colours with a neutral tint. A documented brand colour is applied in Phase 5 with `theme.mjs --brand`; everything else about the look waits for the optional design phase |
 | V2 | An existing app or screens to stay consistent with? | no | none |
 | V3 | Is dark theme in scope? | no | yes: check both themes |
 | V4 | Information density: compact and data-heavy, or airy and guided? | no | from P1 (stressful context → guided) |

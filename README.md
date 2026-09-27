@@ -18,8 +18,12 @@ UX designer would.
 - It **verifies every journey with the Playwright MCP server** on each platform, at phone and
   tablet sizes, in light and dark, at large text sizes. It runs an accessibility audit and builds
   a storyboard of every screen and state.
-- It stops at an approved UX and a **handoff package** for native implementation, with component
-  mappings for Material 3 (Compose) and SwiftUI.
+- **First how it works, then how it looks.** Once you approve the UX, it offers an optional
+  **design pass**: a visual direction for the prototype, or a design system kept in your project.
+  It shows you two directions as style tiles, turns your pick into a Material 3 colour scheme and
+  an iOS tint, checks every text colour for contrast, and verifies everything again.
+- It stops at an approved UX (and look) and a **handoff package** for native implementation, with
+  component mappings and theme values for Material 3 (Compose) and SwiftUI.
 
 Works with **Claude Code**, **Codex**, and any agent that reads `SKILL.md` folders (the open Agent
 Skills format) and can run MCP servers.
@@ -36,9 +40,32 @@ Spec · Architecture · Design · API docs
    5 Build (Android and/or iOS shell + mock scenarios)
    6 Verify with Playwright MCP: journeys × platforms × windows × themes, back, audit, screenshots
    7 Review & iterate (max 3 rounds)
-   8 Storyboard + phone preview ───► you approve                           (gate D)
-   9 HANDOFF.md → stop (no Compose or SwiftUI code)
+   8 Storyboard + phone preview ───► you approve the UX                    (gate D)
+   9 Optional design pass, only if you want one:
+       two directions as style tiles ► you pick                            (gate E1)
+       theme + contrast check, re-verify ► you approve the look            (gate E2)
+  10 HANDOFF.md → stop (no Compose or SwiftUI code)
 ```
+
+## Optional design phase
+
+The prototype is deliberately plain: the platform's own look (Material 3 on Android, system
+colours on iOS), so reviews focus on the flow. After you approve the flow, the skill offers a
+design pass in one line; say no and you get the handoff straight away.
+
+- **Two levels**: a *visual direction* (lives in `prototype/`, disposable) or a *design system*
+  (`design-system/<app>/` in your project, with `material-theme.json` and `ios-theme.json` for the
+  native team, and per-screen notes where a screen differs).
+- **Three plain choices**: density (spacious / balanced / dense), expressiveness (restrained /
+  balanced / bold) and motion (minimal / standard), proposed from your documents.
+- **A fixed contract**: every direction is written into `DESIGN.md`. `theme.mjs` then derives
+  the tokens: Android colours come from Google's
+  [Material Color Utilities](https://github.com/material-foundation/material-color-utilities)
+  (Apache-2.0, downloaded once on first use; an offline approximation is used, and flagged, when
+  it can't be). On iOS the brand becomes the tint and the system colours stay. It refuses to
+  write a theme with any text colour below 4.5:1, and suggests the nearest colour that passes.
+- **Style tiles**: each direction is shown in the prototype's own Android and iOS shells:
+  palette with contrast ratios, type scale and every component, in light and dark.
 
 ## Requirements
 
@@ -148,6 +175,7 @@ prototype/
 ├── scenarios/*.md                            Given / When / Then per journey
 ├── screenshots/<platform>/<window>/<theme>/  Playwright MCP captures
 ├── storyboard.html                           every screen × state in one grid
+├── style-tile.html, tokens/*.theme.css       the design direction (only after a design pass)
 ├── HANDOFF.md                                for the native implementation
 └── notes/                                    STATE, INPUTS, CLARIFICATIONS, DECISIONS, VERIFICATION
 ```
@@ -167,21 +195,23 @@ the simulated status bar and system bars hide themselves.
 install.mjs            installer for any agent (skill + MCP configuration)
 skills/mobile-prototype/
 ├── SKILL.md           the workflow
-├── references/        intake, question bank, clarification protocol, platform conventions
-│                      (platforms/android, platforms/ios), Playwright MCP setup and
-│                      verification, review rubric, handoff
-├── scripts/           check-playwright-mcp, discover-inputs, scaffold, serve, storyboard
-└── assets/            prototype template (shared core + Android and iOS shells) +
-                       notes/scenario/handoff templates
+├── references/        intake, question bank, clarification protocol, platform conventions and
+│                      visual language (platforms/android, platforms/ios), Playwright MCP setup
+│                      and verification, review rubric, design phase and providers, handoff
+├── scripts/           check-playwright-mcp, discover-inputs, scaffold, serve, storyboard, theme
+└── assets/            prototype template (shared core + Android and iOS shells), style tile,
+                       notes/scenario/design/handoff templates
 evals/                 evals.json + a fixture project with a spec, architecture, ADR and design notes
 ```
 
 ## Evals
 
-`evals/evals.json` describes eleven cases: input discovery (with the platform suggestion),
+`evals/evals.json` describes fourteen cases: input discovery (with the platform suggestion),
 proposals for approval, surfacing a document conflict, a missing spec, a missing Playwright MCP,
 verification, handoff, an iOS target on an Android-specific architecture, verifying both
-platforms, a two-platform handoff, and a prompt that should *not* trigger the skill. They run
+platforms, a two-platform handoff, the design phase being offered but not forced, a design pass
+with the built-in provider, a brand colour that fails contrast, and a prompt that should *not*
+trigger the skill. They run
 against `evals/fixtures/glucose-companion`, which contains a deliberate conflict between the PRD
 and an architecture decision record.
 

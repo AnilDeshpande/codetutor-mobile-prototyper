@@ -26,7 +26,8 @@ scope. The template's `platform/android.css` switches bottom navigation to a rai
 - **Primary action**: a filled button at the bottom of task screens, or a FAB on list screens when
   the main action is "create". Only one primary action per screen.
 - **Bottom navigation / rail**: top-level destinations only, visible on top-level screens; hidden
-  inside focused tasks (pairing, checkout, editing).
+  inside focused tasks (pairing, checkout, editing). Labels are one short word or two; in the
+  bar they stay on one line and truncate at large font sizes.
 
 ## Back and up
 
@@ -97,5 +98,7 @@ tappable content under the system bars.
 
 ## Dark theme
 
-Material 3 dark theme uses the dark roles in `tokens/android.css`, not inverted colours. Check both
-themes when V3 is in scope (default: yes). Images and illustrations need to work on dark surfaces.
+Material 3 dark theme uses the dark roles in `tokens/android.css` (and a brand theme's
+`tokens/android.theme.css`), not inverted colours. Check both themes when V3 is in scope
+(default: yes). Images and illustrations need to work on dark surfaces. The look itself — brand
+scheme, type, shape — is covered by `visual-language.md` in this folder (Phase 9).

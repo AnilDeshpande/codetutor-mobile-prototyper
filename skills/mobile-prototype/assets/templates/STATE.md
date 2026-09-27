@@ -12,6 +12,8 @@ Started: {{DATE}}
 | Windows | phone first (compact / iphone); tablet sizes checked for breakage |
 | Themes | light, dark |
 | Verification round | 0 |
+| Design | none — optional after gate D: visual direction or design system (Phase 9) |
+| Design provider | — |
 
 ## Next step
 

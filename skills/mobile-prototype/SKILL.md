@@ -1,6 +1,6 @@
 ---
 name: mobile-prototype
-description: Turn a product spec, architecture notes and design documents into an interactive, clickable HTML prototype of a native mobile app — Android, iOS or both, each with its own platform behaviour. It first finds which documents exist, proposes the answers those documents already give (for the user's approval), asks the user only what remains open, then builds the prototype and verifies every journey with the Playwright MCP server. Use when the user asks to prototype, mock up, wireframe, storyboard or "make clickable" a mobile, Android, iPhone or iOS app, feature, screen or user journey, or to turn a PRD, spec, requirements, user stories, architecture or design docs into something they can click through — even if they never say "prototype". Also use to resume a prototype that has a prototype/notes/STATE.md. Stops at an approved UX and a handoff package; it does not write Compose, SwiftUI, Kotlin or Swift.
+description: Turn a product spec, architecture notes and design documents into an interactive, clickable HTML prototype of a native mobile app — Android, iOS or both, each with its own platform behaviour. It first finds which documents exist, proposes the answers those documents already give (for the user's approval), asks the user only what remains open, then builds the prototype and verifies every journey with the Playwright MCP server. Once the UX is approved it can add an optional visual design pass. Use when the user asks to prototype, mock up, wireframe, storyboard or "make clickable" a mobile, Android, iPhone or iOS app, feature, screen or user journey, or to turn a PRD, spec, requirements, user stories, architecture or design docs into something they can click through — even if they never say "prototype". Also use to resume a prototype that has a prototype/notes/STATE.md. Stops at an approved UX and a handoff package; it does not write Compose, SwiftUI, Kotlin or Swift.
 ---
 
 # Mobile Prototype
@@ -31,6 +31,9 @@ Paths in this file are relative to this skill's directory (`scripts/…`, `refer
 7. **Each platform behaves like itself.** Ask which platforms are in scope (P5) and follow that
    platform's conventions; never make an iOS screen look like Android or the other way round.
 8. **Everything lands in files** under `prototype/notes/`, so a fresh session can resume.
+9. **First how it works, then how it looks.** The visual design phase is optional, starts only
+   after the UX is approved (gate D) and only when the user chooses it, and never blocks the
+   handoff.
 
 ## Workspace (in the user's project)
 
@@ -39,6 +42,7 @@ prototype/
 ├── index.html  screens.js  mock-data.js          ← the prototype: screens and data (you edit these)
 ├── core.js  base.css                            ← shared runtime (back stack, states, mock API, audit)
 ├── platform/<p>.{js,css}  tokens/<p>.css        ← the platform shell(s) and design tokens (android, ios)
+├── tokens/<p>.theme.css  style-tile.html  design/  ← brand theme and design options (theme.mjs; optional)
 ├── scenarios/<journey>.md          ← Given / When / Then, one file per journey
 ├── screenshots/<platform>/<window>/<theme>/…  ← captured by Playwright MCP
 ├── storyboard.html                 ← generated grid of every screen × state
@@ -48,6 +52,7 @@ prototype/
     ├── INPUTS.md           ← document inventory + fact register with citations
     ├── CLARIFICATIONS.md   ← every question: source, proposal, status, decision
     ├── DECISIONS.md        ← approved decisions and recorded assumptions
+    ├── DESIGN.md           ← the visual direction (Phase 9 only) + THEME-REPORT.md from theme.mjs
     └── VERIFICATION.md     ← Playwright MCP run log per scenario × platform × window × theme
 ```
 
@@ -159,9 +164,10 @@ with the remaining items as flagged assumptions rather than keep asking.
    Material 3 roles and iOS system colours. Branch on `ctx.platform` only for copy or behaviour
    that really differs, and give every iOS permission a purpose string (`usage`). Write realistic
    copy from the documents, not lorem ipsum.
-6. Other design skills (for example UI UX Pro Max, frontend-design, web-design-guidelines) are
-   optional advisers. If they are installed, consult them for hierarchy and polish; they never
-   override the decisions or the platform conventions.
+6. Keep the platform baseline look. If an approved decision gives a brand colour (V1), apply it
+   with `node scripts/theme.mjs --brand <#hex> --out prototype`: it derives the Material 3 scheme
+   and the iOS tint, checks contrast in both themes and links the result. Don't consult design
+   skills or refine the look here; that is Phase 9, after the UX is approved.
 
 ## Phase 6 — Verify with Playwright MCP
 
@@ -180,7 +186,8 @@ Serve the prototype (`node scripts/serve.mjs --dir prototype`, in the background
   too: Android leaves the app; iOS does nothing.
 - `browser_emulate_media` with `colorScheme: "dark"` for the dark pass.
 - Run the built-in audit: `browser_evaluate` with `() => window.__prototypeAudit()` (touch targets
-  at the platform's minimum, overflow, overlapping text, unnamed controls, missing state markers).
+  at the platform's minimum, overflow, overlapping text, text contrast, unnamed controls, missing
+  state markers).
   Check `browser_console_messages` for errors.
 - `browser_take_screenshot` with `filename: "prototype/screenshots/<platform>/<window>/<theme>/<scenario>--<screen>--<state>.png"`.
 
@@ -202,12 +209,25 @@ major issue, then re-run only the affected scenarios plus one full regression pa
    assumptions, anything the rubric scored as minor.
 3. Treat feedback as new clarifications: record, change, re-verify the affected scenarios.
    Gate D passes only on an explicit approval from the user.
+4. After the approval, offer the design phase in **one line** (visual direction, design system,
+   or go straight to the handoff) — see `references/design-phase.md`. Don't push it.
 
-## Phase 9 — Handoff and stop
+## Phase 9 — Optional design phase (only if the user chooses it)
+
+Read `references/design-phase.md` and follow it: level (visual direction or design system) and
+provider, three plain-language choices (density, expressiveness, motion), two directions filled
+into the `DESIGN.md` contract, style tiles on every platform in scope for the user to pick from
+(gate E1), `scripts/theme.mjs` to turn the pick into platform tokens with a contrast check, visual
+refinements only (no UX changes), a full re-verification, and the user's approval of the look
+(gate E2). Record the design mode and status in `STATE.md`. If it is skipped or stopped, go to
+Phase 10 with the baseline look.
+
+## Phase 10 — Handoff and stop
 
 Write `prototype/HANDOFF.md` following `references/handoff-package.md`: screen inventory, navigation
 graph, per-screen state model, component mapping per platform (Material 3 for Android, SwiftUI
-for iOS), copy (with iOS purpose strings), decisions with sources,
+for iOS), theme (the Material 3 scheme and the iOS tint, from `THEME-REPORT.md`, plus the design
+system if there is one), copy (with iOS purpose strings), decisions with sources,
 open questions, and the approved screenshots as visual references. Update `STATE.md` to
 `complete`. Tell the user where everything is, and stop — native implementation is a separate task.
 
@@ -218,7 +238,8 @@ open questions, and the approved screenshots as visual references. Update `STATE
    what is *feasible*. Conflicts between them are class C and go to the user.
 3. The platform conventions: `references/platforms/android/conventions.md`,
    `references/platforms/ios/conventions.md`.
-4. Optional design skills, if installed.
+4. The approved visual direction (`DESIGN.md`), for the look only; it never changes behaviour or
+   overrides the platform conventions.
 5. Your own taste.
 
 ## Agent-specific notes

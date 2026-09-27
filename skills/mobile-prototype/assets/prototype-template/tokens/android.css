@@ -67,6 +67,7 @@
   --shape-lg: 16px;
   --shape-xl: 28px;
   --shape-full: 999px;
+  --shape-button: var(--shape-full);   /* buttons: pill by default; theme.mjs may square them */
 
   /* Spacing */
   --space-1: 4px;

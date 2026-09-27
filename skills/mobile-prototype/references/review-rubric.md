@@ -62,6 +62,15 @@ finding by severity; fix all blockers and majors before showing the user.
 - Tablets (medium, expanded, ipad): content width limited (≈ 600–840 px for reading), or split
   into panes; no stretched buttons.
 
+**9. Visual direction** (Phase 9 only, after a direction is applied)
+- The look matches the approved `DESIGN.md`: brand colour where the *Colour use* section puts it,
+  and nowhere it rules out; type hierarchy as described.
+- Still native: Android uses Material roles and tonal surfaces; iOS keeps system backgrounds and
+  labels, the brand only as the tint. A branded navigation bar on iOS, or web-style shadows and
+  hover effects on either, is a major finding.
+- Nothing about behaviour changed: same screens, states, navigation and approved copy.
+- `notes/THEME-REPORT.md` passes and the audit's `lowContrast` is empty in both themes.
+
 ## Exit criteria for Phase 7
 
 - All scenarios pass in the required matrix (latest round).

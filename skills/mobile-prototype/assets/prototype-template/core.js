@@ -570,12 +570,53 @@
       return el.scrollWidth > el.clientWidth + 1;
     }).map(describe);
 
+    // Text below 4.5:1 against what is actually behind it (3:1 for large text), in the app and in
+    // open dialogs. Backgrounds are composited up the tree; text over images or gradients is skipped.
+    const parseColor = (s) => {
+      const m = s.match(/^rgba?\(([^)]+)\)$/) || s.match(/^color\(srgb ([^)]+)\)$/);
+      if (!m) return null;
+      const n = m[1].split(/[\s,/]+/).filter(Boolean).map(Number);
+      const scale = s.startsWith('color(') ? 255 : 1;
+      return { r: n[0] * scale, g: n[1] * scale, b: n[2] * scale, a: n.length > 3 ? n[3] : 1 };
+    };
+    const blend = (t, b) => ({ r: t.r * t.a + b.r * (1 - t.a), g: t.g * t.a + b.g * (1 - t.a), b: t.b * t.a + b.b * (1 - t.a), a: 1 });
+    const lum = (c) => [c.r, c.g, c.b].map((v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0);
+    const canvas = parseColor(getComputedStyle(document.body).backgroundColor) || { r: 255, g: 255, b: 255, a: 1 };
+    const backdrop = (el) => {
+      const layers = [];
+      for (let n = el; n && n.nodeType === 1; n = n.parentElement) {
+        const s = getComputedStyle(n);
+        if (s.backgroundImage !== 'none') return null;
+        const c = parseColor(s.backgroundColor);
+        if (c && c.a > 0) { layers.push(c); if (c.a >= 1) break; }
+      }
+      return layers.reduceRight((under, top) => blend(top, under), canvas.a >= 1 ? canvas : { r: 255, g: 255, b: 255, a: 1 });
+    };
+    const lowContrast = [];
+    for (const root of scope) {
+      for (const el of root.querySelectorAll('*')) {
+        if (![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue;
+        if (!visible(el) || el.closest('[hidden], [aria-hidden="true"], [data-system-ui], .allow-low-contrast') || el.closest('button:disabled, input:disabled')) continue;
+        const s = getComputedStyle(el);
+        let fg = parseColor(s.color);
+        const bg = backdrop(el);
+        if (!fg || !bg) continue;
+        let opacity = 1;
+        for (let n = el; n && n.nodeType === 1; n = n.parentElement) opacity *= Number(getComputedStyle(n).opacity);
+        fg = blend({ ...fg, a: fg.a * opacity }, bg);
+        const [l1, l2] = [lum(fg), lum(bg)];
+        const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+        const size = parseFloat(s.fontSize), large = size >= 24 || (size >= 18.66 && Number(s.fontWeight) >= 700);
+        if (ratio < (large ? 3 : 4.5) - 0.01) lowContrast.push(`${describe(el)} ${ratio.toFixed(2)}:1`);
+      }
+    }
+
     const main = document.getElementById('screen');
     const missingState = [];
     if (!main.dataset.screen) missingState.push('main[data-screen] is empty');
     if (!main.dataset.state) missingState.push('main[data-state] is empty');
 
-    return { platform: platformName, screen: main.dataset.screen, state: main.dataset.state, smallTargets, unnamedControls, overflow: overflow.slice(0, 20), clippedText, overlapping, missingState };
+    return { platform: platformName, screen: main.dataset.screen, state: main.dataset.state, smallTargets, unnamedControls, overflow: overflow.slice(0, 20), clippedText, overlapping, lowContrast: lowContrast.slice(0, 20), missingState };
   };
 
   window.App = {

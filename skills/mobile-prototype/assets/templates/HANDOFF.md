@@ -34,9 +34,19 @@ Approved by: <name> on <date> · Platforms: <android / ios> (min OS: <…>) · P
 | Prototype element | SwiftUI component | Variant / notes (custom? SF Symbol) |
 |---|---|---|
 
-## 7. Tokens
-| Platform | Role / token | Light | Dark |
+## 7. Theme
+Look: <platform baseline | visual direction A, approved <date> | design system `design-system/<app>/`> · Source: `notes/DESIGN.md` · Contrast: `notes/THEME-REPORT.md` (<n>/<n> pairs pass)
+### Android (Material 3 colour scheme)
+Seed <#hex> · variant <tonal-spot…> · dynamic colour <off / on> · <material-theme.json if a design system>
+| Role | Light | Dark |
+|---|---|---|
+### iOS
+AccentColor <#light> / <#dark> · other colours: system semantic colours · materials: <classic / Liquid Glass> · <ios-theme.json if a design system>
+| Colour | Light | Dark | Used for |
 |---|---|---|---|
+### Type, shape, spacing, motion
+| Token | Android | iOS |
+|---|---|---|
 
 ## 8. Copy
 | Screen | Key | Text | iOS variant (if different) | Status (approved / draft) |

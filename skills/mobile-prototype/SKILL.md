@@ -34,7 +34,9 @@ Paths in this file are relative to this skill's directory (`scripts/…`, `refer
 
 ```
 prototype/
-├── index.html  tokens.css  shell.css  app.js  screens.js  mock-data.js   ← the prototype
+├── index.html  screens.js  mock-data.js          ← the prototype: screens and data (you edit these)
+├── core.js  base.css                            ← shared runtime (back stack, states, mock API, audit)
+├── platform/android.{js,css}  tokens/android.css ← the platform shell and its design tokens
 ├── scenarios/<journey>.md          ← Given / When / Then, one file per journey
 ├── screenshots/<window>/<theme>/…  ← captured by Playwright MCP
 ├── storyboard.html                 ← generated grid of every screen × state
@@ -47,7 +49,9 @@ prototype/
     └── VERIFICATION.md     ← Playwright MCP run log per scenario × window × theme
 ```
 
-Create it with `node scripts/scaffold.mjs --out prototype` (never overwrites existing files).
+Create it with `node scripts/scaffold.mjs --out prototype --name "<App>" --platform android`
+(never overwrites existing files). Screens are written once against the shared runtime; the
+platform shell decides how bars, lists, dialogs, sheets and permission prompts look and behave.
 
 ## Phase 0 — Preflight and resume
 
@@ -115,7 +119,7 @@ with the remaining items as flagged assumptions rather than keep asking.
 2. Build the **state inventory**: for every screen, which of loading · content · empty · error ·
    offline · partial · success apply, and which mock scenario triggers each.
 3. Draft the navigation map (top-level destinations, stacks, where system back goes) using
-   `references/android-ux-conventions.md`.
+   `references/platforms/android/conventions.md`.
 4. Show the user the flow as a short text diagram plus the screen list, and get confirmation
    before building. Record the result in `STATE.md`.
 
@@ -133,9 +137,11 @@ with the remaining items as flagged assumptions rather than keep asking.
    `?debug=1` shows a panel for switching these by hand.
 4. Make it testable: use real `<button>`/`<a>` elements with accessible names, `data-testid` on
    key elements, and let the shell keep `data-screen` / `data-state` on `<main>` current.
-5. Follow `references/android-ux-conventions.md`: 48 px minimum touch targets, no hover-only or
-   right-click interactions, no browser-style navigation, Material 3 roles from `tokens.css`.
-   Write realistic copy from the documents, not lorem ipsum.
+5. Follow `references/platforms/android/conventions.md`: 48 px minimum touch targets, no
+   hover-only or right-click interactions, no browser-style navigation. In screen code use the
+   template's classes and only the neutral tokens (`--color-*`, `--text-*`, `--space-*`); the
+   Material 3 roles live in `tokens/android.css`. Write realistic copy from the documents, not
+   lorem ipsum.
 6. Other design skills (for example UI UX Pro Max, frontend-design, web-design-guidelines) are
    optional advisers. If they are installed, consult them for hierarchy and polish; they never
    override the decisions or the Android conventions.
@@ -187,7 +193,7 @@ open questions, and the approved screenshots as visual references. Update `STATE
 1. The user's explicit decisions (in `DECISIONS.md`).
 2. The supplied documents — the spec decides *what* the product does; the architecture decides
    what is *feasible*. Conflicts between them are class C and go to the user.
-3. `references/android-ux-conventions.md`.
+3. `references/platforms/android/conventions.md`.
 4. Optional design skills, if installed.
 5. Your own taste.
 

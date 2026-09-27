@@ -68,7 +68,7 @@ screen so every screen is seen at every window class at least once.
    navigation map says — including closing an open dialog or sheet first.
 8. Run the audit on each distinct screen and state reached:
    `browser_evaluate` `{function: "() => window.__prototypeAudit()"}`. It returns
-   `{ screen, state, smallTargets, unnamedControls, overflow, clippedText, missingState }`; every list should
+   `{ platform, screen, state, smallTargets, unnamedControls, overflow, clippedText, missingState }`; every list should
    be empty. Use `browser_snapshot` with `boxes: true` when you need to see sizes yourself.
 9. `browser_console_messages` — any error fails the run.
 10. Screenshot each distinct screen/state:

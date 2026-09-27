@@ -21,8 +21,8 @@ It must be complete enough that nobody needs to reverse-engineer the HTML. Use t
 6. **Component mapping**: each distinct UI element in the prototype → the Material 3 component it
    stands for (TopAppBar, NavigationBar / NavigationRail, ListItem, FilledButton, OutlinedTextField,
    ModalBottomSheet, AlertDialog, Snackbar, LinearProgressIndicator…), noting variants.
-7. **Tokens**: the colour roles, type scale and shape values actually used from `tokens.css`, and any
-   brand overrides — enough to define a theme.
+7. **Tokens**: the colour roles, type scale and shape values actually used from
+   `tokens/<platform>.css`, and any brand overrides — enough to define a theme.
 8. **Copy**: every user-facing string, grouped by screen, marked `approved` or `draft`.
 9. **Decisions**: everything in `DECISIONS.md`, each with its source (document, user, assumption).
    List assumptions separately at the top of this section: they need confirming before build.

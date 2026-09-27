@@ -1,24 +1,5 @@
-/* Android app shell and Material 3-style components for HTML prototypes.
-   Screen code uses these classes; colours, type and shape come from tokens.css. */
-
-*, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; }
-body {
-  font: var(--body-large);
-  color: var(--md-on-surface);
-  background: var(--md-surface);
-  -webkit-font-smoothing: antialiased;
-  -webkit-tap-highlight-color: transparent;
-  overscroll-behavior: none;
-}
-button, input, select, textarea { font: inherit; color: inherit; }
-button { cursor: pointer; }
-[hidden] { display: none !important; }
-:focus-visible { outline: 3px solid var(--md-primary); outline-offset: 2px; }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-}
+/* Android device chrome and Material 3 components. Colours, type and shape come from
+   tokens/android.css (--md-* roles); platform-neutral helpers and states are in base.css. */
 
 /* ---------- App frame ---------- */
 
@@ -75,14 +56,6 @@ main#screen {
 main#screen.enter { animation: screen-in var(--motion-medium) var(--ease-standard); }
 @keyframes screen-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
 
-.content { max-width: var(--content-max); margin: 0 auto; padding: var(--space-4); }
-.content.flush { padding: 0; }
-.stack { display: flex; flex-direction: column; gap: var(--space-4); }
-.row { display: flex; align-items: center; gap: var(--space-3); }
-.spacer { flex: 1; }
-.muted { color: var(--md-on-surface-variant); }
-.center { text-align: center; }
-
 /* ---------- Top app bar ---------- */
 
 .top-app-bar {
@@ -125,7 +98,7 @@ main#screen.enter { animation: screen-in var(--motion-medium) var(--ease-standar
   height: var(--nav-bar-h);
   background: var(--md-surface-container);
 }
-.app[data-nav="hidden"] .nav { display: none; }
+.app[data-nav-state="hidden"] .nav { display: none; }
 .nav-item {
   flex: 1; min-width: var(--touch-min);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-1);
@@ -155,7 +128,7 @@ main#screen.enter { animation: screen-in var(--motion-medium) var(--ease-standar
     background: var(--md-surface);
   }
   .nav-item { flex: none; height: 56px; }
-  .app[data-nav="hidden"] .nav { display: flex; }   /* the rail stays visible on deeper screens */
+  .app[data-nav-state="hidden"] .nav { display: flex; }   /* the rail stays visible on deeper screens */
   .app[data-focused="true"] .nav { display: none; }
 }
 
@@ -176,6 +149,7 @@ main#screen.enter { animation: screen-in var(--motion-medium) var(--ease-standar
 .btn.tonal { background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
 .btn.outlined { background: none; color: var(--md-primary); border: 1px solid var(--md-outline); }
 .btn.text { background: none; color: var(--md-primary); padding: 0 var(--space-3); }
+.btn.text.destructive { color: var(--md-error); }
 .btn.danger { background: var(--md-error); color: var(--md-on-error); }
 .btn.block { width: 100%; }
 .btn:disabled { background: color-mix(in srgb, var(--md-on-surface) 12%, transparent); color: color-mix(in srgb, var(--md-on-surface) 38%, transparent); border-color: transparent; cursor: default; }
@@ -272,17 +246,6 @@ button.list-item:hover, a.list-item:hover { background: color-mix(in srgb, var(-
 .skeleton { border-radius: var(--shape-sm); background: linear-gradient(90deg, var(--md-surface-container-high), var(--md-surface-container-highest), var(--md-surface-container-high)); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
 @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
-/* ---------- Full-screen states (loading / empty / error / offline) ---------- */
-
-.state {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-  gap: var(--space-3); min-height: 60%; padding: var(--space-6) var(--space-5);
-}
-.state .state-icon { width: 64px; height: 64px; fill: var(--md-on-surface-variant); }
-.state.error .state-icon { fill: var(--md-error); }
-.state h2 { margin: 0; font: var(--title-large); }
-.state p { margin: 0; font: var(--body-medium); color: var(--md-on-surface-variant); max-width: 36ch; }
-
 /* ---------- Snackbar ---------- */
 
 .snackbar {
@@ -352,11 +315,3 @@ dialog.bottom-sheet .sheet-body { padding: 0 var(--space-5); }
 }
 .launcher button { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); border: 0; background: none; font: var(--label-medium); color: var(--md-on-primary-container); }
 .launcher .app-icon { width: 64px; height: 64px; border-radius: var(--shape-lg); background: var(--md-primary); color: var(--md-on-primary); display: grid; place-items: center; font: var(--title-large); box-shadow: var(--elev-2); }
-
-/* ---------- Debug panel (?debug=1) ---------- */
-
-.debug-toggle { position: fixed; right: 8px; top: 32px; z-index: 20; width: 40px; height: 40px; border-radius: 50%; border: 0; background: #202124; color: #fff; opacity: .7; }
-.debug-panel { position: fixed; right: 8px; top: 80px; z-index: 20; width: 260px; max-height: calc(100dvh - 96px); overflow: auto; padding: 12px; border-radius: 12px; background: #202124; color: #e8eaed; font: 12px/1.4 ui-monospace, monospace; box-shadow: 0 8px 24px rgb(0 0 0 / .4); }
-.debug-panel label { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
-.debug-panel select, .debug-panel input { background: #303134; color: #e8eaed; border: 1px solid #5f6368; border-radius: 6px; padding: 4px; font: inherit; }
-.debug-panel button { width: 100%; padding: 6px; border-radius: 6px; border: 0; background: #8ab4f8; color: #202124; font: inherit; font-weight: 700; }

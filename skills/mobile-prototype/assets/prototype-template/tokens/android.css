@@ -1,6 +1,9 @@
-/* Design tokens — Material 3 roles, type scale and shape.
-   Change the colour roles here (brand), never in screen code. Values below are a neutral
-   baseline generated from a teal seed; replace them with the brand's M3 scheme when V1 is known. */
+/* Android design tokens — Material 3 colour roles, type scale and shape (--md-*, --title-large, …),
+   used by platform/android.css. Change the colour roles here (brand), never in screen code. Values
+   below are a neutral baseline generated from a teal seed; replace them with the brand's M3 scheme
+   when V1 is known.
+   The "neutral roles" block maps the platform-neutral tokens that base.css and screen code use
+   (--color-*, --text-*) onto these roles; every tokens/<platform>.css defines the same names. */
 
 :root {
   /* Colour roles — light */
@@ -90,6 +93,30 @@
   --motion-short: 150ms;
   --motion-medium: 300ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+
+  /* Neutral roles for base.css and screen code (same names in every tokens/<platform>.css) */
+  --color-primary: var(--md-primary);
+  --color-on-primary: var(--md-on-primary);
+  --color-primary-container: var(--md-primary-container);
+  --color-on-primary-container: var(--md-on-primary-container);
+  --color-surface: var(--md-surface);
+  --color-on-surface: var(--md-on-surface);
+  --color-surface-raised: var(--md-surface-container-highest);
+  --color-muted: var(--md-on-surface-variant);
+  --color-outline: var(--md-outline-variant);
+  --color-error: var(--md-error);
+  --color-on-error: var(--md-on-error);
+  --color-error-container: var(--md-error-container);
+  --color-on-error-container: var(--md-on-error-container);
+  --color-success: var(--md-success);
+  --text-headline: var(--headline-small);
+  --text-title: var(--title-large);
+  --text-subtitle: var(--title-medium);
+  --text-body: var(--body-large);
+  --text-secondary: var(--body-medium);
+  --text-caption: var(--body-small);
+  --text-label: var(--label-large);
 
   color-scheme: light;
 }

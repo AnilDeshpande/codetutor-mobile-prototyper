@@ -16,8 +16,15 @@
 
    Markup: use ctx.html`…` (escapes values), ctx.UI helpers, data-nav="<screen>" with
    data-param-<name>="…", data-action="<name>", and <form data-submit="<name>">.
-   ctx gives: params, data, error, state, dirty, api(), navigate(), back(), replace(), popScreen(),
-   setState(), rerender(), reload(), snackbar(), dialog(), sheet(), banner(), requestPermission(), form().
+   ctx gives: params, data, error, state, dirty, platform, api(), navigate(), back(), replace(),
+   popScreen(), setState(), rerender(), reload(), snackbar(), dialog(), sheet(), banner(),
+   requestPermission(), form().
+
+   Screens are written once for every platform: the platform shell (platform/<name>.js + .css)
+   decides how bars, lists, dialogs, sheets and permission prompts look and behave. Use the
+   classes from base.css and the platform stylesheets, and only the neutral tokens
+   (--color-*, --text-*, --space-*) in inline styles. Branch on ctx.platform only for copy or
+   behaviour that really differs (for example what "open settings" means).
 */
 (function () {
   const { html, UI } = App;
@@ -166,7 +173,7 @@
               if (choice) { ctx.reminders = choice; ctx.rerender(); ctx.snackbar('Reminders on'); }
             } else if (result === 'blocked') {
               const open = await ctx.dialog({ title: 'Notifications are off', body: 'To get reminders, allow notifications in your phone’s settings.', confirm: 'Open settings', dismiss: 'Not now', testid: 'blocked' });
-              if (open) ctx.snackbar('Would open Android settings');
+              if (open) ctx.snackbar(ctx.platform === 'ios' ? 'Would open this app’s page in Settings' : 'Would open the app’s Android settings');
             } else {
               ctx.snackbar('Reminders need notifications');
             }

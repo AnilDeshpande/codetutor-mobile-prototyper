@@ -29,7 +29,7 @@ finding by severity; fix all blockers and majors before showing the user.
 - Error and offline: plain words, what to do, retry; the user's input is kept.
 - Partial success (S7) is visible, not silently treated as success or failure.
 
-**4. Android conventions** (`android-ux-conventions.md`)
+**4. Platform conventions** (`platforms/android/conventions.md`)
 - Back and up behave as the navigation map says; dialogs and sheets close on back first.
 - Bottom navigation only on top-level screens; rail on medium and expanded.
 - Snackbar vs dialog vs banner used for the right purpose.
@@ -47,7 +47,8 @@ finding by severity; fix all blockers and majors before showing the user.
 
 **7. Consistency**
 - Same thing, same name, same look, same place, across screens.
-- Only `tokens.css` roles used; no one-off colours or font sizes.
+- Only token roles used (neutral `--color-*` / `--text-*` in screen code, platform roles in the
+  platform stylesheet); no one-off colours or font sizes.
 
 **8. Layout across window classes**
 - Compact: nothing clipped behind system bars or bottom navigation.

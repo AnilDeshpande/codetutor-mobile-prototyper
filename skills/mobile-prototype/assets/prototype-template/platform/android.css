@@ -262,7 +262,8 @@ button.list-item:hover, a.list-item:hover { background: color-mix(in srgb, var(-
   box-shadow: var(--elev-3);
   animation: rise var(--motion-short) var(--ease-standard);
 }
-.snackbar .msg { flex: 1; padding: var(--space-3) 0; }
+.snackbar { flex-wrap: wrap; }                          /* a long action goes on its own line, as in Material */
+.snackbar .msg { flex: 1; min-width: 0; overflow-wrap: anywhere; padding: var(--space-3) 0; }
 .snackbar .btn.text { color: var(--md-inverse-primary); }
 .pane:has(.fab:not([hidden])) .snackbar { bottom: 88px; }
 @keyframes rise { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }

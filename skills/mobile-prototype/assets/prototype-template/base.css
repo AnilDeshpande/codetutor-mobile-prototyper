@@ -24,6 +24,7 @@ button { cursor: pointer; }
 
 /* ---------- Layout helpers for screen code ---------- */
 
+#screen { overflow-wrap: break-word; }   /* long words wrap instead of spilling out at large text sizes */
 .content { max-width: var(--content-max); margin: 0 auto; padding: var(--space-4); }
 .content.flush { padding: 0; }
 .stack { display: flex; flex-direction: column; gap: var(--space-4); }

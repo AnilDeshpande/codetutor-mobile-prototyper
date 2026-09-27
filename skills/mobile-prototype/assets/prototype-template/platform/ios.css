@@ -299,7 +299,8 @@ button.list-item:active, a.list-item:active { background: var(--ios-fill-tertiar
   box-shadow: 0 8px 24px rgb(0 0 0 / .18);
   animation: rise var(--motion-medium) var(--ease-standard);
 }
-.snackbar .msg { flex: 1; padding: 10px 0; }
+.snackbar { flex-wrap: wrap; }                          /* the action moves under the text at large sizes */
+.snackbar .msg { flex: 1; min-width: 0; overflow-wrap: anywhere; padding: 10px 0; }
 .snackbar:not(:has(.toast-action)) { padding-right: var(--space-4); }
 .toast-action { min-height: var(--touch-min); min-width: var(--touch-min); padding: 0 var(--space-4); border: 0; border-radius: 20px; background: none; color: var(--ios-toast-action); font: var(--ios-headline); }
 

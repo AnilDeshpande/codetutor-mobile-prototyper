@@ -5,7 +5,17 @@
   "author": {
     "name": "Anil Deshpande"
   },
-  "keywords": ["prototype", "android", "mobile", "ux", "playwright", "agent-skills"],
+  "homepage": "https://github.com/AnilDeshpande/codetutor-mobile-prototyper",
+  "repository": "https://github.com/AnilDeshpande/codetutor-mobile-prototyper",
+  "license": "MIT",
+  "keywords": [
+    "prototype",
+    "android",
+    "mobile",
+    "ux",
+    "playwright",
+    "agent-skills"
+  ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Mobile Prototyper",
@@ -13,7 +23,11 @@
     "longDescription": "Reads your spec, architecture and design documents, proposes answers from them for your approval, asks only the questions that remain, then builds an interactive HTML prototype and verifies every journey, state and window size with the Playwright MCP server. Stops at an approved UX and a handoff package for native implementation.",
     "developerName": "Anil Deshpande",
     "category": "Coding",
-    "capabilities": ["Document analysis", "UX prototyping", "Browser verification"],
+    "capabilities": [
+      "Document analysis",
+      "UX prototyping",
+      "Browser verification"
+    ],
     "defaultPrompt": [
       "Prototype the onboarding flow from docs/SPEC.md and docs/ARCHITECTURE.md.",
       "Check which of my docs are available and start a mobile prototype.",

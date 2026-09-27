@@ -5,7 +5,17 @@
   "author": {
     "name": "Anil Deshpande"
   },
-  "keywords": ["prototype", "android", "mobile", "ux", "playwright", "agent-skills"],
+  "homepage": "https://github.com/AnilDeshpande/codetutor-mobile-prototyper",
+  "repository": "https://github.com/AnilDeshpande/codetutor-mobile-prototyper",
+  "license": "MIT",
+  "keywords": [
+    "prototype",
+    "android",
+    "mobile",
+    "ux",
+    "playwright",
+    "agent-skills"
+  ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json"
 }

@@ -39,25 +39,24 @@ Spec · Architecture · Design · API docs
 
 ## Install
 
-Replace `<you>` with the GitHub account that hosts this repository.
 
 ### Claude Code (plugin — bundles Playwright MCP)
 
 ```bash
-claude plugin marketplace add <you>/codetutor-mobile-prototyper
+claude plugin marketplace add AnilDeshpande/codetutor-mobile-prototyper
 ```
 
 ```bash
 claude plugin install mobile-prototyper@codetutor
 ```
 
-Or inside a Claude Code session: `/plugin marketplace add <you>/codetutor-mobile-prototyper`, then
+Or inside a Claude Code session: `/plugin marketplace add AnilDeshpande/codetutor-mobile-prototyper`, then
 `/plugin install mobile-prototyper@codetutor`. Restart the session afterwards.
 
 ### Codex (plugin — bundles Playwright MCP)
 
 ```bash
-codex plugin marketplace add https://github.com/<you>/codetutor-mobile-prototyper.git
+codex plugin marketplace add https://github.com/AnilDeshpande/codetutor-mobile-prototyper.git
 ```
 
 ```bash
@@ -86,12 +85,12 @@ configures Playwright MCP for each, after showing what it will change. Options:
 | `--skip-mcp` | don't touch MCP configuration |
 | `--dry-run` | show what would happen |
 
-Without cloning: `npx github:<you>/codetutor-mobile-prototyper -- --agent codex`.
+Without cloning: `npx github:AnilDeshpande/codetutor-mobile-prototyper -- --agent codex`.
 
 With the open Agent Skills CLI, which knows the skill folders of many agents:
 
 ```bash
-npx skills add <you>/codetutor-mobile-prototyper --skill mobile-prototype
+npx skills add AnilDeshpande/codetutor-mobile-prototyper --skill mobile-prototype
 ```
 
 Then make sure Playwright MCP is configured for that agent (next section).
@@ -168,3 +167,7 @@ evals/                 evals.json + a fixture project with a spec, architecture,
 document conflict, a missing spec, a missing Playwright MCP, verification, handoff, and a prompt
 that should *not* trigger the skill. They run against `evals/fixtures/glucose-companion`, which
 contains a deliberate conflict between the PRD and an architecture decision record.
+
+## License
+
+[MIT](LICENSE) © Anil Deshpande

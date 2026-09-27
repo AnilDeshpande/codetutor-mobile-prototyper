@@ -12,12 +12,26 @@
     ".claude-plugin/",
     ".codex-plugin/",
     ".agents/",
-    ".mcp.json"
+    ".mcp.json",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=18"
   },
-  "keywords": ["agent-skills", "claude-code", "codex", "prototype", "android", "playwright", "mcp"],
+  "keywords": [
+    "agent-skills",
+    "claude-code",
+    "codex",
+    "prototype",
+    "android",
+    "playwright",
+    "mcp"
+  ],
   "author": "Anil Deshpande",
-  "license": "UNLICENSED"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnilDeshpande/codetutor-mobile-prototyper.git"
+  },
+  "homepage": "https://github.com/AnilDeshpande/codetutor-mobile-prototyper#readme"
 }

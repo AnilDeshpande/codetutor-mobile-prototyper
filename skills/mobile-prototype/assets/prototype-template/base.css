@@ -30,6 +30,8 @@ button { cursor: pointer; }
 .row { display: flex; align-items: center; gap: var(--space-3); }
 .spacer { flex: 1; }
 .muted { color: var(--color-muted); }
+/* Icons placed with UI.icon() inside text default to the text size; component rules override this. */
+:where(#screen) svg { width: 1.25em; height: 1.25em; fill: currentColor; vertical-align: -0.25em; flex: none; }
 .center { text-align: center; }
 
 /* ---------- Full-screen states (loading / empty / error / offline) ---------- */

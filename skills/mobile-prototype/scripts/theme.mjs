@@ -4,7 +4,7 @@
 //
 //   node theme.mjs --design prototype/notes/DESIGN.md [--out prototype]      apply to the prototype
 //   node theme.mjs --design <file> --option b                                 preview only: design/b/, for the style tile
-//   node theme.mjs --brand "#0B6E4F"                                          just a brand colour (V1), defaults for the rest
+//   node theme.mjs --brand "#0B6E4F" [--font Inter]                           just the documented brand (V1), defaults for the rest
 //   node theme.mjs --design <file> --export design-system/<app>               also write material-theme.json + ios-theme.json
 //   node theme.mjs --remove                                                   back to the template baseline
 //   options: --platform android,ios (default: the platforms index.html links)  --offline  --no-fonts  --json
@@ -83,7 +83,7 @@ const DEFAULTS = {
 
 let designFile = opt('design');
 let design;
-if (opt('brand')) design = { ...DEFAULTS, brand: opt('brand') };
+if (opt('brand')) design = { ...DEFAULTS, brand: opt('brand'), ...(opt('font') ? { 'font.display': opt('font'), 'font.text': opt('font') } : {}) };
 else {
   designFile ||= path.join(out, 'notes', 'DESIGN.md');
   if (!fs.existsSync(designFile)) fail(`${rel(path.resolve(designFile))} not found. Pass --design <DESIGN.md> or --brand <#hex>.`);

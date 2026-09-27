@@ -165,8 +165,8 @@ with the remaining items as flagged assumptions rather than keep asking.
    that really differs, and give every iOS permission a purpose string (`usage`). Write realistic
    copy from the documents, not lorem ipsum.
 6. Keep the platform baseline look. If an approved decision gives a brand colour (V1), apply it
-   with `node scripts/theme.mjs --brand <#hex> --out prototype`: it derives the Material 3 scheme
-   and the iOS tint, checks contrast in both themes and links the result. Don't consult design
+   with `node scripts/theme.mjs --brand <#hex> [--font "<typeface>"] --out prototype`: it derives
+   the Material 3 scheme and the iOS tint, checks contrast in both themes and links the result. Don't consult design
    skills or refine the look here; that is Phase 9, after the UX is approved.
 
 ## Phase 6 — Verify with Playwright MCP

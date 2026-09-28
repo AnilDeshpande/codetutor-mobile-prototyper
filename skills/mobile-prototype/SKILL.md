@@ -116,7 +116,8 @@ At every stop:
 2. Check whether the Playwright MCP tools are available **in this session**: look for tools whose
    names end in `browser_navigate`, `browser_snapshot`, `browser_click` (for example
    `mcp__playwright__browser_navigate`, or a plugin-prefixed variant).
-3. If they are missing, run `node scripts/check-playwright-mcp.mjs` and show the user the result.
+3. If they are missing, run `node scripts/check-playwright-mcp.mjs --host <this agent>` (claude,
+   codex, cursor or gemini — other agents aren't your concern here) and show the user the result.
    Then **ask** before changing their configuration; on approval run it again with
    `--configure --host <this agent>`. Details and per-agent config: `references/playwright-mcp-setup.md`.
 4. A newly configured MCP server only loads when the agent session restarts. Say so, record it in

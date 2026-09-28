@@ -1,7 +1,7 @@
 {
   "name": "codetutor-mobile-prototyper",
-  "version": "0.1.0",
-  "description": "Agent skill: turn a spec, architecture and design docs into a verified, clickable Android UX prototype (Playwright MCP).",
+  "version": "0.2.0",
+  "description": "Agent skill: turn a spec, architecture and design docs into a verified, clickable Android / iOS UX prototype (Playwright MCP).",
   "type": "module",
   "bin": {
     "mobile-prototype-install": "install.mjs"
@@ -24,6 +24,7 @@
     "codex",
     "prototype",
     "android",
+    "ios",
     "playwright",
     "mcp"
   ],

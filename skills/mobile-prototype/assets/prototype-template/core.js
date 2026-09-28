@@ -1,15 +1,23 @@
-/* Prototype runtime: Android-style navigation, back stack, screen states, mock API, overlays.
+/* Prototype runtime, shared by every platform: back stack, screen states, mock API, overlays,
+   debug panel and the audit. The platform look and behaviour (device chrome, how components,
+   dialogs and permission prompts look and act, what back does at the root) comes from
+   platform/<name>.js, which registers itself with App.registerPlatform().
    Screens are defined in screens.js with App.start({...}); data lives in mock-data.js.
    You normally don't need to edit this file.
 
    URL parameters
+     platform=<android|ios>  which platform to show when the prototype has more than one
      scenario=<id>      mock scenario from mock-data.js (default: "default")
      latency=<fast|normal|slow|ms>
      screen=<id>&state=<state>&params=<json>   open a screen directly, optionally forcing a state
      theme=<light|dark> force a theme (otherwise follows the browser / browser_emulate_media)
      fontScale=<n>      text size multiplier, e.g. 2 for 200 %
-     chrome=off         hide the simulated status and navigation bars
+     chrome=off|on      hide or show the simulated status and system bars (default: shown, except
+                        on a touch device such as a real phone, which has its own)
      debug=1            show the debug panel
+
+   This file is loaded in <head>, after the platform stylesheets, so it can pick the platform
+   before the first paint. Everything else waits for App.start().
 */
 (function () {
   'use strict';
@@ -22,7 +30,7 @@
     latency: LATENCY[query.get('latency')] ?? (Number(query.get('latency')) || LATENCY.normal),
     theme: query.get('theme'),
     fontScale: Number(query.get('fontScale')) || 1,
-    chrome: query.get('chrome') !== 'off',
+    chrome: query.has('chrome') ? query.get('chrome') !== 'off' : !matchMedia('(pointer: coarse)').matches,
     debug: query.get('debug') === '1',
     screen: query.get('screen'),
     state: query.get('state'),
@@ -30,6 +38,16 @@
   };
   if (cfg.theme) document.documentElement.dataset.theme = cfg.theme;
   if (cfg.fontScale !== 1) document.documentElement.style.fontSize = `${16 * cfg.fontScale}px`;
+
+  // ---------- platform choice (before first paint) ----------
+  // index.html links one tokens + one shell stylesheet per platform in scope, marked data-platform.
+  const platformLinks = [...document.querySelectorAll('link[data-platform]')];
+  const available = [...new Set(platformLinks.map((l) => l.dataset.platform))];
+  const platformName = available.includes(query.get('platform')) ? query.get('platform') : available[0] || 'android';
+  for (const l of platformLinks) l.disabled = l.dataset.platform !== platformName;
+  document.documentElement.dataset.platform = platformName;
+  const adapters = {};
+  let P = null;                 // the active platform adapter
 
   // ---------- small helpers ----------
   function safeJson(s) { try { return s ? JSON.parse(s) : null; } catch { return null; } }
@@ -42,8 +60,11 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const clone = (v) => (v === undefined ? v : JSON.parse(JSON.stringify(v)));
   const $ = (sel, root = document) => root.querySelector(sel);
+  /** Markup that may be plain text or html``/raw() output. */
+  const markup = (v) => (v instanceof Raw ? v.s : esc(v));
 
-  // Material icon paths (Apache 2.0). Add more as needed: name → SVG path data.
+  // Icon paths (Material Symbols, Apache 2.0): name → SVG path data. Platforms may replace or
+  // add icons (adapter.icons); screens only use the names.
   const ICONS = {
     back: 'M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z',
     home: 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z',
@@ -65,13 +86,12 @@
     delete: 'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z',
     edit: 'M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z',
     notifications: 'M12 22c1.1 0 2-.9 2-2h-4a2 2 0 0 0 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z',
-    sys_back: 'M17 4v16L5 12z',
-    sys_home: 'M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 14a6 6 0 1 1 0-12 6 6 0 0 1 0 12z',
-    sys_recent: 'M5 5h14v14H5z',
   };
   const icon = (name, cls = '') => raw(`<svg viewBox="0 0 24 24" aria-hidden="true"${cls ? ` class="${cls}"` : ''}><path d="${ICONS[name] || name}"/></svg>`);
 
   // ---------- UI building blocks for screens ----------
+  // Semantic components: each platform's stylesheet gives them its own look, and an adapter may
+  // replace any of them (adapter.ui) when the markup itself has to differ.
   const params = (p = {}) => raw(Object.entries(p).map(([k, v]) => ` data-param-${esc(k)}="${esc(v)}"`).join(''));
   const target = ({ action, nav, navParams, testid }) =>
     raw(`${action ? ` data-action="${esc(action)}"` : ''}${nav ? ` data-nav="${esc(nav)}"` : ''}${params(navParams)}${testid ? ` data-testid="${esc(testid)}"` : ''}`);
@@ -122,11 +142,15 @@
   };
 
   // ---------- mock API ----------
-  const MOCK = window.MOCK || { base: {}, scenarios: { default: {} }, api: {} };
-  const scenario = MOCK.scenarios[cfg.scenario] || MOCK.scenarios.default || {};
-  if (!MOCK.scenarios[cfg.scenario]) console.warn(`Unknown scenario "${cfg.scenario}", using default.`);
-  const db = Object.assign(clone(MOCK.base || {}), clone(scenario.data || {}));
-  const permissions = Object.assign({}, scenario.permissions || {});
+  // mock-data.js loads after this file, so the scenario is read in App.start().
+  let MOCK, scenario, db, permissions;
+  function loadMock() {
+    MOCK = window.MOCK || { base: {}, scenarios: { default: {} }, api: {} };
+    scenario = MOCK.scenarios[cfg.scenario] || MOCK.scenarios.default || {};
+    if (!MOCK.scenarios[cfg.scenario]) console.warn(`Unknown scenario "${cfg.scenario}", using default.`);
+    db = Object.assign(clone(MOCK.base || {}), clone(scenario.data || {}));
+    permissions = Object.assign({}, scenario.permissions || {});
+  }
 
   async function api(name, args) {
     const handler = MOCK.api[name];
@@ -148,11 +172,21 @@
   let renderToken = 0;
   const els = {};
 
+  function registerPlatform(name, adapter) { adapters[name] = adapter; }
+
   function start(definition) {
     def = definition;
+    loadMock();
+    P = adapters[platformName];
+    if (!P) throw new Error(`No platform adapter for "${platformName}". Is platform/${platformName}.js loaded?`);
+    Object.assign(ICONS, P.icons || {});
+    Object.assign(UI, P.ui || {});
     document.title = `${def.appName || 'App'} — prototype`;
+
+    const app = $('#app');
+    app.innerHTML = P.chrome({ appName: def.appName || 'App', esc, icon });
     Object.assign(els, {
-      app: $('#app'), nav: $('#nav'), title: $('#screen-title'), up: $('#up-button'), actions: $('#top-actions'),
+      app, nav: $('#nav'), title: $('#screen-title'), up: $('#up-button'), actions: $('#top-actions'),
       bar: $('#top-app-bar'), banner: $('#banner'), main: $('#screen'), fab: $('#fab'), snackbar: $('#snackbar'),
       dialog: $('#dialog'), sheet: $('#sheet'), scrim: $('#scrim'), launcher: $('#launcher'),
     });
@@ -162,7 +196,7 @@
     wireEvents();
     if (cfg.debug) buildDebugPanel();
 
-    // Browser back (and Playwright's browser_navigate_back) acts as Android system back.
+    // Browser back (and Playwright's browser_navigate_back) acts as the platform's back.
     history.replaceState({ app: 'base' }, '');
     history.pushState({ app: 'trap' }, '');
     addEventListener('popstate', () => { back(); history.pushState({ app: 'trap' }, ''); });
@@ -193,7 +227,7 @@
     show({ animate: true });
   }
 
-  /** Android system back: overlays first, then the screen's own handler, then the stack. */
+  /** Back: overlays first, then the screen's own handler, then the stack. */
   async function back() {
     if (!els.launcher.hidden) return;
     if (els.sheet.open) { closeOverlay(els.sheet, null); return; }
@@ -203,10 +237,11 @@
     popScreen();
   }
 
+  /** One step up the stack. At the root, the platform decides: 'exit' (Android) or 'none'. */
   function popScreen() {
     if (stack.length > 1) { stack.pop(); show({ animate: true }); return; }
     if (current?.id !== def.start) { stack = rootStackFor(def.start); show({ animate: true }); return; }
-    exitApp();
+    if (P.rootBack === 'exit') exitApp();
   }
 
   function exitApp() {
@@ -223,6 +258,11 @@
   }
 
   // ---------- rendering ----------
+  const titleOf = (entry, ctx) => {
+    const t = def.screens[entry.id]?.title;
+    return typeof t === 'function' ? t(ctx || { id: entry.id, params: entry.params || {}, data: null, state: null }) : t;
+  };
+
   async function show({ forcedState = null, animate = false } = {}) {
     const entry = stack[stack.length - 1];
     const screen = def.screens[entry.id];
@@ -230,13 +270,11 @@
     current = makeContext(entry, token);
 
     const top = isDestination(entry.id) || stack.length === 1;
-    els.app.dataset.nav = top && !screen.focused ? 'visible' : 'hidden';
+    els.app.dataset.navState = top && !screen.focused ? 'visible' : 'hidden';
     els.app.dataset.focused = screen.focused ? 'true' : 'false';
-    els.up.hidden = top;
-    els.bar.classList.toggle('has-up', !top);
-    els.bar.hidden = screen.appBar === false;
+    els.app.dataset.top = String(top);
     const activeDest = [...stack].reverse().find((s) => isDestination(s.id))?.id || def.start;
-    els.nav.querySelectorAll('.nav-item').forEach((b) => b.setAttribute('aria-current', b.dataset.nav === activeDest ? 'page' : 'false'));
+    els.nav.querySelectorAll('[data-nav]').forEach((b) => b.setAttribute('aria-current', b.dataset.nav === activeDest ? 'page' : 'false'));
     banner(null);
 
     if (forcedState) {
@@ -263,6 +301,7 @@
 
     if (animate) { els.main.classList.remove('enter'); void els.main.offsetWidth; els.main.classList.add('enter'); }
     els.main.scrollTop = 0;
+    els.bar?.classList.remove('scrolled');
     els.main.focus({ preventScroll: true });
   }
 
@@ -273,17 +312,18 @@
     ctx.state = state;
     els.main.dataset.screen = ctx.id;
     els.main.dataset.state = state;
-    const title = typeof screen.title === 'function' ? screen.title(ctx) : screen.title;
-    els.title.textContent = title || '';
-    els.actions.innerHTML = (screen.topActions ? screen.topActions(ctx) : []).map((a) => UI.iconButton(a.icon, a.label, a)).join('');
     const fab = screen.fab && (typeof screen.fab === 'function' ? screen.fab(ctx) : screen.fab);
-    els.fab.hidden = !fab || state !== 'content' && !fab.always;
-    if (fab) {
-      els.fab.innerHTML = `${icon(fab.icon || 'add')}${fab.extended === false ? '' : `<span>${esc(fab.label)}</span>`}`;
-      els.fab.setAttribute('aria-label', fab.label);
-      els.fab.dataset.action = fab.action || '';
-      els.fab.dataset.testid = fab.testid || 'fab';
-    }
+    const prev = stack.length > 1 ? stack[stack.length - 2] : null;
+    P.renderBar({
+      top: els.app.dataset.top === 'true',
+      hidden: screen.appBar === false,
+      focused: !!screen.focused,
+      title: titleOf(stack[stack.length - 1], ctx) || '',
+      previousTitle: prev ? titleOf(prev) || '' : '',
+      actions: screen.topActions ? screen.topActions(ctx) : [],
+      fab: fab && (state === 'content' || fab.always) ? fab : null,
+      state,
+    }, els);
     els.main.innerHTML = String(defaultStateView(screen, ctx, state));
     screen.afterRender?.(ctx, els.main);
   }
@@ -301,7 +341,7 @@
   function makeContext(entry, token) {
     const ctx = {
       id: entry.id, params: entry.params || {}, state: null, data: null, error: null, dirty: false,
-      scenario: cfg.scenario, token,
+      scenario: cfg.scenario, platform: platformName, token,
       api, navigate, back, replace: (id, p) => navigate(id, p, { replace: true }),
       popScreen, setState: (s) => setState(s, token), rerender: () => setState(ctx.state, token), reload: () => show(),
       snackbar, dialog, sheet, banner, requestPermission, html, raw, esc, icon, UI,
@@ -312,10 +352,11 @@
 
   // ---------- overlays ----------
   let snackTimer = null;
+  /** Transient message with an optional action. Resolves true if the action was used. */
   function snackbar(message, { action, duration = 4000, testid = 'snackbar' } = {}) {
     return new Promise((resolve) => {
       clearTimeout(snackTimer);
-      els.snackbar.innerHTML = `<span class="msg">${esc(message)}</span>${action ? `<button type="button" class="btn text" data-testid="${esc(testid)}-action">${esc(action)}</button>` : ''}`;
+      els.snackbar.innerHTML = P.snackbar({ message, action, testid }, { esc, icon });
       els.snackbar.hidden = false;
       const btn = els.snackbar.querySelector('button');
       if (btn) btn.onclick = () => { hideSnackbar(); resolve(true); };
@@ -324,6 +365,7 @@
   }
   function hideSnackbar() { clearTimeout(snackTimer); els.snackbar.hidden = true; }
 
+  /** Inline status under the top bar. tone: 'info' | 'error'. */
   function banner(message, { tone = 'info', icon: ic } = {}) {
     if (!message) { els.banner.hidden = true; return; }
     els.banner.className = `banner ${tone}`;
@@ -331,9 +373,9 @@
     els.banner.hidden = false;
   }
 
-  let overlayResolve = new Map();
-  function openOverlay(el, markup, resolve) {
-    el.innerHTML = markup;
+  const overlayResolve = new Map();
+  function openOverlay(el, content, resolve) {
+    el.innerHTML = content;
     overlayResolve.set(el, resolve);
     el.show();
     els.scrim.hidden = false;
@@ -348,62 +390,50 @@
     r?.(value);
   }
 
-  /** App dialog. Resolves true (confirm) or false (dismiss / back). */
-  function dialog({ title, body, confirm = 'OK', dismiss = 'Cancel', icon: ic, destructive = false, system = false, dismissible = true, testid = 'dialog' }) {
+  /**
+   * App dialog. Resolves true (confirm) or false (dismiss / back).
+   * system: true draws it as operating-system UI (permission prompts).
+   * Buttons carry data-value="true|false" and data-testid="<testid>-confirm|-dismiss".
+   */
+  function dialog(opts) {
+    const o = { confirm: 'OK', dismiss: 'Cancel', destructive: false, system: false, dismissible: true, testid: 'dialog', ...opts };
     return new Promise((resolve) => {
-      els.dialog.className = `app-dialog${system ? ' system' : ''}`;
-      els.dialog.dataset.dismissible = String(dismissible);
-      els.dialog.dataset.testid = testid;
-      openOverlay(els.dialog, `
-        ${ic ? `<div class="dialog-icon">${icon(ic)}</div>` : ''}
-        <h2 id="dialog-title">${esc(title)}</h2>
-        ${body ? `<div class="dialog-body">${body instanceof Raw ? body.s : esc(body)}</div>` : ''}
-        <div class="dialog-actions">
-          ${dismiss ? `<button type="button" class="btn text" data-testid="${esc(testid)}-dismiss" data-value="false">${esc(dismiss)}</button>` : ''}
-          <button type="button" class="btn text" data-testid="${esc(testid)}-confirm" data-value="true"${destructive ? ' style="color:var(--md-error)"' : ''}>${esc(confirm)}</button>
-        </div>`, resolve);
+      const { className, content } = P.dialog(o, { esc, icon, markup });
+      els.dialog.className = className;
+      els.dialog.dataset.dismissible = String(o.dismissible);
+      els.dialog.dataset.testid = o.testid;
+      openOverlay(els.dialog, content, resolve);
       els.dialog.setAttribute('aria-labelledby', 'dialog-title');
     });
   }
 
-  /** Modal bottom sheet. options: [{ label, value, icon, supporting }]. Resolves the chosen value or null. */
-  function sheet({ title, body, options = [], testid = 'sheet' }) {
+  /** Modal sheet. options: [{ label, value, icon, supporting }]. Resolves the chosen value or null. */
+  function sheet(opts) {
+    const o = { options: [], testid: 'sheet', ...opts };
     return new Promise((resolve) => {
-      els.sheet.dataset.testid = testid;
-      openOverlay(els.sheet, `<div class="handle" aria-hidden="true"></div>
-        ${title ? `<h2 id="sheet-title">${esc(title)}</h2>` : ''}
-        ${body ? `<div class="sheet-body">${body instanceof Raw ? body.s : esc(body)}</div>` : ''}
-        ${options.length ? `<ul class="list">${options.map((o) => UI.listItem({ headline: o.label, supporting: o.supporting, leadingIcon: o.icon, value: o.value, testid: `${testid}-${o.value}` })).join('')}</ul>` : ''}`, resolve);
-      if (title) els.sheet.setAttribute('aria-labelledby', 'sheet-title');
+      const { className, content } = P.sheet(o, { esc, icon, markup, UI });
+      els.sheet.className = className;
+      els.sheet.dataset.testid = o.testid;
+      openOverlay(els.sheet, content, resolve);
+      if (o.title) els.sheet.setAttribute('aria-labelledby', 'sheet-title');
+      else els.sheet.removeAttribute('aria-labelledby');
     });
   }
 
   /**
-   * Simulated Android runtime permission. Returns 'granted' | 'denied' | 'blocked'.
+   * Simulated runtime permission. Returns 'granted' | 'denied' | 'blocked'.
    * Scenario mock data can preset permissions: { bluetooth: 'granted' | 'denied' | 'blocked' }.
-   * A second denial becomes 'blocked' (Android's "don't ask again").
+   * How often the system asks, and when a denial becomes 'blocked', is the platform's rule.
    */
-  async function requestPermission(name, { prompt, rationale } = {}) {
-    const state = permissions[name] || 'ask';
-    if (state === 'granted' || state === 'blocked') return state;
-    if (rationale && (state === 'denied' || rationale.always)) {
-      const go = await dialog({ title: rationale.title, body: rationale.body, confirm: rationale.confirm || 'Continue', dismiss: 'Not now', icon: rationale.icon, testid: 'rationale' });
-      if (!go) return 'denied';
-    }
-    const allowed = await dialog({
-      title: prompt || `Allow ${def.appName || 'this app'} to use ${name}?`,
-      confirm: 'Allow', dismiss: 'Don’t allow', system: true, testid: `permission-${name}`,
-    });
-    permissions[name] = allowed ? 'granted' : state === 'denied' ? 'blocked' : 'denied';
-    return permissions[name];
+  function requestPermission(name, options = {}) {
+    return P.requestPermission(name, options, { permissions, dialog, appName: def.appName || 'this app' });
   }
 
   // ---------- events ----------
   function wireEvents() {
-    els.up.innerHTML = String(icon('back'));
-    els.up.addEventListener('click', () => back());
-    $('#system-back').addEventListener('click', () => back());
-    $('#system-home').addEventListener('click', exitApp);
+    els.up?.addEventListener('click', () => back());
+    $('#system-back')?.addEventListener('click', () => back());
+    $('#system-home')?.addEventListener('click', exitApp);
     $('button', els.launcher).addEventListener('click', relaunch);
 
     addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); back(); } });   // Esc = back
@@ -414,7 +444,8 @@
     for (const d of [els.dialog, els.sheet]) {
       d.addEventListener('click', (e) => {
         const b = e.target.closest('[data-value]');
-        if (b) closeOverlay(d, b.dataset.value === 'true' ? true : b.dataset.value === 'false' ? false : b.dataset.value);
+        const v = b?.dataset.value;
+        if (b) closeOverlay(d, v === 'true' ? true : v === 'false' ? false : v === '__null' ? null : v);
       });
     }
 
@@ -435,7 +466,8 @@
       if (action) runAction(action, e.target, e);
     });
     els.main.addEventListener('input', () => { if (current) current.dirty = true; });
-    els.main.addEventListener('scroll', () => els.bar.classList.toggle('scrolled', els.main.scrollTop > 0));
+    els.main.addEventListener('scroll', () => els.bar?.classList.toggle('scrolled', els.main.scrollTop > 0));
+    P.wire?.({ els, back, exitApp });
   }
 
   function runAction(name, el, event) {
@@ -447,9 +479,9 @@
   }
 
   function buildNav() {
-    els.nav.innerHTML = (def.destinations || []).map((d) =>
-      `<button type="button" class="nav-item" data-nav="${esc(d.id)}" data-testid="nav-${esc(d.id)}"><span class="indicator">${icon(d.icon || 'home')}</span><span>${esc(d.label)}</span></button>`).join('');
-    if ((def.destinations || []).length < 2) els.nav.hidden = true;
+    const dests = def.destinations || [];
+    els.nav.innerHTML = dests.map((d) => P.navItem(d, { esc, icon })).join('');
+    if (dests.length < 2) els.nav.hidden = true;
   }
 
   function buildDebugPanel() {
@@ -460,12 +492,13 @@
     const opts = (list, sel) => list.map((v) => `<option${v === sel ? ' selected' : ''}>${esc(v)}</option>`).join('');
     const latencyName = Object.keys(LATENCY).find((k) => LATENCY[k] === cfg.latency) || String(cfg.latency);
     panel.innerHTML = `
+      ${available.length > 1 ? `<label>Platform<select name="platform">${opts(available, platformName)}</select></label>` : ''}
       <label>Scenario<select name="scenario">${opts(Object.keys(MOCK.scenarios), cfg.scenario)}</select></label>
       <label>Latency<select name="latency">${opts(['fast', 'normal', 'slow'], latencyName)}</select></label>
       <label>Screen<select name="screen"><option value="">(start)</option>${opts(Object.keys(def.screens), cfg.screen)}</select></label>
       <label>State<select name="state"><option value="">(natural)</option>${opts(['loading', 'content', 'empty', 'error', 'offline', 'partial', 'success'], cfg.state)}</select></label>
       <label>Theme<select name="theme"><option value="">(system)</option>${opts(['light', 'dark'], cfg.theme)}</select></label>
-      <label>Font scale<select name="fontScale">${opts(['1', '1.3', '2'], String(cfg.fontScale))}</select></label>
+      <label>Font scale<select name="fontScale">${opts(['1', '1.3', '2', '3'], String(cfg.fontScale))}</select></label>
       <button type="button">Apply</button>`;
     panel.querySelector('button').onclick = () => {
       const q = new URLSearchParams({ debug: '1' });
@@ -477,7 +510,13 @@
   }
 
   // ---------- audit for Playwright MCP: browser_evaluate(() => window.__prototypeAudit()) ----------
-  window.__prototypeAudit = function () {
+  // Pass { minContrast: 7 } when the product commits to WCAG AAA (DESIGN.md "contrast: high").
+  window.__prototypeAudit = function ({ minContrast = 4.5 } = {}) {
+    const minTarget = P?.minTarget || 48;
+    // Settle finite animations first, so a screen still sliding in isn't reported as overflow.
+    for (const a of document.getAnimations()) {
+      if (Number.isFinite(a.effect?.getComputedTiming?.().endTime)) a.finish();
+    }
     const describe = (el) => {
       const r = el.getBoundingClientRect();
       const name = (el.getAttribute('aria-label') || el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40);
@@ -488,7 +527,8 @@
     const interactive = scope.flatMap((root) => [...root.querySelectorAll('button, a[href], input, select, textarea, [role=button], [role=switch], [role=tab], [tabindex]:not([tabindex="-1"])')])
       .filter((el) => visible(el) && !el.disabled && !el.closest('[hidden]') && !(el.tagName === 'A' && el.closest('p')));
 
-    const smallTargets = interactive.filter((el) => {
+    // Simulated OS chrome (marked data-system-ui) isn't app UI, so its sizes aren't the app's to fix.
+    const smallTargets = interactive.filter((el) => !el.closest('[data-system-ui]')).filter((el) => {
       const r = el.getBoundingClientRect();
       const a = getComputedStyle(el, '::after');
       let w = r.width, h = r.height;
@@ -497,7 +537,7 @@
         w += Math.max(0, -parseFloat(a.left) || 0) + Math.max(0, -parseFloat(a.right) || 0);
       }
       if (el.type === 'checkbox' || el.type === 'radio') { const l = el.closest('label'); if (l) { const lr = l.getBoundingClientRect(); w = Math.max(w, lr.width); h = Math.max(h, lr.height); } }
-      return w < 47.5 || h < 47.5;
+      return w < minTarget - 0.5 || h < minTarget - 0.5;
     }).map(describe);
 
     const unnamedControls = interactive.filter((el) => {
@@ -522,13 +562,66 @@
       return clips && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1);
     }).map(describe);
 
+    // Content that spills out of its own box (and so is drawn over its neighbours), typically a
+    // flex row whose text column was squeezed at a large font scale.
+    const overlapping = [...document.querySelectorAll('#screen *')].filter((el) => {
+      if (!visible(el) || el.classList.contains('allow-overlap') || el.closest('svg') || !el.textContent.trim()) return false;
+      const s = getComputedStyle(el);
+      if (s.display === 'inline' || !['visible'].includes(s.overflowX) || !el.clientWidth) return false;
+      return el.scrollWidth > el.clientWidth + 1;
+    }).map(describe);
+
+    // Text below 4.5:1 (or minContrast) against what is actually behind it (3:1 for large text; 4.5:1
+    // at AAA), in the app and in open dialogs. Backgrounds are composited up the tree; text over images or gradients is skipped.
+    const parseColor = (s) => {
+      const m = s.match(/^rgba?\(([^)]+)\)$/) || s.match(/^color\(srgb ([^)]+)\)$/);
+      if (!m) return null;
+      const n = m[1].split(/[\s,/]+/).filter(Boolean).map(Number);
+      const scale = s.startsWith('color(') ? 255 : 1;
+      return { r: n[0] * scale, g: n[1] * scale, b: n[2] * scale, a: n.length > 3 ? n[3] : 1 };
+    };
+    const blend = (t, b) => ({ r: t.r * t.a + b.r * (1 - t.a), g: t.g * t.a + b.g * (1 - t.a), b: t.b * t.a + b.b * (1 - t.a), a: 1 });
+    const lum = (c) => [c.r, c.g, c.b].map((v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0);
+    const canvas = parseColor(getComputedStyle(document.body).backgroundColor) || { r: 255, g: 255, b: 255, a: 1 };
+    const backdrop = (el) => {
+      const layers = [];
+      for (let n = el; n && n.nodeType === 1; n = n.parentElement) {
+        const s = getComputedStyle(n);
+        if (s.backgroundImage !== 'none') return null;
+        const c = parseColor(s.backgroundColor);
+        if (c && c.a > 0) { layers.push(c); if (c.a >= 1) break; }
+      }
+      return layers.reduceRight((under, top) => blend(top, under), canvas.a >= 1 ? canvas : { r: 255, g: 255, b: 255, a: 1 });
+    };
+    const lowContrast = [];
+    for (const root of scope) {
+      for (const el of root.querySelectorAll('*')) {
+        if (![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue;
+        if (!visible(el) || el.closest('[hidden], [aria-hidden="true"], [data-system-ui], .allow-low-contrast') || el.closest('button:disabled, input:disabled')) continue;
+        const s = getComputedStyle(el);
+        let fg = parseColor(s.color);
+        const bg = backdrop(el);
+        if (!fg || !bg) continue;
+        let opacity = 1;
+        for (let n = el; n && n.nodeType === 1; n = n.parentElement) opacity *= Number(getComputedStyle(n).opacity);
+        fg = blend({ ...fg, a: fg.a * opacity }, bg);
+        const [l1, l2] = [lum(fg), lum(bg)];
+        const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+        const size = parseFloat(s.fontSize), large = size >= 24 || (size >= 18.66 && Number(s.fontWeight) >= 700);
+        if (ratio < (large ? (minContrast >= 7 ? 4.5 : 3) : minContrast) - 0.01) lowContrast.push(`${describe(el)} ${ratio.toFixed(2)}:1`);
+      }
+    }
+
     const main = document.getElementById('screen');
     const missingState = [];
     if (!main.dataset.screen) missingState.push('main[data-screen] is empty');
     if (!main.dataset.state) missingState.push('main[data-state] is empty');
 
-    return { screen: main.dataset.screen, state: main.dataset.state, smallTargets, unnamedControls, overflow: overflow.slice(0, 20), clippedText, missingState };
+    return { platform: platformName, screen: main.dataset.screen, state: main.dataset.state, smallTargets, unnamedControls, overflow: overflow.slice(0, 20), clippedText, overlapping, lowContrast: lowContrast.slice(0, 20), missingState };
   };
 
-  window.App = { start, navigate, back, snackbar, dialog, sheet, banner, requestPermission, api, UI, html, raw, esc, icon, ICONS, config: cfg };
+  window.App = {
+    start, registerPlatform, navigate, back, snackbar, dialog, sheet, banner, requestPermission, api,
+    UI, html, raw, esc, icon, ICONS, config: cfg, platform: platformName, platforms: available,
+  };
 })();

@@ -15,6 +15,7 @@ register first (Phase 2), and ask the user only if it remains class C or D (Phas
 | P2 | What is the user trying to get done in this feature, in one sentence? | yes | — |
 | P3 | Which feature, journeys and screens are in scope for *this* prototype, and what is explicitly out? | yes | — |
 | P4 | How will we know the experience works (task completed, time, errors avoided)? | no | "the primary journey completes without help" |
+| P5 | Which platforms does this prototype target: Android, iOS or both? | yes | — (propose from the documents and the project's build files; never assume both) |
 
 ## J — Journeys
 
@@ -30,9 +31,9 @@ register first (Phase 2), and ask the user only if it remains class C or D (Phas
 
 | ID | Question | Blocking | Default if open |
 |---|---|---|---|
-| N1 | What are the top-level destinations of the app (the bottom-navigation items)? | yes if more than one screen | derive from the spec; 3–5 items |
+| N1 | What are the top-level destinations of the app (bottom navigation on Android, tabs on iOS)? | yes if more than one screen | derive from the spec; 3–5 items |
 | N2 | Which screens sit inside which destination's stack? | no | derive from journeys |
-| N3 | What happens on system back at each step of the primary journey, especially mid-task (discard, confirm, save draft)? | yes for multi-step tasks | confirm before discarding user input |
+| N3 | What happens on back (Android system back; iOS back button, edge swipe, Cancel in a modal) at each step of the primary journey, especially mid-task (discard, confirm, save draft)? | yes for multi-step tasks | confirm before discarding user input |
 | N4 | Can users arrive from a notification or a link directly into a deep screen? | no | no |
 
 ## S — States and data
@@ -52,9 +53,10 @@ register first (Phase 2), and ask the user only if it remains class C or D (Phas
 | ID | Question | Blocking | Default if open |
 |---|---|---|---|
 | A1 | Is sign-in part of this prototype, or do we assume a signed-in user? | yes | assume signed in |
-| A2 | Which runtime permissions are needed (Bluetooth, location, notifications, camera…), when are they asked, and what happens if the user denies them, including "don't ask again"? | yes if any are needed | rationale screen → system prompt; denied → explain + retry; permanently denied → link to settings |
-| A3 | Which form factors are in scope: phones only, or also tablets and foldables? | no | phones (compact) primary; check medium and expanded layouts don't break |
+| A2 | Which runtime permissions are needed (Bluetooth, location, notifications, camera…), when are they asked, and what happens if the user denies them, including "don't ask again"? On iOS, what is each purpose string? | yes if any are needed | rationale → system prompt; Android: denied → explain + retry, permanently denied → settings; iOS: one denial is final → explain + Open Settings |
+| A3 | Which form factors are in scope: phones only, or also tablets and foldables (iPad on iOS)? | no | phones primary; check tablet layouts don't break |
 | A4 | Portrait only, or landscape too? | no | portrait |
+| A5 | Minimum OS versions (Android API level, iOS version)? They decide which generation of the platform's design language applies. | no | current versions: Material 3 on Android; Liquid Glass-era iOS (26+) |
 
 ## T — Technical constraints that change the experience
 
@@ -79,7 +81,7 @@ register first (Phase 2), and ask the user only if it remains class C or D (Phas
 
 | ID | Question | Blocking | Default if open |
 |---|---|---|---|
-| V1 | Brand colours, typeface, logo? | no | Material 3 baseline, neutral palette |
+| V1 | Brand colours, typeface, logo? | no | platform baseline: Material 3 neutral palette; iOS system colours with a neutral tint. A documented brand colour is applied in Phase 5 with `theme.mjs --brand`; everything else about the look waits for the optional design phase |
 | V2 | An existing app or screens to stay consistent with? | no | none |
 | V3 | Is dark theme in scope? | no | yes: check both themes |
 | V4 | Information density: compact and data-heavy, or airy and guided? | no | from P1 (stressful context → guided) |
@@ -88,7 +90,7 @@ register first (Phase 2), and ask the user only if it remains class C or D (Phas
 
 | ID | Question | Blocking | Default if open |
 |---|---|---|---|
-| X1 | Any accessibility commitments beyond the Android baseline (large text, screen reader first, colour-blind safe charts)? | no | Android baseline: 48 dp targets, 4.5:1 text contrast, labels on every control, works at 200 % font scale |
+| X1 | Any accessibility commitments beyond the platform baseline (large text, screen reader first, colour-blind safe charts)? | no | platform baseline: 48 dp (Android) / 44 pt (iOS) targets, 4.5:1 text contrast, labels on every control, works at 200 % font scale (Android) / the largest Dynamic Type size (iOS) |
 | X2 | Regulatory requirements that change the UI (medical device wording, financial disclosures, consent flows, data export)? | yes if a regulated domain | — |
 
 ## Adding questions

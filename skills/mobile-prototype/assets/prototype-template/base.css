@@ -1,0 +1,55 @@
+/* Platform-neutral base: reset, layout helpers, full-screen states and the debug panel.
+   Uses only the neutral tokens (--color-*, --text-*, --space-*) that every tokens/<platform>.css
+   defines, so screen code that sticks to these classes and tokens works on every platform.
+   The device chrome and component look live in platform/<platform>.css. */
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font: var(--text-body);
+  color: var(--color-on-surface);
+  background: var(--color-surface);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---------- Layout helpers for screen code ---------- */
+
+#screen { overflow-wrap: break-word; }   /* long words wrap instead of spilling out at large text sizes */
+.content { max-width: var(--content-max); margin: 0 auto; padding: var(--space-4); }
+.content.flush { padding: 0; }
+.stack { display: flex; flex-direction: column; gap: var(--space-4); }
+.row { display: flex; align-items: center; gap: var(--space-3); }
+.spacer { flex: 1; }
+.muted { color: var(--color-muted); }
+/* Icons placed with UI.icon() inside text default to the text size; component rules override this. */
+:where(#screen) svg { width: 1.25em; height: 1.25em; fill: currentColor; vertical-align: -0.25em; flex: none; }
+.center { text-align: center; }
+
+/* ---------- Full-screen states (loading / empty / error / offline) ---------- */
+
+.state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  gap: var(--space-3); min-height: 60%; padding: var(--space-6) var(--space-5);
+}
+.state .state-icon { width: 64px; height: 64px; fill: var(--color-muted); }
+.state.error .state-icon { fill: var(--color-error); }
+.state h2 { margin: 0; font: var(--text-title); }
+.state p { margin: 0; font: var(--text-secondary); color: var(--color-muted); max-width: 36ch; }
+
+/* ---------- Debug panel (?debug=1) ---------- */
+
+.debug-toggle { position: fixed; right: 8px; top: 32px; z-index: 20; width: 40px; height: 40px; border-radius: 50%; border: 0; background: #202124; color: #fff; opacity: .7; }
+.debug-panel { position: fixed; right: 8px; top: 80px; z-index: 20; width: 260px; max-height: calc(100dvh - 96px); overflow: auto; padding: 12px; border-radius: 12px; background: #202124; color: #e8eaed; font: 12px/1.4 ui-monospace, monospace; box-shadow: 0 8px 24px rgb(0 0 0 / .4); }
+.debug-panel label { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.debug-panel select, .debug-panel input { background: #303134; color: #e8eaed; border: 1px solid #5f6368; border-radius: 6px; padding: 4px; font: inherit; }
+.debug-panel button { width: 100%; padding: 6px; border-radius: 6px; border: 0; background: #8ab4f8; color: #202124; font: inherit; font-weight: 700; }

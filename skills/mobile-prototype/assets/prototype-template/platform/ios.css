@@ -1,0 +1,372 @@
+/* iOS device chrome and UIKit/SwiftUI-style components. Colours, type and sizes come from
+   tokens/ios.css (--ios-*); platform-neutral helpers and states are in base.css.
+   Baseline look: translucent bars, inset grouped lists, capsule buttons, alerts and sheets —
+   it reads correctly on current and recent iOS versions. */
+
+/* ---------- App frame ---------- */
+
+.app {
+  position: relative;
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: var(--status-bar-h) minmax(0, 1fr) auto var(--home-indicator-h);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "status" "pane" "nav" "home";
+  background: var(--ios-grouped-bg);
+  overflow: hidden;
+}
+.app[data-chrome="off"] { grid-template-rows: env(safe-area-inset-top, 0px) minmax(0, 1fr) auto env(safe-area-inset-bottom, 0px); }
+.app[data-chrome="off"] .status-bar, .app[data-chrome="off"] .home-indicator button { visibility: hidden; }
+
+.status-bar {
+  grid-area: status;
+  position: relative;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 28px 0 36px;
+  font: 600 16px/1 var(--font);
+  color: var(--ios-label);
+  background: var(--ios-grouped-bg);
+}
+.status-bar .island { position: absolute; left: 50%; top: 11px; width: 124px; height: 36px; margin-left: -62px; border-radius: 20px; background: #000; }
+.status-bar .status-icons { display: flex; gap: 6px; align-items: center; }
+.status-bar svg { height: 12px; width: auto; fill: currentColor; }
+
+.home-indicator { grid-area: home; position: relative; z-index: 40; }
+.app:not([data-focused="true"]) .home-indicator { background: var(--ios-bar-bg); }
+.home-indicator button { width: 100%; height: 100%; padding: 0; border: 0; background: none; display: grid; place-items: end center; }
+.home-indicator span { width: 134px; height: 5px; margin-bottom: 8px; border-radius: 3px; background: var(--ios-label); }
+
+.pane { grid-area: pane; position: relative; display: flex; flex-direction: column; min-height: 0; }
+
+main#screen {
+  flex: 1; min-height: 0;
+  overflow-y: auto; overflow-x: hidden;
+  outline: none;
+  padding-bottom: var(--space-6);
+}
+main#screen.enter { animation: push-in var(--motion-medium) var(--ease-standard); }
+.app[data-focused="true"] main#screen.enter { animation: modal-in var(--motion-medium) var(--ease-standard); }
+@keyframes push-in { from { transform: translateX(30%); opacity: .6; } to { transform: none; opacity: 1; } }
+@keyframes modal-in { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Edge swipe back: a thin strip on the left edge of pushed screens. */
+.edge-swipe { position: absolute; left: 0; top: 0; bottom: 0; width: 16px; z-index: 4; touch-action: none; }
+.app[data-top="true"] .edge-swipe, .app[data-focused="true"] .edge-swipe { display: none; }
+
+#fab { display: none !important; }   /* iOS: the primary action lives in the navigation bar */
+
+/* ---------- Navigation bar ---------- */
+
+.nav-bar {
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr) minmax(0, auto) minmax(max-content, 1fr);
+  grid-template-rows: minmax(var(--nav-bar-h), auto) auto;
+  grid-template-areas: "lead title trail" "large large large";
+  align-items: center;
+  column-gap: var(--space-2);
+  padding: 0 var(--space-2);
+  background: var(--ios-grouped-bg);
+  position: relative; z-index: 3;
+  transition: background var(--motion-short);
+}
+.nav-bar.scrolled { background: var(--ios-bar-bg); backdrop-filter: saturate(180%) blur(20px); box-shadow: 0 0.5px 0 var(--ios-separator); }
+.bar-leading { grid-area: lead; justify-self: start; display: flex; min-width: 0; }
+.nav-bar h1 {
+  grid-area: title; margin: 0; min-width: 0;
+  font: 600 17px/22px var(--font); text-align: center;   /* bar titles and buttons don't grow with Dynamic Type */
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.nav-bar.large h1 {
+  grid-area: large;
+  font: var(--ios-large-title); text-align: left;
+  white-space: normal; overflow-wrap: anywhere;
+  padding: var(--space-1) var(--space-2) var(--space-2);
+}
+.nav-bar.large.scrolled h1 { grid-area: title; font: 600 17px/22px var(--font); text-align: center; white-space: nowrap; padding: 0; }
+.top-actions { grid-area: trail; justify-self: end; display: flex; }
+
+.back-button {
+  display: inline-flex; align-items: center; gap: 2px;
+  min-height: var(--touch-min); min-width: var(--touch-min); max-width: 100%;
+  padding: 0 var(--space-2) 0 0;
+  border: 0; background: none; color: var(--ios-tint); font: 400 17px/22px var(--font);
+}
+.back-button svg { width: 24px; height: 24px; fill: currentColor; flex: none; margin-left: -2px; }
+.back-button .back-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.back-button.cancel { padding-left: var(--space-2); }
+.back-button.cancel svg { display: none; }
+.back-button:active, .icon-button:active { opacity: .4; }
+
+.icon-button {
+  width: var(--touch-min); height: var(--touch-min);
+  border: 0; border-radius: var(--shape-full);
+  background: none; color: var(--ios-tint);
+  display: inline-grid; place-items: center; flex: none;
+}
+.icon-button svg { width: 24px; height: 24px; fill: currentColor; }
+
+/* ---------- Banner (inline status under the navigation bar) ---------- */
+
+.banner {
+  display: flex; align-items: center; gap: var(--space-3);
+  margin: var(--space-2) var(--space-4) 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--shape-md);
+  background: var(--ios-tint-fill); color: var(--ios-on-tint-fill);
+  font: var(--ios-subheadline);
+}
+.banner.error { background: var(--ios-red-fill); color: var(--ios-on-red-fill); }
+.banner svg { width: 20px; height: 20px; fill: currentColor; flex: none; }
+
+/* ---------- Tab bar (iPhone) and sidebar (iPad, regular width) ---------- */
+
+.nav {
+  grid-area: nav;
+  display: flex; justify-content: space-around;
+  height: var(--tab-bar-h);
+  background: var(--ios-bar-bg);
+  backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 -0.5px 0 var(--ios-separator);
+}
+.app[data-focused="true"] .nav { display: none; }       /* modal tasks cover the tab bar */
+.tab-item {
+  flex: 1; min-width: var(--touch-min);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  border: 0; background: none; color: var(--ios-tab-inactive);
+  font: 500 10px/12px var(--font);                      /* tab labels don't grow with Dynamic Type */
+}
+.tab-item svg { width: 26px; height: 26px; fill: currentColor; }
+.tab-item[aria-current="page"] { color: var(--ios-tint); }
+
+@media (min-width: 700px) {
+  :root { --status-bar-h: 24px; --home-indicator-h: 20px; }   /* iPad: no Dynamic Island */
+  .status-bar { padding: 0 20px; font-size: 13px; }
+  .status-bar .island { display: none; }
+  .home-indicator span { width: 200px; margin-bottom: 6px; }
+  .app {
+    grid-template-rows: var(--status-bar-h) minmax(0, 1fr) var(--home-indicator-h);
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+    grid-template-areas: "status status" "nav pane" "home home";
+  }
+  .app[data-chrome="off"] { grid-template-rows: env(safe-area-inset-top, 0px) minmax(0, 1fr) env(safe-area-inset-bottom, 0px); }
+  .app[data-focused="true"] { grid-template-columns: 0 minmax(0, 1fr); }
+  .app:not([data-focused="true"]) .home-indicator { background: none; }
+  .nav {
+    flex-direction: column; justify-content: flex-start; gap: 2px;
+    height: auto; padding: var(--space-2);
+    background: var(--ios-bg-secondary); backdrop-filter: none;
+    box-shadow: 0.5px 0 0 var(--ios-separator);
+  }
+  .tab-item {
+    flex: none; flex-direction: row; justify-content: flex-start; gap: var(--space-3);
+    min-height: var(--touch-min); padding: 0 var(--space-3);
+    border-radius: 10px; color: var(--ios-label); font: var(--ios-body);
+  }
+  .tab-item svg { width: 22px; height: 22px; fill: var(--ios-tint); }
+  .tab-item[aria-current="page"] { background: var(--ios-tint); color: var(--ios-on-tint); }
+  .tab-item[aria-current="page"] svg { fill: currentColor; }
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: var(--touch-min); min-width: var(--touch-min);
+  padding: 0 var(--space-5);
+  border: 0; border-radius: var(--shape-button);
+  font: var(--ios-headline); text-decoration: none;
+}
+.btn svg { width: 20px; height: 20px; fill: currentColor; }
+.btn.filled { background: var(--ios-tint); color: var(--ios-on-tint); }
+.btn.tonal { background: var(--ios-tint-fill); color: var(--ios-on-tint-fill); }
+.btn.outlined { background: var(--ios-fill-tertiary); color: var(--ios-tint); }
+.btn.text { background: none; color: var(--ios-tint); font: var(--ios-body); padding: 0 var(--space-3); }
+.btn.text.destructive { color: var(--ios-red); }
+.btn.danger { background: var(--ios-red); color: var(--ios-on-red); }
+.btn.block { width: 100%; }
+.btn:disabled { background: var(--ios-fill-tertiary); color: var(--ios-label-tertiary); cursor: default; }
+.btn:not(:disabled):active { opacity: .6; }
+
+.bottom-actions {
+  position: sticky; bottom: 0;
+  display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: flex-end;   /* buttons stack at large text */
+  padding: var(--space-4);
+  background: linear-gradient(transparent, var(--ios-grouped-bg) 24%);
+}
+
+/* ---------- Lists (inset grouped) ---------- */
+
+.list {
+  list-style: none;
+  margin: var(--space-2) var(--space-4) var(--space-4); padding: 0;
+  background: var(--ios-grouped-bg-secondary);
+  border-radius: var(--shape-md);
+  overflow: hidden;
+}
+.list > li { position: relative; }
+.list > li + li::before { content: ""; position: absolute; top: 0; right: 0; left: var(--space-4); border-top: 0.5px solid var(--ios-separator); z-index: 1; }
+.list > li + li:has(.leading)::before { left: 60px; }
+.list-item {
+  display: flex; align-items: center; gap: var(--space-3);
+  width: 100%; min-height: var(--touch-min);
+  padding: 11px var(--space-4);
+  border: 0; background: none; text-align: left; color: inherit; text-decoration: none;
+  font: var(--ios-body);
+}
+.list-item.two-line, .list-item.three-line { padding-block: 10px; }
+.list-item.three-line { align-items: flex-start; }
+button.list-item:active, a.list-item:active { background: var(--ios-fill-tertiary); }
+.list-item .leading {
+  width: 32px; height: 32px; border-radius: var(--shape-sm); flex: none;
+  display: grid; place-items: center;
+  background: var(--ios-tint); color: var(--ios-on-tint);
+  font: 600 15px/1 var(--font);           /* row icons keep their size at large text */
+}
+.list-item .leading svg { width: 20px; height: 20px; fill: currentColor; }
+.list-item .text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow-wrap: anywhere; }  /* long words wrap at large text sizes */
+.list-item .headline { font: var(--ios-body); color: var(--ios-label); }
+.list-item .supporting { font: var(--ios-subheadline); color: var(--ios-label-secondary); }
+.list-item .trailing { flex: none; display: flex; align-items: center; gap: var(--space-1); font: var(--ios-subheadline); color: var(--ios-label-secondary); }
+.list-item .trailing svg { width: 14px; height: 14px; fill: var(--ios-label-tertiary); }
+/* Accessibility text sizes: rows stack their content vertically instead of squeezing it */
+.list { container-type: inline-size; }
+@container (max-width: 16em) {
+  .list-item { flex-wrap: wrap; align-items: flex-start; }
+  .list-item .text { flex-basis: calc(100% - 44px); }
+  .list-item .trailing { flex-basis: 100%; padding-left: 44px; white-space: normal; }
+}
+.list-header { margin: 0; padding: var(--space-5) var(--space-6) var(--space-1); font: var(--ios-footnote); text-transform: uppercase; color: var(--ios-label-secondary); }
+.divider { height: 0; margin: 0; border: 0; }
+
+/* ---------- Cards ---------- */
+
+.card { border-radius: var(--shape-md); padding: var(--space-4); background: var(--ios-grouped-bg-secondary); }
+.card.filled { background: var(--ios-grouped-bg-secondary); }
+.card.outlined { background: transparent; border: 0.5px solid var(--ios-separator); }
+.card h2, .card h3 { margin: 0 0 var(--space-2); font: var(--ios-headline); }
+
+/* ---------- Text fields ---------- */
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font: var(--ios-footnote); color: var(--ios-label-secondary); padding-left: var(--space-4); }
+.field input, .field select, .field textarea {
+  min-height: var(--touch-min); padding: 11px var(--space-4);
+  border: 0; border-radius: var(--shape-md);
+  background: var(--ios-grouped-bg-secondary); color: var(--ios-label);
+  font: var(--ios-body);
+}
+.field textarea { min-height: 100px; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--ios-tint); outline-offset: 0; }
+.field .helper { font: var(--ios-footnote); color: var(--ios-label-secondary); padding-left: var(--space-4); }
+.field.invalid input, .field.invalid select, .field.invalid textarea { outline: 2px solid var(--ios-red); outline-offset: 0; }
+.field.invalid .helper { color: var(--ios-red); }
+
+/* ---------- Switch, chips, progress ---------- */
+
+.switch-row { display: flex; align-items: center; gap: var(--space-3); min-height: var(--touch-min); padding: 6px var(--space-4); }
+.switch-row .text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.switch { appearance: none; width: 51px; height: 31px; margin: 0; border-radius: 16px; background: var(--ios-fill); position: relative; flex: none; cursor: pointer; transition: background var(--motion-short); }
+.switch::before { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgb(0 0 0 / .15), 0 1px 1px rgb(0 0 0 / .16); transition: transform var(--motion-short) var(--ease-standard); }
+.switch:checked { background: var(--ios-switch-on); }
+.switch:checked::before { transform: translateX(20px); }
+
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.chip { min-height: 32px; padding: 0 var(--space-4); border-radius: var(--shape-full); border: 0; background: var(--ios-fill-tertiary); color: var(--ios-label); font: var(--ios-subheadline); position: relative; }
+.chip::after { content: ""; position: absolute; inset: -6px 0; }
+.chip[aria-pressed="true"] { background: var(--ios-tint); color: var(--ios-on-tint); }
+
+.progress-circular { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--ios-fill); border-top-color: var(--ios-label-secondary); animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.progress-linear { height: 4px; border-radius: 2px; background: var(--ios-fill); overflow: hidden; }
+.progress-linear > span { display: block; height: 100%; background: var(--ios-tint); border-radius: 2px; transition: width var(--motion-medium); }
+.progress-linear.indeterminate > span { width: 40%; animation: slide 1.4s var(--ease-standard) infinite; }
+@keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+
+.skeleton { border-radius: var(--shape-xs); background: var(--ios-fill-secondary); animation: pulse 1s ease-in-out infinite alternate; }
+@keyframes pulse { to { opacity: .45; } }
+
+/* ---------- Toast (ctx.snackbar; not a native iOS component) ---------- */
+
+.snackbar {
+  position: absolute; left: var(--space-4); right: var(--space-4); bottom: var(--space-4); z-index: 5;
+  width: fit-content; max-width: 420px; margin: 0 auto;
+  display: flex; align-items: center; gap: var(--space-2);
+  min-height: var(--touch-min); padding: 2px 2px 2px var(--space-4);
+  border-radius: 22px;
+  background: var(--ios-toast-bg); color: var(--ios-toast-fg);
+  font: var(--ios-subheadline);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 24px rgb(0 0 0 / .18);
+  animation: rise var(--motion-medium) var(--ease-standard);
+}
+.snackbar { flex-wrap: wrap; }                          /* the action moves under the text at large sizes */
+.snackbar .msg { flex: 1; min-width: 0; overflow-wrap: anywhere; padding: 10px 0; }
+.snackbar:not(:has(.toast-action)) { padding-right: var(--space-4); }
+.toast-action { min-height: var(--touch-min); min-width: var(--touch-min); padding: 0 var(--space-4); border: 0; border-radius: 20px; background: none; color: var(--ios-toast-action); font: var(--ios-headline); }
+
+/* ---------- Alerts, action sheets and sheets ---------- */
+
+dialog { border: 0; padding: 0; color: var(--ios-label); }
+.scrim { position: absolute; inset: 0; z-index: 30; background: var(--ios-scrim); animation: fade var(--motion-short); }
+@keyframes fade { from { opacity: 0; } }
+@keyframes rise { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+dialog.alert {
+  position: absolute; inset: 0; z-index: 31; margin: auto;
+  height: fit-content; max-height: calc(100% - 96px); overflow-y: auto;
+  width: clamp(270px, 17rem, calc(100% - 32px)); max-width: none;
+  border-radius: var(--shape-alert);
+  background: var(--ios-alert-bg); backdrop-filter: blur(30px);
+  text-align: center;
+  animation: alert-in var(--motion-short) var(--ease-standard);
+}
+@keyframes alert-in { from { transform: scale(1.08); opacity: 0; } }
+.alert .alert-text { padding: 19px var(--space-4) 15px; }
+.alert h2 { margin: 0; font: var(--ios-headline); }
+.alert .alert-body { margin-top: 2px; font: var(--ios-footnote); }
+.alert .alert-actions { display: flex; border-top: 0.5px solid var(--ios-separator); }
+.alert .alert-actions button { flex: 1 1 0; min-height: var(--touch-min); padding: var(--space-2); border: 0; background: none; color: var(--ios-tint); font: var(--ios-body); }
+.alert .alert-actions button + button { border-left: 0.5px solid var(--ios-separator); }
+.alert .alert-actions .preferred { font-weight: 600; }
+.alert .alert-actions .destructive { color: var(--ios-red); }
+.alert.stacked .alert-actions { flex-direction: column-reverse; border-top: 0; }
+.alert.stacked .alert-actions button { border-left: 0; border-top: 0.5px solid var(--ios-separator); }
+/* OS-owned permission alert: iOS draws it like any alert, so label it for reviewers */
+.alert.system::after { content: "System alert (simulated)"; display: block; padding: 6px; border-top: 0.5px solid var(--ios-separator); font: var(--ios-caption1); color: var(--ios-label-secondary); }
+
+dialog.action-sheet {
+  position: absolute; left: var(--space-2); right: var(--space-2); top: auto; bottom: var(--home-indicator-h); z-index: 31;
+  width: auto; max-width: 420px; max-height: 80%; margin: 0 auto; overflow-y: auto;
+  background: none;
+  animation: rise var(--motion-medium) var(--ease-standard);
+}
+dialog.action-sheet[open] { display: flex; flex-direction: column; gap: var(--space-2); }
+.action-group { display: flex; flex-direction: column; border-radius: var(--shape-alert); background: var(--ios-alert-bg); backdrop-filter: blur(30px); overflow: hidden; }
+.action-group h2 { margin: 0; padding: 14px var(--space-4); font: var(--ios-footnote); font-weight: 600; color: var(--ios-label-secondary); text-align: center; }
+.action-group button { min-height: 56px; padding: var(--space-2) var(--space-4); border: 0; border-top: 0.5px solid var(--ios-separator); background: none; color: var(--ios-tint); font: var(--ios-title3); }
+.action-group > :first-child { border-top: 0; }
+.action-group button small { display: block; font: var(--ios-footnote); color: var(--ios-label-secondary); }
+.action-group .cancel { font-weight: 600; }
+
+dialog.ios-sheet {
+  position: absolute; left: 0; right: 0; top: auto; bottom: 0; z-index: 31;
+  width: 100%; max-width: 700px; min-height: 50%; max-height: calc(100% - var(--status-bar-h) - 10px);
+  margin: 0 auto; overflow-y: auto;
+  border-radius: var(--shape-xl) var(--shape-xl) 0 0;
+  background: var(--ios-grouped-bg);
+  padding: var(--space-2) 0 calc(var(--home-indicator-h) + var(--space-4));
+  animation: rise var(--motion-medium) var(--ease-standard);
+}
+.ios-sheet .grabber { width: 36px; height: 5px; border-radius: 3px; background: var(--ios-label-tertiary); margin: 0 auto var(--space-3); }
+.ios-sheet h2 { margin: 0; padding: var(--space-2) var(--space-4); font: var(--ios-headline); text-align: center; }
+.ios-sheet .sheet-body { padding: 0 var(--space-4); }
+
+@media (min-width: 700px) {
+  dialog.ios-sheet { top: 0; bottom: 0; height: fit-content; min-height: 0; width: min(540px, calc(100% - 64px)); border-radius: var(--shape-xl); padding-bottom: var(--space-5); }
+}
+
+/* ---------- Home screen (shown on Home; iOS apps don't exit on back) ---------- */
+
+.launcher { position: absolute; inset: 0; z-index: 10; display: grid; place-items: center; background: var(--ios-wallpaper); }
+.launcher button { display: flex; flex-direction: column; align-items: center; gap: 6px; border: 0; background: none; color: #fff; font: 500 12px/1.2 var(--font); text-shadow: 0 1px 2px rgb(0 0 0 / .4); }
+.launcher .app-icon { width: 64px; height: 64px; border-radius: 15px; background: var(--ios-tint); color: var(--ios-on-tint); display: grid; place-items: center; font: 600 28px/1 var(--font); box-shadow: 0 4px 12px rgb(0 0 0 / .25); text-shadow: none; }

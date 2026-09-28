@@ -3,6 +3,9 @@
 The prototype runs in a browser but must behave like an Android app. These conventions follow
 Material 3 and Android's adaptive-layout guidance. CSS pixels are used as a proxy for dp.
 
+For iOS see `../ios/conventions.md`. When both platforms are in scope the flow, screens and states
+are shared; these rules decide how the Android version looks and behaves.
+
 ## Window size classes
 
 | Class | Width | Test viewport | Navigation | Layout |
@@ -13,7 +16,7 @@ Material 3 and Android's adaptive-layout guidance. CSS pixels are used as a prox
 
 Compact is the primary design target. Medium and expanded must not break (no stretched
 600 px-wide buttons, no lonely narrow column in a sea of white) even when tablets are out of
-scope. The template's `shell.css` switches bottom navigation to a rail at 600 px.
+scope. The template's `platform/android.css` switches bottom navigation to a rail at 600 px.
 
 ## Structure of a screen
 
@@ -23,7 +26,8 @@ scope. The template's `shell.css` switches bottom navigation to a rail at 600 px
 - **Primary action**: a filled button at the bottom of task screens, or a FAB on list screens when
   the main action is "create". Only one primary action per screen.
 - **Bottom navigation / rail**: top-level destinations only, visible on top-level screens; hidden
-  inside focused tasks (pairing, checkout, editing).
+  inside focused tasks (pairing, checkout, editing). Labels are one short word or two; in the
+  bar they stay on one line and truncate at large font sizes.
 
 ## Back and up
 
@@ -75,10 +79,11 @@ Model these as mock scenarios (`permission-denied`, `permission-blocked`) so eac
 ## Touch, motion and accessibility
 
 - Minimum touch target 48 × 48 px, even when the visible element is smaller (the template's
-  `.touch` helper pads it). At least 8 px between targets.
+  buttons and chips extend their hit area with an `::after` box; the audit counts it). At least
+  8 px between targets.
 - No hover-only information, no right-click, no double-click, no keyboard-only paths.
-- Text contrast at least 4.5:1 (3:1 for large text and icons). Use `tokens.css` roles; don't
-  invent greys.
+- Text contrast at least 4.5:1 (3:1 for large text and icons). Use the roles in
+  `tokens/android.css` (or the neutral `--color-*` tokens in screen code); don't invent greys.
 - Every control has an accessible name (visible text or `aria-label`). Icons that do something
   are buttons.
 - Content must survive 200 % text size: no fixed heights on text containers, no truncating
@@ -93,5 +98,7 @@ tappable content under the system bars.
 
 ## Dark theme
 
-Material 3 dark theme uses the dark roles in `tokens.css`, not inverted colours. Check both
-themes when V3 is in scope (default: yes). Images and illustrations need to work on dark surfaces.
+Material 3 dark theme uses the dark roles in `tokens/android.css` (and a brand theme's
+`tokens/android.theme.css`), not inverted colours. Check both themes when V3 is in scope
+(default: yes). Images and illustrations need to work on dark surfaces. The look itself — brand
+scheme, type, shape — is covered by `visual-language.md` in this folder (Phase 9).

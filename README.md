@@ -47,6 +47,12 @@ Spec · Architecture · Design · API docs
   10 HANDOFF.md → stop (no Compose or SwiftUI code)
 ```
 
+The skill pauses at each gate and does nothing ahead of your approval. Every pause ends with a
+short reading guide: which files were created, which ones you need to read now and in what
+order, and which are only for reference or for the agent. The same guide is kept in
+`prototype/README.md`, so it's the one file to open first. At gate A, for example, you only need
+the proposals table in the chat; the notes behind it are optional.
+
 ## Optional design phase
 
 The prototype is deliberately plain: the platform's own look (Material 3 on Android, system
@@ -205,13 +211,14 @@ Everything the skill produces lives in `prototype/`:
 
 ```
 prototype/
+├── README.md                                 start here: where things stand and what to read
 ├── index.html, screens.js, mock-data.js, …   the prototype (plain HTML/CSS/JS, no build step)
 ├── scenarios/*.md                            Given / When / Then per journey
 ├── screenshots/<platform>/<window>/<theme>/  Playwright MCP captures
 ├── storyboard.html                           every screen × state in one grid
 ├── style-tile.html, tokens/*.theme.css       the design direction (only after a design pass)
 ├── HANDOFF.md                                for the native implementation
-└── notes/                                    STATE, INPUTS, CLARIFICATIONS, DECISIONS, VERIFICATION
+└── notes/                                    STATE, INPUTS, CLARIFICATIONS, DECISIONS, FLOW, VERIFICATION
 ```
 
 Open it yourself with `node skills/mobile-prototype/scripts/serve.mjs --dir prototype` (the path
@@ -235,14 +242,15 @@ skills/mobile-prototype/
 ├── scripts/           check-playwright-mcp, discover-inputs, scaffold, serve, storyboard, theme,
 │                      design-provider
 └── assets/            prototype template (shared core + Android and iOS shells), style tile,
-                       notes/scenario/design/handoff templates
+                       reading guide, notes, flow, scenario, design and handoff templates
 evals/                 evals.json + a fixture project with a spec, architecture, ADR and design notes
 ```
 
 ## Evals
 
-`evals/evals.json` describes fifteen cases: input discovery (with the platform suggestion),
-proposals for approval, surfacing a document conflict, a missing spec, a missing Playwright MCP,
+`evals/evals.json` describes seventeen cases: input discovery (with the platform suggestion),
+proposals for approval, stopping at gate A with a reading guide, writing the flow and scenarios
+at gate C, surfacing a document conflict, a missing spec, a missing Playwright MCP,
 verification, handoff, an iOS target on an Android-specific architecture, verifying both
 platforms, a two-platform handoff, the design phase being offered but not forced, falling back
 to the built-in provider without Python, a brand colour that fails contrast, installing and using

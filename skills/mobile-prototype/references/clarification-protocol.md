@@ -57,6 +57,10 @@ Defaults I'll use unless you object: Material 3 neutral palette (V1), portrait o
 draft copy marked as draft (C1).
 ```
 
+Close the message with the reading guide (SKILL.md, *Stops and the reading guide*): the table is
+the thing to review; `CLARIFICATIONS.md` is optional detail and `INPUTS.md` is only for checking a
+citation. Don't draft the flow or the scenarios in the same turn.
+
 Then wait. Treat silence or "looks good" as approval of the whole table only if the user clearly
 means it; if they correct IDs, update just those.
 

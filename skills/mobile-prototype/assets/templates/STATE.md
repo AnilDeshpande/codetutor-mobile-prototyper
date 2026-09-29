@@ -6,8 +6,9 @@ Started: {{DATE}}
 |---|---|
 | Phase | 1 — Discover inputs |
 | Gates passed | none |
+| Waiting on user | — (the stop the agent is paused at, and what it needs) |
 | Playwright MCP | unknown (check in Phase 0) |
-| Platforms | {{PLATFORMS}} (the first opens by default; confirm in Phase 2) |
+| Platforms | {{PLATFORMS}} |
 | Scope | (feature / journeys being prototyped) |
 | Windows | phone first (compact / iphone); tablet sizes checked for breakage |
 | Themes | light, dark |

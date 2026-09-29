@@ -183,6 +183,30 @@
       ]
     },
     {
+      "id": 16,
+      "name": "stops-at-gate-a-with-reading-guide",
+      "prompt": "Prototype the meter pairing onboarding. The docs in docs/ and design/ are authoritative; nothing else to add.",
+      "expectations": [
+        "Creates the notes with scaffold.mjs --notes-only: prototype/README.md plus notes/STATE.md, INPUTS.md, CLARIFICATIONS.md and DECISIONS.md, and no other note files",
+        "Presents the A/B proposals table and ends the turn there: no notes/FLOW.md, no scenarios/*.md, no state inventory and no notes/VERIFICATION.md, not even as drafts",
+        "Ends the message with a short reading guide: how many files were created, what to review now in order (the table first, CLARIFICATIONS.md as optional detail), what is reference only (INPUTS.md, DECISIONS.md) and what is agent notes (STATE.md)",
+        "prototype/README.md names the current stop (gate A), what the user is asked to do, and marks each file as you / reference / agent",
+        "STATE.md records the stop under Waiting on user"
+      ]
+    },
+    {
+      "id": 17,
+      "name": "gate-c-writes-flow-and-scenarios",
+      "setup": "Gates A and B have passed for the Android meter pairing prototype (decisions in prototype/notes/DECISIONS.md, including the 60 s lock conflict resolved as a confirm dialog).",
+      "prompt": "Carry on.",
+      "expectations": [
+        "Copies the FLOW.md template to prototype/notes/FLOW.md and fills in the navigation map, screen list, state inventory with mock scenarios, back behaviour and what is out of scope",
+        "Writes one scenarios/<journey>.md per journey from the SCENARIO.md template, including the pairing cancellation and permission-denied paths",
+        "Shows the flow in chat as a short text diagram plus the screen list and stops for confirmation without scaffolding or writing HTML",
+        "The reading guide puts the diagram in chat first, then notes/FLOW.md, then the scenarios with the primary journey first; README.md is updated for gate C with the new files added to All files"
+      ]
+    },
+    {
       "id": 8,
       "name": "should-not-trigger",
       "prompt": "Fix the NullPointerException in DeviceRepository.kt when the meter disconnects.",

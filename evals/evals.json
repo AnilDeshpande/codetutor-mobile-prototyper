@@ -73,7 +73,7 @@
         "Writes prototype/flow.json: one journey, one frame per screen state (including the empty Devices state, the Bluetooth rationale, the system permission prompt, permission denied, scanning, no meter found, pairing, the stop-pairing dialog and the paired state), and a labelled flow for every transition",
         "Branches (the permission-denied state, the stop-pairing dialog) use \"below\" to hang under the screen they interrupt; flows start from a control key",
         "Generates prototype/flow.drawio with sketch.mjs; does not hand-write draw.io XML or place shapes itself",
-        "Runs sketch.mjs --check and it passes (no overlapping arrows); looks at any warnings before showing the sketch",
+        "Runs sketch.mjs --check and it passes (no arrow overlaps or crosses another or runs over a screen, every label in the clear); looks at any warnings before showing the sketch",
         "Opens or points to the diagram (sketch.mjs --open, or the file path), gives a short text outline with S-numbers, lists decisions made on the user's behalf and assumptions, and stops for the user to lock the flow",
         "Does not create HTML, a look/ folder, scenarios or a verification log, and does not start the design phase"
       ]

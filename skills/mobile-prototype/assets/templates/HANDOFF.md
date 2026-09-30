@@ -69,7 +69,7 @@ AccentColor <#light> / <#dark> · other colours: system semantic colours · mate
 ## 11. What was checked
 | Check | Result |
 |---|---|
-| `sketch.mjs --check` (spec valid, every screen reachable, no overlapping arrows) | |
+| `sketch.mjs --check` (spec valid, every screen reachable; no arrow overlaps or crosses another or runs over a screen; labels in the clear) | |
 | Flow locked by the user (gate C) | |
 | Theme contrast (`THEME-REPORT.md`), if the design phase ran | |
 | `look/screens.html` checks, as reported by the user, if the design phase ran | |

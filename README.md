@@ -67,7 +67,7 @@ node skills/mobile-prototype/scripts/sketch.mjs --style wireflow --open
 ```
 
 The script does the numbering, the layout and the arrow routes, so two runs of the same flow
-give the same picture, and it fails rather than draw two arrows on top of each other. The same
+give the same picture, and it fails rather than draw arrows that overlap, cross or run over a screen, or a label that sits on something else. The same
 `flow.json` later feeds the design phase, so the final-look screens always match the locked flow.
 
 ## Optional design phase

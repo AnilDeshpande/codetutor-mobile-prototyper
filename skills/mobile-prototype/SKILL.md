@@ -30,9 +30,11 @@ Paths in this file are relative to this skill's directory (`scripts/…`, `refer
    real components, no pixel decisions before the flow is locked.
 5. **Numbered and untangled.** Every screen frame carries a serial number (S1, S2, … in flow
    order), and people refer to screens by it everywhere: chat, notes, the final-look screens, the
-   handoff. No two arrows share a line, no arrow runs over a screen, and no two screens sit on
-   top of each other. `sketch.mjs` enforces all of this and refuses to draw otherwise; never show
-   a sketch that didn't pass `--check`, and fix a failure in `flow.json`, not in the diagram.
+   handoff. No two arrows share a line or cross each other, no arrow runs over a screen, no two
+   screens sit on top of each other, and every arrow label sits clear of screens, arrows and
+   other labels. `sketch.mjs` finds such a drawing or refuses to draw; never show a sketch that
+   didn't pass `--check`, and fix a failure in `flow.json` (see "When the check fails" in
+   `references/sketch-spec.md`), not in the diagram.
 6. **Stop at every gate, and say what to read.** At each stop, end your turn: don't start the
    next phase ahead of the approval. Update `prototype/README.md` and close the message with the
    reading guide (see *Stops and the reading guide*).
@@ -211,7 +213,8 @@ items), go straight on to Phase 4.
    `node scripts/sketch.mjs --style <wireflow|click-through|both>` writes `prototype/flow.drawio`.
    Screens are numbered S1, S2, … in flow order, and every arrow gets its own route.
 3. **Check it** before showing it: `node scripts/sketch.mjs --check` must pass (it validates the
-   spec, and that no two arrows overlap and nothing is drawn over a screen), then go through `references/sketch-review.md`. Fix
+   spec and that arrows, screens and labels stay out of each other's way), then go through
+   `references/sketch-review.md`. Fix
    `flow.json` and generate again; don't show a sketch with warnings you haven't looked at.
 4. **Show it**: `node scripts/sketch.mjs --style <style> --open` opens it in draw.io Desktop if
    installed, otherwise in the browser viewer. Give the user the file path too (it opens in the

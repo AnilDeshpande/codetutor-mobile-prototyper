@@ -103,20 +103,40 @@ Keep texts short: a frame is 230 px wide. Give a control a `key` when a flow sta
 |---|---|
 | `from`, `to` | frame ids in the same journey. A flow can't go to its own frame: show the result as another state |
 | `key` | the control on `from` that triggers it. The arrow starts at that control; without it, at the frame's edge |
-| `label` | what the user does or what happens: "tap Save", "Save with an empty name", "Back with changes", "after 30 s". Use `\n` to break a long label |
+| `label` | what the user does or what happens: "tap Save", "Save with an empty name", "Back with changes", "after 30 s". Keep it to a few words; the script wraps it and finds a clear place for it |
 
 Every frame except the first needs at least one flow leading to it.
 
 ## What the script guarantees
 
 - numbering in flow order, on every frame title, map box and page tab;
-- one route per arrow: straight to the next frame, straight up or down to a branch, and
-  otherwise along a free lane between the rows. `--check` fails if two arrows would overlap;
-- nothing drawn over a screen: `--check` fails if an arrow would run through a frame or into the
-  page title, or if two frames would land on the same place. When it fails, move a screen
-  (`below`, or the order) or split the journey into two;
+- a clean drawing, or none. Each arrow goes straight to the next frame or straight up or down to
+  a branch where it can; otherwise the script tries the routes it knows (around the side, along
+  a lane between the rows, the long way round the page) and keeps one that lies on no other
+  arrow, crosses none and runs over no screen. Each label is wrapped and moved along its arrow
+  until it is clear of screens, arrows and other labels. If no such drawing exists for the
+  layout you gave, `--check` fails, names the arrows or the label, and nothing is written;
 - it never overwrites a diagram that was edited by hand without `--force` (and then keeps a
   `.bak`).
+
+## When the check fails
+
+The layout comes from the spec, so that is where to fix it. Try these in order and run `--check`
+after each:
+
+1. **Two arrows cross.** Look at which screens they join. Usually one screen is in the wrong
+   place: move a branch under the screen it really interrupts (`below`), or change the order of
+   the main path so that screens joined by an arrow sit next to each other.
+2. **Many arrows return to one screen** (every branch ends with "back to the start"). Draw the
+   return once: let the branches lead to one closing frame, and that frame back to the start.
+3. **The journey does too much.** Split it into two journeys; each gets its own page. A screen
+   that both need appears as a frame in each (a different `state`, for example `content` and
+   `content-after-pairing`).
+4. **No clear place for a label.** Shorten it to what the user does ("tap Save", not "the user
+   taps the Save button at the bottom"). The script wraps labels by itself; `\n` isn't needed.
+
+Don't work around a failure by removing a flow the decisions call for, and don't edit the diagram
+by hand to hide it.
 
 ```
 node scripts/sketch.mjs --check                       validate the spec and the routes

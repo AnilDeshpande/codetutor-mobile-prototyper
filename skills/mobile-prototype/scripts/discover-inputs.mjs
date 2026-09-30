@@ -24,7 +24,7 @@ for (let i = 0; i < args.length; i++) {
 }
 
 const SKIP_DIRS = new Set(['node_modules', '.git', '.hg', '.svn', 'build', 'dist', 'out', 'target', '.gradle', '.idea', '.vscode',
-  '.next', '.nuxt', 'coverage', 'vendor', 'Pods', '.venv', 'venv', '__pycache__', 'prototype', 'graphify-out', '.claude', '.codex', '.agents', '.cursor', 'res', 'mipmap', 'drawable', 'fonts', 'icons']);
+  '.next', '.nuxt', 'coverage', 'vendor', 'Pods', '.venv', 'venv', '__pycache__', 'prototype', 'prototypes', 'graphify-out', '.claude', '.codex', '.agents', '.cursor', 'res', 'mipmap', 'drawable', 'fonts', 'icons']);
 const TEXT_EXT = new Set(['.md', '.mdx', '.markdown', '.txt', '.rst', '.adoc']);
 const DOC_EXT = new Set(['.pdf', '.docx', '.doc', '.pptx', '.odt', '.rtf']);
 const API_EXT = new Set(['.yaml', '.yml', '.json', '.graphql', '.gql', '.proto']);

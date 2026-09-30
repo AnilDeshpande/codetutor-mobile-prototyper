@@ -5,7 +5,7 @@ after the flow is locked (gate C). It is optional, runs only when the user choos
 blocks the handoff: if it's skipped or stopped, the handoff goes ahead with the sketch alone,
 marked "visual design not done".
 
-Its input is the locked `prototype/flow.json`. Its output is a design system (or a lighter visual
+Its input is the locked `docs/prototypes/flow.json`. Its output is a design system (or a lighter visual
 direction) plus **final-look screens**: every screen state of the flow, rendered in the
 platform's own look — Material 3 on Android, the system look on iOS — with the chosen theme.
 The screens are pictures of the look. They are not a working app, and the flow is not reopened.
@@ -33,7 +33,7 @@ requested` in `STATE.md`) and make this offer at gate C; don't start earlier.
 
 | Level | Files | For |
 |---|---|---|
-| **Visual direction** | `prototype/notes/DESIGN.md`, `prototype/look/` | a convincing look for reviews; disposable with the prototype |
+| **Visual direction** | `docs/prototypes/notes/DESIGN.md`, `docs/prototypes/look/` | a convincing look for reviews; disposable with the prototype |
 | **Design system** | `design-system/<app>/DESIGN.md` (master), `design-system/<app>/screens/<screen>.md` (overrides), `material-theme.json`, `ios-theme.json`, `THEME-REPORT.md` | a look the native build will implement; kept in the project, linked from the handoff |
 
 Provider — whoever fills the `DESIGN.md` contract:
@@ -54,11 +54,11 @@ Whichever provider fills the contract, everything after it is the same.
 ## 5.2 Render the screens
 
 ```
-node scripts/screens.mjs --spec prototype/flow.json --out prototype
+node scripts/screens.mjs --spec docs/prototypes/flow.json
 ```
 
 It reads the platforms from the spec (or `--platform android|ios|both`) and writes
-`prototype/look/`: `screens.html` (every screen state in flow order, with the same S-numbers as
+`docs/prototypes/look/`: `screens.html` (every screen state in flow order, with the same S-numbers as
 the sketch, per platform, light and dark, at three text sizes) and the files behind it. At this
 point the screens use the platform baseline look. Everything in `look/` is generated: never edit
 it, and run `screens.mjs` again if `flow.json` changes.
@@ -93,13 +93,13 @@ to a native build as a design decision.
 
 ## 5.4 Two directions
 
-Write two filled contracts (`assets/templates/DESIGN.md`): `prototype/notes/design/option-a.md`
+Write two filled contracts (`assets/templates/DESIGN.md`): `docs/prototypes/notes/design/option-a.md`
 (recommended) and `option-b.md` (a real alternative, see the provider reference). Then generate
 their tokens without touching the screens:
 
 ```
-node scripts/theme.mjs --design prototype/notes/design/option-a.md --option a --out prototype
-node scripts/theme.mjs --design prototype/notes/design/option-b.md --option b --out prototype
+node scripts/theme.mjs --design docs/prototypes/notes/design/option-a.md --option a
+node scripts/theme.mjs --design docs/prototypes/notes/design/option-b.md --option b
 ```
 
 `theme.mjs` checks every text/background pair on every platform in scope, in light and dark. If
@@ -109,7 +109,7 @@ output says so: run it again online before the handoff.
 
 ## 5.5 Style tiles → gate D1
 
-`theme.mjs` writes `prototype/look/style-tile.html`: the platform shell showing the palette with
+`theme.mjs` writes `docs/prototypes/look/style-tile.html`: the platform shell showing the palette with
 contrast ratios, the type scale, and every component (buttons, list, fields, switch, chips,
 banner, error state, dialog, sheet, snackbar/toast). Give the user the links for both options on
 each platform in scope, with one line each on what the direction is for:
@@ -126,18 +126,18 @@ option's file, regenerate, show again. Gate D1 passes on an explicit pick.
 
 ## 5.6 Apply
 
-- **Visual direction**: copy the chosen option to `prototype/notes/DESIGN.md` (status
-  `approved`), then `node scripts/theme.mjs --design prototype/notes/DESIGN.md --out prototype`.
+- **Visual direction**: copy the chosen option to `docs/prototypes/notes/DESIGN.md` (status
+  `approved`), then `node scripts/theme.mjs --design docs/prototypes/notes/DESIGN.md`.
   This writes `look/tokens/<platform>.theme.css`, links it in `look/index.html`, and writes
   `notes/THEME-REPORT.md`. `look/screens.html` now shows every screen in the chosen look.
 - **Design system**: copy it to `design-system/<app>/DESIGN.md` instead, then
-  `node scripts/theme.mjs --design design-system/<app>/DESIGN.md --out prototype --export design-system/<app>`.
-  Write `prototype/notes/DESIGN.md` as a one-line pointer to the master. Add
+  `node scripts/theme.mjs --design design-system/<app>/DESIGN.md --export design-system/<app>`.
+  Write `docs/prototypes/notes/DESIGN.md` as a one-line pointer to the master. Add
   `design-system/<app>/screens/<screen>.md` only for screens that differ from the master (for
   example an onboarding screen with a large illustration, or a dashboard where one figure
   dominates): what differs and why, in terms of the master's roles and styles — never new colour
   values. A screen file overrides the master for that screen only.
-- `node scripts/theme.mjs --remove --out prototype` goes back to the platform baseline.
+- `node scripts/theme.mjs --remove` goes back to the platform baseline.
 
 Record the decision in `DECISIONS.md` (for example `D21 — Visual direction A approved: calm,
 restrained teal, platform fonts`).

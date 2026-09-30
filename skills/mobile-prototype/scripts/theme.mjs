@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Turn a design direction (the ```theme block in DESIGN.md) into platform tokens for the final-look
-// screens (prototype/look/, made by screens.mjs), check every text/background pair for contrast,
+// screens (docs/prototypes/look/, made by screens.mjs), check every text/background pair for contrast,
 // and stop without writing anything if one fails.
 //
-//   node theme.mjs --design prototype/notes/DESIGN.md [--out prototype]      apply to the screens
+//   node theme.mjs --design docs/prototypes/notes/DESIGN.md [--out <folder>]      apply to the screens
 //   node theme.mjs --design <file> --option b                                 preview only: look/design/b/, for the style tile
 //   node theme.mjs --brand "#0B6E4F" [--font Inter]                           just the documented brand (V1), defaults for the rest
 //   node theme.mjs --design <file> --export design-system/<app>               also write material-theme.json + ios-theme.json
@@ -20,6 +20,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as C from './lib/color.mjs';
+import { workspace } from './lib/workspace.mjs';
 import { cacheDir, download, untar } from './lib/fetch-archive.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -38,7 +39,7 @@ if (flag('help') || flag('h')) {
   console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 17).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
   process.exit(0);
 }
-const out = path.resolve(opt('out') || 'prototype');
+const out = workspace(opt('out'));
 const asJson = flag('json');
 const option = opt('option');
 const warnings = [];

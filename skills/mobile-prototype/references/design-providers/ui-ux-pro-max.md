@@ -87,7 +87,7 @@ Run the direction query twice with different dials or mood words (for example "c
 variance 2 vs "warm supportive" at variance 5) so the options differ for a reason; map both.
 Keep the raw output for provenance, not as a second source of truth:
 
-- visual direction: `prototype/notes/design/ui-ux-pro-max-<option>.json` (the `--json` output);
+- visual direction: `docs/prototypes/notes/design/ui-ux-pro-max-<option>.json` (the `--json` output);
 - design system: `design-system/<app>/sources/ui-ux-pro-max.md` (the same query with
   `--format markdown` instead of `--json`). Don't use its `--persist`: it writes a `MASTER.md`
   that its own skill treats as the master, which would compete with the approved `DESIGN.md`.

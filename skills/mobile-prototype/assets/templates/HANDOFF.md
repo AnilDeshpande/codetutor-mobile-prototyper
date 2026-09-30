@@ -1,6 +1,6 @@
 # Handoff — {{APP_NAME}}
 
-Flow locked by: <name> on <date> · Platforms: <android / ios> (min OS: <…>) · Sketch: `prototype/flow.drawio` · Final look: <`prototype/look/screens.html` / not done>
+Flow locked by: <name> on <date> · Platforms: <android / ios> (min OS: <…>) · Sketch: `docs/prototypes/flow.drawio` · Final look: <`docs/prototypes/look/screens.html` / not done>
 
 ## 1. Summary
 

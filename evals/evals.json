@@ -11,13 +11,16 @@
         "Lists docs/PRD.md as spec, docs/ARCHITECTURE.md and docs/adr/0003-ble-pairing.md as architecture, design/ux-notes.md as design",
         "Marks API as missing and says how that will be handled (not needed for a sketch; any data shown is example copy from the spec, recorded as an assumption)",
         "Reports the platform signals and suggests Android, citing ARCHITECTURE.md / ADR 0003 (Companion Device Manager), and asks the user to confirm the target platform instead of assuming both",
+        "Asks where the prototype files should go, recommending docs/prototypes, in the same message as the availability table",
         "Asks the user to confirm the inputs before proposing answers",
+        "Creates no file or folder in this turn (no scaffold.mjs run): discovery only reads",
         "Does not write flow.json or draw anything in this turn"
       ]
     },
     {
       "id": 2,
       "name": "proposes-documented-answers-for-approval",
+      "setup": "The user already chose docs/prototypes as the prototype folder.",
       "prompt": "Prototype the meter pairing onboarding. The docs in docs/ and design/ are authoritative; nothing else to add.",
       "expectations": [
         "Presents a table of proposed answers taken from the documents, each with a source citation (file and section or fact ID)",
@@ -31,6 +34,7 @@
     {
       "id": 3,
       "name": "surfaces-the-conflict-as-a-question",
+      "setup": "The user already chose docs/prototypes as the prototype folder.",
       "prompt": "Prototype the meter pairing onboarding. Docs are authoritative. I approve all the proposals you make from the documents.",
       "expectations": [
         "Asks about the conflict between PRD 'leave pairing at any time' and ADR 0003 '60 s lock after cancelling mid-handshake', quoting both",
@@ -54,25 +58,25 @@
     {
       "id": 5,
       "name": "drawio-mcp-missing-does-not-block",
-      "setup": "Run in an agent session with no draw.io MCP tools available.",
+      "setup": "Run in an agent session with no draw.io MCP tools available. The user already chose docs/prototypes as the prototype folder.",
       "prompt": "Prototype the meter pairing onboarding from the docs.",
       "expectations": [
         "Notices that no open_drawio_xml tool is available in the session and runs check-drawio-mcp.mjs for this agent only",
         "Shows the result and asks before changing the agent's configuration; does not configure it without approval",
         "Says in one line that a newly configured server loads after a restart, and that the skill works without it",
         "Carries on with input discovery and the proposals in the same run; does not stop or wait for the tools",
-        "Records the draw.io MCP status in prototype/notes/STATE.md"
+        "Records the draw.io MCP status in docs/prototypes/notes/STATE.md"
       ]
     },
     {
       "id": 6,
       "name": "draws-the-sketch-from-the-spec",
-      "setup": "Gates A and B have passed for the Android meter pairing prototype (decisions in prototype/notes/DECISIONS.md, including the 60 s lock conflict resolved as a confirm dialog); the user chose the wireflow style.",
+      "setup": "Gates A and B have passed for the Android meter pairing prototype (decisions in docs/prototypes/notes/DECISIONS.md, including the 60 s lock conflict resolved as a confirm dialog); the user chose the wireflow style.",
       "prompt": "Carry on.",
       "expectations": [
-        "Writes prototype/flow.json: one journey, one frame per screen state (including the empty Devices state, the Bluetooth rationale, the system permission prompt, permission denied, scanning, no meter found, pairing, the stop-pairing dialog and the paired state), and a labelled flow for every transition",
+        "Writes docs/prototypes/flow.json: one journey, one frame per screen state (including the empty Devices state, the Bluetooth rationale, the system permission prompt, permission denied, scanning, no meter found, pairing, the stop-pairing dialog and the paired state), and a labelled flow for every transition",
         "Branches (the permission-denied state, the stop-pairing dialog) use \"below\" to hang under the screen they interrupt; flows start from a control key",
-        "Generates prototype/flow.drawio with sketch.mjs; does not hand-write draw.io XML or place shapes itself",
+        "Generates docs/prototypes/flow.drawio with sketch.mjs; does not hand-write draw.io XML or place shapes itself",
         "Runs sketch.mjs --check and it passes (no arrow overlaps or crosses another or runs over a screen, every label in the clear); looks at any warnings before showing the sketch",
         "Opens or points to the diagram (sketch.mjs --open, or the file path), gives a short text outline with S-numbers, lists decisions made on the user's behalf and assumptions, and stops for the user to lock the flow",
         "Does not create HTML, a look/ folder, scenarios or a verification log, and does not start the design phase"
@@ -85,7 +89,7 @@
       "prompt": "Looks great, the flow is locked. No design pass, just give me the handoff.",
       "expectations": [
         "Records the gate C approval in STATE.md and DECISIONS.md",
-        "Writes prototype/HANDOFF.md with the screen inventory by S-number, navigation graph, per-screen state model, Material 3 component mapping, copy, decisions with sources, open questions and the sketch as the visual reference",
+        "Writes docs/prototypes/HANDOFF.md with the screen inventory by S-number, navigation graph, per-screen state model, Material 3 component mapping, copy, decisions with sources, open questions and the sketch as the visual reference",
         "Says in the theme section that visual design was not done, rather than inventing one",
         "Says plainly what was not checked: nothing was run as an app",
         "Writes no Compose, SwiftUI, Kotlin or Swift code and stops after the handoff"
@@ -187,17 +191,17 @@
       "name": "stops-at-gate-a-with-reading-guide",
       "prompt": "Prototype the meter pairing onboarding. The docs in docs/ and design/ are authoritative; nothing else to add.",
       "expectations": [
-        "Creates the workspace with scaffold.mjs: prototype/README.md, flow.json (still the empty template) and notes/STATE.md, INPUTS.md, CLARIFICATIONS.md, DECISIONS.md, and no other files",
+        "Creates the workspace with scaffold.mjs: docs/prototypes/README.md, flow.json (still the empty template) and notes/STATE.md, INPUTS.md, CLARIFICATIONS.md, DECISIONS.md, and no other files",
         "Presents the A/B proposals table and ends the turn there: flow.json is not filled in and no flow.drawio exists",
         "Ends the message with a short reading guide: how many files were created, what to review now in order (the table first, CLARIFICATIONS.md as optional detail), what is reference only (INPUTS.md, DECISIONS.md) and what is agent notes (STATE.md, flow.json)",
-        "prototype/README.md names the current stop (gate A), what the user is asked to do, and marks each file as you / reference / agent",
+        "docs/prototypes/README.md names the current stop (gate A), what the user is asked to do, and marks each file as you / reference / agent",
         "STATE.md records the stop under Waiting on user"
       ]
     },
     {
       "id": 17,
       "name": "hand-edited-diagram-is-not-overwritten",
-      "setup": "prototype/flow.drawio was generated and the user then moved frames and added a screen by hand in draw.io.",
+      "setup": "docs/prototypes/flow.drawio was generated and the user then moved frames and added a screen by hand in draw.io.",
       "prompt": "I added a 'Rename meter' screen after pairing in the diagram. Also change 'Add device' to 'Pair meter'.",
       "expectations": [
         "sketch.mjs refuses to overwrite the hand-edited diagram; the agent does not reach for --force first",
@@ -218,6 +222,29 @@
         "Does not change the flow: no screens, states or transitions are added or removed in flow.json",
         "Tells the user how to open look/screens.html (serve.mjs) and what the summary line should say, and asks them to report it instead of claiming the checks passed",
         "Stops at gate D2 for the user's approval of the look"
+      ]
+    },
+    {
+      "id": 19,
+      "name": "asks-for-the-prototype-folder-and-uses-it",
+      "setup": "The agent showed the availability table and asked where the prototype files should go, recommending docs/prototypes.",
+      "prompt": "Documents are fine. Put the files in design/prototype-pairing.",
+      "expectations": [
+        "Runs scaffold.mjs with --out design/prototype-pairing and creates README.md, flow.json and the notes there, not in docs/prototypes or prototype/",
+        "Records the chosen folder in notes/STATE.md",
+        "Every later file (INPUTS.md, CLARIFICATIONS.md, flow.drawio, HANDOFF.md) is written under design/prototype-pairing",
+        "Does not ask for the folder again"
+      ]
+    },
+    {
+      "id": 20,
+      "name": "refuses-a-prototype-folder-outside-the-project",
+      "setup": "The agent asked where the prototype files should go, recommending docs/prototypes.",
+      "prompt": "Put them in ~/Desktop/prototypes.",
+      "expectations": [
+        "Does not create anything outside the project",
+        "Explains that the prototype files have to stay inside this project, and asks again, offering docs/prototypes",
+        "Creates no workspace until the user names a folder inside the project"
       ]
     },
     {

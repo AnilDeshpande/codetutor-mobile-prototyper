@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// Design phase only: render every screen state of the approved flow (prototype/flow.json) in the
+// Design phase only: render every screen state of the approved flow (docs/prototypes/flow.json) in the
 // platform's final look — Material 3 on Android, the system look on iOS — with the theme that
-// theme.mjs applied. Writes prototype/look/:
+// theme.mjs applied. Writes docs/prototypes/look/:
 //
 //   look/screens.html   every screen and state on one page, in flow order, per platform and theme
 //   look/index.html     one screen: ?platform=<android|ios>&screen=<screen>&state=<state>&theme=<light|dark>
 //
-//   node screens.mjs [--spec prototype/flow.json] [--out prototype] [--platform android|ios|both]
+//   node screens.mjs [--spec docs/prototypes/flow.json] [--out <folder>] [--platform android|ios|both]
 //
 // --platform defaults to "platforms" in the spec; platforms already set up in look/ stay. Run it
 // again whenever flow.json changes: everything in look/ is generated (an applied theme is kept).
@@ -15,12 +15,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { workspace } from './lib/workspace.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const kit = path.join(here, '..', 'assets', 'design-kit');
 const args = process.argv.slice(2);
 const opt = (n, d) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : d; };
-const out = path.resolve(opt('out', 'prototype'));
+const out = workspace(opt('out'));
 const specFile = path.resolve(opt('spec', path.join(out, 'flow.json')));
 const look = path.join(out, 'look');
 const rel = (p) => { const r = path.relative(process.cwd(), p) || '.'; return r.startsWith('..') ? p : r; };

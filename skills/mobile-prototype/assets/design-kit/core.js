@@ -2,7 +2,7 @@
    platform's look, with its overlays, and runs the audit. The platform look (device chrome, how
    components, dialogs and permission prompts look) comes from platform/<name>.js, which
    registers itself with App.registerPlatform(). Screens come from flow-screens.js, which reads
-   the flow spec in flow-data.js. Generated into prototype/look/ by scripts/screens.mjs; the
+   the flow spec in flow-data.js. Generated into docs/prototypes/look/ by scripts/screens.mjs; the
    style tile (style-tile.js) uses it too. Don't edit the copies in look/.
 
    URL parameters

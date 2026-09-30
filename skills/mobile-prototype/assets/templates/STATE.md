@@ -4,6 +4,7 @@ Started: {{DATE}}
 
 | Field | Value |
 |---|---|
+| Prototype folder | (the folder the user chose, relative to the project root; recommended `docs/prototypes`) |
 | Phase | 1 — Discover inputs |
 | Gates passed | none |
 | Waiting on user | — (the stop the agent is paused at, and what it needs) |

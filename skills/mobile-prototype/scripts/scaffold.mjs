@@ -2,7 +2,10 @@
 // Create the prototype workspace in the user's project: the reading guide, the flow spec and the
 // notes, from templates. Existing files are never overwritten.
 //
-//   node scaffold.mjs [--out prototype] [--name "App name"]
+//   node scaffold.mjs --out <folder> [--name "App name"]
+//
+// The folder is the user's choice (recommended: docs/prototypes) and must be inside the project;
+// a folder outside it is refused. Without --out, an existing workspace is used, else docs/prototypes.
 //
 // The sketch (flow.drawio) is written later by sketch.mjs, and the design phase's look/ folder
 // by screens.mjs.
@@ -10,12 +13,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { workspace } from './lib/workspace.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const templates = path.join(here, '..', 'assets', 'templates');
 const args = process.argv.slice(2);
 const opt = (name, def) => { const i = args.indexOf(`--${name}`); return i >= 0 ? args[i + 1] : def; };
-const out = path.resolve(opt('out', 'prototype'));
+const out = workspace(opt('out'));
 const appName = opt('name', 'App');
 
 const vars = { '{{APP_NAME}}': appName, '{{DATE}}': new Date().toISOString().slice(0, 10) };

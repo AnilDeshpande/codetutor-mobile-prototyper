@@ -1,4 +1,4 @@
-# The flow spec (`prototype/flow.json`)
+# The flow spec (`docs/prototypes/flow.json`)
 
 One file describes the whole prototype. `scripts/sketch.mjs` draws it as a draw.io sketch, and
 the optional design phase (`scripts/screens.mjs`) renders the same frames in the final look. You
@@ -141,6 +141,6 @@ by hand to hide it.
 
 ```
 node scripts/sketch.mjs --check                       validate the spec and the routes
-node scripts/sketch.mjs --style wireflow --open       write prototype/flow.drawio and open it
+node scripts/sketch.mjs --style wireflow --open       write docs/prototypes/flow.drawio and open it
 node scripts/sketch.mjs --style click-through --url   also write a browser-viewer link
 ```

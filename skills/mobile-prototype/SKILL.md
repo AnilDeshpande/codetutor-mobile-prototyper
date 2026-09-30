@@ -1,6 +1,6 @@
 ---
 name: mobile-prototype
-description: Turn a product spec, architecture notes and design documents into a rough, hand-drawn-style draw.io prototype of a native mobile app (Android, iOS or both) — numbered screens, their states and branches, and the arrows between them — so the flow can be discussed and locked before anything is designed or built. It first finds which documents exist, proposes the answers those documents already give (for the user's approval), asks the user only what remains open, then draws the flow as an editable .drawio file. Once the flow is locked it can add an optional design phase that turns the same flow into a design system and final-look Android / iOS screens. Use when the user asks to prototype, sketch, wireframe, mock up, storyboard or map the screens or user flow of a mobile, Android, iPhone or iOS app or feature, or to turn a PRD, spec, requirements, user stories, architecture or design docs into screens and a flow they can look at — even if they never say "prototype" or "draw.io". Also use to resume a prototype that has a prototype/notes/STATE.md. Stops at a locked flow (and optionally an approved look) plus a handoff package; it does not build a clickable web app and does not write Compose, SwiftUI, Kotlin or Swift.
+description: Turn a product spec, architecture notes and design documents into a rough, hand-drawn-style draw.io prototype of a native mobile app (Android, iOS or both) — numbered screens, their states and branches, and the arrows between them — so the flow can be discussed and locked before anything is designed or built. It first finds which documents exist, proposes the answers those documents already give (for the user's approval), asks the user only what remains open, then draws the flow as an editable .drawio file. Once the flow is locked it can add an optional design phase that turns the same flow into a design system and final-look Android / iOS screens. Use when the user asks to prototype, sketch, wireframe, mock up, storyboard or map the screens or user flow of a mobile, Android, iPhone or iOS app or feature, or to turn a PRD, spec, requirements, user stories, architecture or design docs into screens and a flow they can look at — even if they never say "prototype" or "draw.io". Also use to resume a prototype that has a docs/prototypes/notes/STATE.md. Stops at a locked flow (and optionally an approved look) plus a handoff package; it does not build a clickable web app and does not write Compose, SwiftUI, Kotlin or Swift.
 ---
 
 # Mobile Prototype
@@ -23,7 +23,7 @@ Paths in this file are relative to this skill's directory (`scripts/…`, `refer
    the user approves it. Record who decided what.
 2. **Ask only what changes the experience.** Conflicts between documents and unknowns that change
    a journey, a state or navigation get asked. Cosmetic choices you decide yourself and record.
-3. **The flow lives in one file.** `prototype/flow.json` is the source of truth; the draw.io file
+3. **The flow lives in one file.** `docs/prototypes/flow.json` is the source of truth; the draw.io file
    and the final-look screens are generated from it by scripts. Never hand-write draw.io XML or
    HTML, and never place shapes or route arrows yourself.
 4. **Rough on purpose.** The sketch uses plain boxes in a hand-drawn style. No brand colours, no
@@ -36,14 +36,16 @@ Paths in this file are relative to this skill's directory (`scripts/…`, `refer
    didn't pass `--check`, and fix a failure in `flow.json` (see "When the check fails" in
    `references/sketch-spec.md`), not in the diagram.
 6. **Stop at every gate, and say what to read.** At each stop, end your turn: don't start the
-   next phase ahead of the approval. Update `prototype/README.md` and close the message with the
+   next phase ahead of the approval. Update `docs/prototypes/README.md` and close the message with the
    reading guide (see *Stops and the reading guide*).
 7. **Stop at a locked flow.** Deliver the sketch and a handoff package. Do not build a clickable
    app, and do not generate Compose, SwiftUI, Kotlin, Swift or production web code.
 8. **Each platform behaves like itself.** Ask which platforms are in scope (P5). The sketch is one
    flow for all of them; where Android and iOS differ (back, dialogs versus sheets, permission
    rules) note it on the screen. Follow `references/platforms/<platform>/conventions.md`.
-9. **Everything lands in files** under `prototype/`, so a fresh session can resume.
+9. **Everything lands in files** in one prototype folder, so a fresh session can resume. The
+   user chooses that folder before the first file is written (recommended: `docs/prototypes`),
+   and it is always inside the project you are working in.
 10. **First how it works, then how it looks.** The design phase is optional, starts only after
     the flow is locked (gate C) and only when the user chooses it, and never blocks the handoff.
 11. **draw.io tooling helps; it never blocks.** Setup installs the draw.io MCP server. If its
@@ -52,8 +54,14 @@ Paths in this file are relative to this skill's directory (`scripts/…`, `refer
 
 ## Workspace (in the user's project)
 
+The prototype folder is the user's choice; you ask for it in Phase 1, before creating any file.
+This document writes it as `docs/prototypes/`, the recommended location: wherever you read that
+path, use the folder the user chose. The folder must be inside the project. If the user names a
+path outside it (another repository, the home folder, `/tmp`), say that the files have to stay
+in this project so they travel with it, and ask again; `scaffold.mjs` refuses such a path too.
+
 ```
-prototype/
+docs/prototypes/
 ├── README.md        ← the reading guide: where we are, what to read, in what order
 ├── flow.json        ← the flow: journeys, screen states, transitions (you edit this)
 ├── flow.drawio      ← the sketch, generated from flow.json (the user looks at this)
@@ -67,9 +75,10 @@ prototype/
     └── DESIGN.md           ← the visual direction (design phase only) + THEME-REPORT.md
 ```
 
-`node scripts/scaffold.mjs --out prototype --name "<App>"` creates `README.md`, `flow.json` and
+`node scripts/scaffold.mjs --out <folder> --name "<App>"` creates `README.md`, `flow.json` and
 the four notes from templates, and never overwrites. Fill in what it creates; don't invent other
-files.
+files. The other scripts find the folder by themselves (they look for its `notes/STATE.md`), so
+they need no `--out`; pass it only if the project holds more than one prototype folder.
 
 ## Stops and the reading guide
 
@@ -78,7 +87,7 @@ then end your turn.
 
 | Stop | After | The user reads, in this order | The user is asked to |
 |---|---|---|---|
-| Inputs | Phase 1 (only if they didn't name the files) | the availability table in chat | confirm the documents and the platform suggestion |
+| Inputs | Phase 1, before any file is created | the availability table in chat | choose the prototype folder (recommended: `docs/prototypes`); confirm the documents and the platform suggestion |
 | Gate A | Phase 2 | the proposals table in chat → `notes/CLARIFICATIONS.md` for detail → `notes/INPUTS.md` only to check a citation | approve all, or correct by ID; choose the sketch style |
 | Gate B | each Phase 3 round (only if C/D items exist) | the questions in chat | answer them |
 | Gate C | Phase 4 | `flow.drawio`, screen by screen in S-number order → the list of assumptions in chat | lock the flow, or say what to change |
@@ -87,7 +96,7 @@ then end your turn.
 
 At every stop:
 
-1. Update `prototype/README.md` (template: `assets/templates/README.md`). Fill in *Where we are*
+1. Update `docs/prototypes/README.md` (template: `assets/templates/README.md`). Fill in *Where we are*
    and *Read now* for this stop, and add a row to *All files* for each file created since the
    last stop. Mark every file **you** (to read now), **reference** (open it only to check
    something) or **agent** (working notes, such as `STATE.md` — the user never needs to read
@@ -96,7 +105,7 @@ At every stop:
 3. End the chat message with the reading guide, kept this short:
 
    ```
-   Created: 6 files in prototype/ — start with prototype/README.md.
+   Created: 6 files in docs/prototypes/ — start with docs/prototypes/README.md.
    To review now:
    1. The table above (2 min) — everything you need to decide is in it.
    2. notes/CLARIFICATIONS.md (optional, 5 min) — the evidence behind each proposal.
@@ -109,7 +118,10 @@ At every stop:
 
 ## Phase 0 — Setup and resume
 
-1. If `prototype/notes/STATE.md` exists, read it and every file in `prototype/notes/`, tell the
+1. Look for an existing prototype folder: `docs/prototypes/notes/STATE.md`, the older default
+   `prototype/notes/STATE.md`, or a `notes/STATE.md` next to a `flow.json` elsewhere in the
+   project. If there is one, that is the prototype folder: don't ask for it again. Read
+   `STATE.md` and every file in `notes/`, tell the
    user in two lines where things stand, and continue from the recorded next step. If the
    recorded stop is still waiting on the user, repeat what it needs rather than moving on.
 2. Check whether the draw.io MCP tools are available **in this session**: a tool whose name ends
@@ -123,16 +135,27 @@ At every stop:
 
 ## Phase 1 — Discover the inputs
 
-1. Create the workspace: `node scripts/scaffold.mjs --out prototype --name "<App>"`.
-2. If the user named files, use those. Otherwise run
+1. If the user named files, use those. Otherwise run
    `node scripts/discover-inputs.mjs --root .` (add `--json` for machine output) to find candidate
    specs, architecture notes, design documents, API contracts and images. It also reports
    **platform signals** (build files, and what the documents mention) with a suggestion.
-3. Show the user an **availability table** — Spec / Architecture / Design / API / Other, plus the
-   platform suggestion — with the files found for each, and ask them to confirm which files are
-   authoritative, which to ignore, and whether anything is missing (for example a design folder
-   elsewhere or a Figma link). This is the *Inputs* stop; skip it when the user named the files
-   and there is nothing to ask about them.
+   This step only reads; nothing is created yet.
+2. **Ask where the prototype files should go** (the *Inputs* stop). Always ask, in these words
+   or close to them, unless the user already named a folder or Phase 0 found one:
+
+   > Where should I put the prototype files? I recommend `docs/prototypes` (created if it
+   > doesn't exist). Reply "ok" for that, or give another folder in this project.
+
+   In the same message show the **availability table** — Spec / Architecture / Design / API /
+   Other, plus the platform suggestion — with the files found for each, and ask the user to
+   confirm which files are authoritative, which to ignore, and whether anything is missing (for
+   example a design folder elsewhere or a Figma link). Leave the table out when the user named
+   the files and there is nothing to ask about them; the folder question stays. End your turn.
+3. Take the answer. "ok", "yes" or no preference means `docs/prototypes`. A relative path is
+   relative to the project root; an absolute path is fine if it is inside the project. If the
+   path is outside the project, explain and ask again (see *Workspace*). Then create the
+   workspace: `node scripts/scaffold.mjs --out <folder> --name "<App>"`, and record the folder
+   in `notes/STATE.md`.
 4. Read every confirmed document in full (images too — look at them). Record the inventory and a
    fact register (ID, fact, source file § section) in `notes/INPUTS.md`.
 5. Adjust for what is missing — see `references/document-intake.md`. A missing spec means you need
@@ -196,7 +219,7 @@ items), go straight on to Phase 4.
 
 ## Phase 4 — Sketch the flow → gate C
 
-1. **Write the flow** in `prototype/flow.json` (format and element list:
+1. **Write the flow** in `docs/prototypes/flow.json` (format and element list:
    `references/sketch-spec.md`):
    - one **journey** per user goal in scope;
    - one **frame per screen state** the decisions require — the content state, and also empty,
@@ -210,7 +233,7 @@ items), go straight on to Phase 4.
    `references/platforms/<platform>/conventions.md` for navigation, back and permissions; where
    the platforms differ, say so in the frame's `note`.
 2. **Generate the sketch**:
-   `node scripts/sketch.mjs --style <wireflow|click-through|both>` writes `prototype/flow.drawio`.
+   `node scripts/sketch.mjs --style <wireflow|click-through|both>` writes `docs/prototypes/flow.drawio`.
    Screens are numbered S1, S2, … in flow order, and every arrow gets its own route.
 3. **Check it** before showing it: `node scripts/sketch.mjs --check` must pass (it validates the
    spec and that arrows, screens and labels stay out of each other's way), then go through
@@ -235,7 +258,7 @@ items), go straight on to Phase 4.
 
 Read `references/design-phase.md` and follow it. In short: the locked `flow.json` is the input.
 `node scripts/screens.mjs` renders every screen state in the platform's own look into
-`prototype/look/`; a provider (ui-ux-pro-max, installed on first use with
+`docs/prototypes/look/`; a provider (ui-ux-pro-max, installed on first use with
 `scripts/design-provider.mjs` and a clear notice; the built-in baseline when that isn't possible)
 and three plain-language choices (density, expressiveness, motion) give two directions in the
 `DESIGN.md` contract; the user picks one from style tiles (gate D1); `scripts/theme.mjs` turns it
@@ -245,7 +268,7 @@ stopped, go to Phase 6.
 
 ## Phase 6 — Handoff and stop
 
-Write `prototype/HANDOFF.md` following `references/handoff-package.md`: screen inventory,
+Write `docs/prototypes/HANDOFF.md` following `references/handoff-package.md`: screen inventory,
 navigation graph, per-screen state model, component mapping per platform (Material 3 for Android,
 SwiftUI for iOS), theme (only if the design phase ran), copy (with iOS purpose strings),
 decisions with sources, open questions, and the sketch as the visual reference. Update `STATE.md`

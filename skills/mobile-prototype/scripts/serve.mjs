@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Zero-dependency static server for the design phase's final-look screens (prototype/look/, made
+// Zero-dependency static server for the design phase's final-look screens (docs/prototypes/look/, made
 // by screens.mjs). Prints the local URL; with --host 0.0.0.0 also a LAN URL, to open the screens
 // on a real phone on the same Wi-Fi.
 //
-//   node serve.mjs [--dir prototype/look] [--port 4173] [--host 127.0.0.1]
+//   node serve.mjs [--dir docs/prototypes/look] [--port 4173] [--host 127.0.0.1]
 //
 // If the port is busy it tries the next ones. Files are served with no-cache headers so every
 // reload shows the latest edit.
@@ -12,10 +12,11 @@ import http from 'node:http';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { workspace } from './lib/workspace.mjs';
 
 const args = process.argv.slice(2);
 const opt = (name, def) => { const i = args.indexOf(`--${name}`); return i >= 0 ? args[i + 1] : def; };
-const dir = path.resolve(opt('dir', 'prototype/look'));
+const dir = opt('dir') ? path.resolve(opt('dir')) : path.join(workspace(), 'look');
 let port = Number(opt('port', 4173));
 const host = opt('host', '127.0.0.1');
 

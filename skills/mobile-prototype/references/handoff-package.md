@@ -1,4 +1,4 @@
-# Handoff package (`prototype/HANDOFF.md`)
+# Handoff package (`docs/prototypes/HANDOFF.md`)
 
 The handoff is what a native implementation (by a person or another agent skill) starts from.
 It must be complete enough that nobody needs to reconstruct the flow from the diagram. Write it

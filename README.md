@@ -76,7 +76,8 @@ node skills/mobile-prototype/scripts/sketch.mjs --spec docs/examples/pair-a-mete
 Spec · Architecture · Design · API docs
                 │
    0 Setup: draw.io MCP server present? (offer to configure it; never blocks)
-   1 Discover inputs + platforms ──► you confirm the availability table
+   1 Discover inputs + platforms ──► you choose the prototype folder (recommended: docs/prototypes)
+                                     and confirm the availability table
    2 Answer from the documents ────► you approve / correct the proposals,  (gate A)
                                      and choose wireflow / click-through / both
    3 Ask what's left, ≤ 4 at a time ► you answer                           (gate B)
@@ -90,12 +91,12 @@ Spec · Architecture · Design · API docs
 The skill pauses at each gate and does nothing ahead of your approval. Every pause ends with a
 short reading guide: which files were created, which ones you need to read now and in what
 order, and which are only for reference or for the agent. The same guide is kept in
-`prototype/README.md`, so it's the one file to open first. At gate A, for example, you only need
+`docs/prototypes/README.md`, so it's the one file to open first. At gate A, for example, you only need
 the proposals table in the chat; the notes behind it are optional.
 
 ## How the sketch is made
 
-The agent writes the flow once, as data, in `prototype/flow.json`: journeys, one frame per screen
+The agent writes the flow once, as data, in `docs/prototypes/flow.json`: journeys, one frame per screen
 state, and one labelled transition per arrow. A script turns that into the diagram:
 
 ```bash
@@ -127,7 +128,7 @@ The sketch is deliberately plain, so reviews focus on the flow. After you lock t
 offers a design pass in one line; say no and you get the handoff straight away.
 
 - **Input**: the locked `flow.json`. The design phase changes how screens look, never the flow.
-- **Two levels**: a *visual direction* (lives in `prototype/`, disposable) or a *design system*
+- **Two levels**: a *visual direction* (lives in `docs/prototypes/`, disposable) or a *design system*
   (`design-system/<app>/` in your project, with `material-theme.json` and `ios-theme.json` for the
   native team, and per-screen notes where a screen differs).
 - **Three plain choices**: density (spacious / balanced / dense), expressiveness (restrained /
@@ -140,7 +141,7 @@ offers a design pass in one line; say no and you get the handoff straight away.
   write a theme with any text colour below 4.5:1, and suggests the nearest colour that passes.
 - **Style tiles**: each direction is shown in Android and iOS device shells: palette with
   contrast ratios, type scale and every component, in light and dark.
-- **Final-look screens**: `prototype/look/screens.html` shows every screen state of your flow,
+- **Final-look screens**: `docs/prototypes/look/screens.html` shows every screen state of your flow,
   with the same S-numbers as the sketch, in Material 3 and in the iOS system look, in light and
   dark and at larger text sizes. The page checks each screen (touch-target size, overflow,
   cut-off text, contrast) and shows the result. They are pictures of the look, not a working app.
@@ -285,10 +286,13 @@ Put your documents anywhere in the project (for example `docs/` and `design/`), 
 
 > Resume my mobile prototype.
 
-Everything the skill produces lives in `prototype/`:
+Before it creates anything, the skill asks where the prototype files should go. It recommends
+`docs/prototypes`; you can name any other folder inside your project. A path outside the project
+is refused, so the files always travel with the repository. Everything the skill produces then
+lives in that folder:
 
 ```
-prototype/
+docs/prototypes/
 ├── README.md      start here: where things stand and what to read
 ├── flow.drawio    the sketch: numbered screens and the arrows between them
 ├── flow.json      the same flow as data (the agent edits this; the sketch is generated from it)

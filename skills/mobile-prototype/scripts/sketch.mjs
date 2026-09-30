@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// Turn the flow spec (prototype/flow.json) into a hand-drawn-style draw.io file: one numbered
+// Turn the flow spec (docs/prototypes/flow.json) into a hand-drawn-style draw.io file: one numbered
 // frame per screen state (S1, S2, … in flow order) and one arrow per transition. Arrows never
 // lie on or cross each other or run over a screen, and labels sit clear of everything else; if
 // the layout in the spec allows no such drawing, the script says what is in the way and stops.
 //
-//   node sketch.mjs [--spec prototype/flow.json] [--out prototype/flow.drawio]
+//   node sketch.mjs [--spec docs/prototypes/flow.json] [--out docs/prototypes/flow.drawio]
 //                   [--style wireflow|click-through|both] [--check] [--open] [--url] [--force]
 //
 //   wireflow       one page per journey: every frame and arrow at a glance (default)
@@ -25,6 +25,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { workspace } from './lib/workspace.mjs';
 
 const args = process.argv.slice(2);
 const opt = (n, d) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : d; };
@@ -33,7 +34,7 @@ if (flag('help') || flag('h')) {
   console.log(fs.readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 21).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
   process.exit(0);
 }
-const specFile = path.resolve(opt('spec', 'prototype/flow.json'));
+const specFile = opt('spec') ? path.resolve(opt('spec')) : path.join(workspace(), 'flow.json');
 const outFile = path.resolve(opt('out', path.join(path.dirname(specFile), 'flow.drawio')));
 const style = opt('style', 'wireflow');
 const rel = (p) => { const r = path.relative(process.cwd(), p) || '.'; return r.startsWith('..') ? p : r; };

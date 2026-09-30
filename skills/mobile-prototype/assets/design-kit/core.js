@@ -7,14 +7,11 @@
 
    URL parameters
      platform=<android|ios>  which platform to show when the prototype has more than one
-     scenario=<id>      mock scenario from mock-data.js (default: "default")
-     latency=<fast|normal|slow|ms>
      screen=<id>&state=<state>&params=<json>   open a screen directly, optionally forcing a state
      theme=<light|dark> force a theme (otherwise follows the browser)
      fontScale=<n>      text size multiplier, e.g. 2 for 200 %
      chrome=off|on      hide or show the simulated status and system bars (default: shown, except
                         on a touch device such as a real phone, which has its own)
-     debug=1            show the debug panel
 
    This file is loaded in <head>, after the platform stylesheets, so it can pick the platform
    before the first paint. Everything else waits for App.start().
@@ -24,14 +21,10 @@
 
   // ---------- configuration from the URL ----------
   const query = new URLSearchParams(location.search);
-  const LATENCY = { fast: 50, normal: 700, slow: 3000 };
   const cfg = {
-    scenario: query.get('scenario') || 'default',
-    latency: LATENCY[query.get('latency')] ?? (Number(query.get('latency')) || LATENCY.normal),
     theme: query.get('theme'),
     fontScale: Number(query.get('fontScale')) || 1,
     chrome: query.has('chrome') ? query.get('chrome') !== 'off' : !matchMedia('(pointer: coarse)').matches,
-    debug: query.get('debug') === '1',
     screen: query.get('screen'),
     state: query.get('state'),
     params: safeJson(query.get('params')) || {},
@@ -57,8 +50,6 @@
   const fmt = (v) => (v == null || v === false ? '' : v instanceof Raw ? v.s : Array.isArray(v) ? v.map(fmt).join('') : esc(v));
   /** Tagged template that escapes interpolated values; nest html`` or raw() for markup. */
   const html = (strings, ...vals) => raw(strings.reduce((out, s, i) => out + s + (i < vals.length ? fmt(vals[i]) : ''), ''));
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  const clone = (v) => (v === undefined ? v : JSON.parse(JSON.stringify(v)));
   const $ = (sel, root = document) => root.querySelector(sel);
   /** Markup that may be plain text or html``/raw() output. */
   const markup = (v) => (v instanceof Raw ? v.s : esc(v));
@@ -141,42 +132,18 @@
     },
   };
 
-  // ---------- mock API ----------
-  // mock-data.js loads after this file, so the scenario is read in App.start().
-  let MOCK, scenario, db, permissions;
-  function loadMock() {
-    MOCK = window.MOCK || { base: {}, scenarios: { default: {} }, api: {} };
-    scenario = MOCK.scenarios[cfg.scenario] || MOCK.scenarios.default || {};
-    if (!MOCK.scenarios[cfg.scenario]) console.warn(`Unknown scenario "${cfg.scenario}", using default.`);
-    db = Object.assign(clone(MOCK.base || {}), clone(scenario.data || {}));
-    permissions = Object.assign({}, scenario.permissions || {});
-  }
-
-  async function api(name, args) {
-    const handler = MOCK.api[name];
-    if (!handler) throw new Error(`mock-data.js has no api.${name}`);
-    await sleep(cfg.latency + (MOCK.delays?.[name] || 0) * (cfg.latency / LATENCY.normal));
-    const failure = scenario.offline ? 'offline' : scenario.fail?.[name];
-    if (failure) {
-      const err = new Error(failure === 'offline' ? 'No connection' : `${name} failed`);
-      err.type = failure;
-      throw err;
-    }
-    return clone(handler(db, clone(args)));
-  }
-
   // ---------- app state ----------
   let def = null;              // the App.start() configuration
   let stack = [];              // [{ id, params }]
   let current = null;          // the live screen context
   let renderToken = 0;
   const els = {};
+  const permissions = {};      // what the simulated permission prompts have answered so far
 
   function registerPlatform(name, adapter) { adapters[name] = adapter; }
 
   function start(definition) {
     def = definition;
-    loadMock();
     P = adapters[platformName];
     if (!P) throw new Error(`No platform adapter for "${platformName}". Is platform/${platformName}.js loaded?`);
     Object.assign(ICONS, P.icons || {});
@@ -191,10 +158,8 @@
       dialog: $('#dialog'), sheet: $('#sheet'), scrim: $('#scrim'), launcher: $('#launcher'),
     });
     els.app.dataset.chrome = cfg.chrome ? 'on' : 'off';
-    document.body.dataset.scenario = cfg.scenario;
     buildNav();
     wireEvents();
-    if (cfg.debug) buildDebugPanel();
 
     // Browser back acts as the platform's back.
     history.replaceState({ app: 'base' }, '');
@@ -263,7 +228,7 @@
     return typeof t === 'function' ? t(ctx || { id: entry.id, params: entry.params || {}, data: null, state: null }) : t;
   };
 
-  async function show({ forcedState = null, animate = false } = {}) {
+  function show({ forcedState = null, animate = false } = {}) {
     const entry = stack[stack.length - 1];
     const screen = def.screens[entry.id];
     const token = ++renderToken;
@@ -277,27 +242,7 @@
     els.nav.querySelectorAll('[data-nav]').forEach((b) => b.setAttribute('aria-current', b.dataset.nav === activeDest ? 'page' : 'false'));
     banner(null);
 
-    if (forcedState) {
-      if (forcedState !== 'loading' && screen.load) {
-        try { current.data = await screen.load({ ...current, api: (n, a) => clone(MOCK.api[n](db, clone(a))) }); }
-        catch (e) { current.error = e; }
-      }
-      setState(forcedState, token);
-    } else if (screen.load) {
-      setState('loading', token);
-      try {
-        const data = await screen.load(current);
-        if (token !== renderToken) return;
-        current.data = data;
-        setState(screen.stateFor ? screen.stateFor(data, current) : Array.isArray(data) && data.length === 0 ? 'empty' : 'content', token);
-      } catch (e) {
-        if (token !== renderToken) return;
-        current.error = e;
-        setState(e.type === 'offline' ? 'offline' : 'error', token);
-      }
-    } else {
-      setState(screen.initialState || 'content', token);
-    }
+    setState(forcedState || screen.initialState || 'content', token);
 
     if (animate) { els.main.classList.remove('enter'); void els.main.offsetWidth; els.main.classList.add('enter'); }
     els.main.scrollTop = 0;
@@ -341,8 +286,8 @@
   function makeContext(entry, token) {
     const ctx = {
       id: entry.id, params: entry.params || {}, state: null, data: null, error: null, dirty: false,
-      scenario: cfg.scenario, platform: platformName, token,
-      api, navigate, back, replace: (id, p) => navigate(id, p, { replace: true }),
+      platform: platformName, token,
+      navigate, back, replace: (id, p) => navigate(id, p, { replace: true }),
       popScreen, setState: (s) => setState(s, token), rerender: () => setState(ctx.state, token), reload: () => show(),
       snackbar, dialog, sheet, banner, requestPermission, html, raw, esc, icon, UI,
       form: () => Object.fromEntries(new FormData(els.main.querySelector('form') || undefined)),
@@ -422,7 +367,6 @@
 
   /**
    * Simulated runtime permission. Returns 'granted' | 'denied' | 'blocked'.
-   * Scenario mock data can preset permissions: { bluetooth: 'granted' | 'denied' | 'blocked' }.
    * How often the system asks, and when a denial becomes 'blocked', is the platform's rule.
    */
   function requestPermission(name, options = {}) {
@@ -482,31 +426,6 @@
     const dests = def.destinations || [];
     els.nav.innerHTML = dests.map((d) => P.navItem(d, { esc, icon })).join('');
     if (dests.length < 2) els.nav.hidden = true;
-  }
-
-  function buildDebugPanel() {
-    const toggle = document.createElement('button');
-    toggle.className = 'debug-toggle'; toggle.textContent = '⚙'; toggle.setAttribute('aria-label', 'Prototype debug panel');
-    const panel = document.createElement('aside');
-    panel.className = 'debug-panel'; panel.hidden = true;
-    const opts = (list, sel) => list.map((v) => `<option${v === sel ? ' selected' : ''}>${esc(v)}</option>`).join('');
-    const latencyName = Object.keys(LATENCY).find((k) => LATENCY[k] === cfg.latency) || String(cfg.latency);
-    panel.innerHTML = `
-      ${available.length > 1 ? `<label>Platform<select name="platform">${opts(available, platformName)}</select></label>` : ''}
-      <label>Scenario<select name="scenario">${opts(Object.keys(MOCK.scenarios), cfg.scenario)}</select></label>
-      <label>Latency<select name="latency">${opts(['fast', 'normal', 'slow'], latencyName)}</select></label>
-      <label>Screen<select name="screen"><option value="">(start)</option>${opts(Object.keys(def.screens), cfg.screen)}</select></label>
-      <label>State<select name="state"><option value="">(natural)</option>${opts(['loading', 'content', 'empty', 'error', 'offline', 'partial', 'success'], cfg.state)}</select></label>
-      <label>Theme<select name="theme"><option value="">(system)</option>${opts(['light', 'dark'], cfg.theme)}</select></label>
-      <label>Font scale<select name="fontScale">${opts(['1', '1.3', '2', '3'], String(cfg.fontScale))}</select></label>
-      <button type="button">Apply</button>`;
-    panel.querySelector('button').onclick = () => {
-      const q = new URLSearchParams({ debug: '1' });
-      panel.querySelectorAll('select').forEach((s) => { if (s.value && !(s.name === 'fontScale' && s.value === '1')) q.set(s.name, s.value); });
-      location.search = q.toString();
-    };
-    toggle.onclick = () => { panel.hidden = !panel.hidden; };
-    document.body.append(toggle, panel);
   }
 
   // ---------- audit: look/screens.html calls window.__prototypeAudit() on every screen ----------
@@ -621,7 +540,7 @@
   };
 
   window.App = {
-    start, registerPlatform, navigate, back, snackbar, dialog, sheet, banner, requestPermission, api,
+    start, registerPlatform, navigate, back, snackbar, dialog, sheet, banner, requestPermission,
     UI, html, raw, esc, icon, ICONS, config: cfg, platform: platformName, platforms: available,
   };
 })();

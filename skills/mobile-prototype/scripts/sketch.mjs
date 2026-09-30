@@ -95,7 +95,12 @@ for (const j of journeys) {
     s.col = parent.col; s.row = parent.row + 1;
     while (cells.has(`${s.col}:${s.row}`)) s.row += 1; // a second branch under the same screen goes one row further down
   };
-  for (const s of j.screens) { place(s); cells.set(`${s.col}:${s.row}`, s.id); }
+  for (const s of j.screens) {
+    place(s);
+    const taken = cells.get(`${s.col}:${s.row}`);
+    if (taken) errors.push(`${s.id} and ${taken} are at the same place (column ${s.col}, row ${s.row}) and would be drawn on top of each other. Remove "col"/"row" from one of them or change "below".`);
+    cells.set(`${s.col}:${s.row}`, s.id);
+  }
   const incoming = new Set();
   for (const f of j.flows || []) {
     const tag = `${where}: flow ${f.from || '?'} → ${f.to || '?'}`;
@@ -315,9 +320,22 @@ function lineProblems(edges) {
   return { overlaps, crossings, pairs: [...new Set(pairs)] };
 }
 
+/** Arrows that run through a frame (any frame, including their own), or above the page title. */
+function frameProblems(nodes, edges) {
+  const hits = [];
+  for (const e of edges) for (let k = 0; k < e.path.length - 1; k++) {
+    const [x1, y1] = e.path[k], [x2, y2] = e.path[k + 1];
+    const [l, r, t, b] = [Math.min(x1, x2), Math.max(x1, x2), Math.min(y1, y2), Math.max(y1, y2)];
+    if (t < 40) hits.push(`${e.from} → ${e.to}  runs into the page title`);
+    // A segment may touch a frame's border (where it starts or ends) but not enter it.
+    for (const [id, n] of Object.entries(nodes)) if (r > n.x + 2 && l < n.x + n.w - 2 && b > n.y + 2 && t < n.y + n.h - 2) hits.push(`${e.from} → ${e.to}  runs through ${id}`);
+  }
+  return [...new Set(hits)];
+}
+
 // ---------- pages ----------
 const pages = [];
-const stats = { frames: 0, arrows: 0, overlaps: 0, crossings: 0, pairs: [] };
+const stats = { frames: 0, arrows: 0, overlaps: 0, crossings: 0, pairs: [], hits: [] };
 const pid = (id) => `page-${id}`;
 const link = (id) => `data:page/id,${pid(id)}`;
 const GAPX = 240, GAPY = 190, LEFT = 140;
@@ -325,16 +343,21 @@ const GAPX = 240, GAPY = 190, LEFT = 140;
 function grid(j, w, h, gapx, gapy, top) {
   return (s) => ({ col: s.col, row: s.row, x: LEFT + s.col * (w + gapx), y: top + s.row * (h + gapy), w, h });
 }
-const lanesAbove = (j) => Math.max(1, (j.flows || []).length); // generous: room above the first row
-function addProblems(edges) {
+/** How many arrows run in the lanes above the first row: that much room is kept under the title. */
+function lanesAbove(j) {
+  const at = Object.fromEntries(j.screens.map((s) => [s.id, s]));
+  return Math.max(1, (j.flows || []).filter((f) => at[f.from].row === 0 && at[f.to].row === 0 && at[f.to].col !== at[f.from].col + 1).length);
+}
+function addProblems(nodes, edges) {
   const p = lineProblems(edges);
   stats.overlaps += p.overlaps; stats.crossings += p.crossings; stats.pairs.push(...p.pairs); stats.arrows += edges.length;
+  stats.hits.push(...frameProblems(nodes, edges));
 }
 
 function wireflowPage(j, withLinks) {
   const measured = new Map(j.screens.map((s) => [s.id, measure(s)]));
   const H = Math.max(MINH, ...[...measured.values()].map((m) => m.need));
-  const top = 80 + Math.min(6, lanesAbove(j)) * 16 + 30;
+  const top = 80 + lanesAbove(j) * 16 + 30;
   const at = grid(j, FW, H, GAPX, GAPY, top);
   const cells = [], nodes = {};
   for (const s of j.screens) {
@@ -346,7 +369,7 @@ function wireflowPage(j, withLinks) {
     stats.frames++;
   }
   const edges = routeEdges(nodes, j.flows || []);
-  addProblems(edges);
+  addProblems(nodes, edges);
   const width = LEFT + (Math.max(...j.screens.map((s) => s.col)) + 1) * (FW + GAPX);
   cells.unshift(headerCell(`${j.title || j.id} — ${j.screens[0].sid} to ${j.screens[j.screens.length - 1].sid}, in flow order.  Grey frames are overlays on the screen before them.`, Math.max(900, width)));
   cells.push(...edges.map(edgeXml));
@@ -355,7 +378,7 @@ function wireflowPage(j, withLinks) {
 
 function mapPage(j) {
   const BW = 210, BH = 84;
-  const at = grid(j, BW, BH, 130, 150, 80 + Math.min(6, lanesAbove(j)) * 16 + 30);
+  const at = grid(j, BW, BH, 130, 150, 80 + lanesAbove(j) * 16 + 30);
   const cells = [], nodes = {};
   for (const s of j.screens) {
     const g = at(s), id = nid('m');
@@ -363,7 +386,7 @@ function mapPage(j) {
     nodes[s.id] = { ...g, id, ctl: {} };
   }
   const edges = routeEdges(nodes, j.flows || []);
-  addProblems(edges);
+  addProblems(nodes, edges);
   cells.unshift(headerCell(`${j.title || j.id} — map.  Click a box to open that screen; inside a screen, click the blue controls.`, 1400));
   cells.push(...edges.map(edgeXml));
   return page(`map-${j.id}`, `Map · ${j.title || j.id}`, cells);
@@ -392,12 +415,13 @@ if (!errors.length) {
     else pages.push(mapPage(j), ...screenPages(j, `map-${j.id}`));
   }
   if (stats.overlaps) errors.push(`${stats.overlaps} arrow segment(s) lie on top of each other:\n    ${stats.pairs.join('\n    ')}\n  Move one of the screens (change "below" or the order) or split the journey.`);
+  if (stats.hits.length) errors.push(`${stats.hits.length} arrow(s) would be drawn over a screen:\n    ${stats.hits.join('\n    ')}\n  Too many arrows share one gap. Move a screen (change "below" or the order) or split the journey.`);
 }
 
 // ---------- report, write, open ----------
 for (const w of warnings) console.log(`! ${w}`);
 if (errors.length) { for (const e of errors) console.error(`✗ ${e}`); process.exit(1); }
-const summary = `${journeys.length} journey(s), ${counter} screen frame(s), ${stats.arrows} arrow(s); no overlapping lines, ${stats.crossings} crossing(s)`;
+const summary = `${journeys.length} journey(s), ${counter} screen frame(s), ${stats.arrows} arrow(s); no overlapping lines, no line over a screen, ${stats.crossings} crossing(s)`;
 if (flag('check')) { console.log(`✓ ${rel(specFile)}: ${summary}`); process.exit(0); }
 
 const xml = `<mxfile host="app.diagrams.net" agent="mobile-prototype sketch">\n${pages.join('\n')}\n</mxfile>\n`;

@@ -9,7 +9,7 @@ How to find, confirm, read and register the user's documents (Phase 1).
 | **Spec** | PRD, spec, requirements, user stories, feature brief, BRD, acceptance criteria | users and context, goals, features in scope and out of scope, journeys, business rules, acceptance criteria, success metrics, edge cases they already thought about |
 | **Architecture** | ARCHITECTURE, ADR-*, system design, tech design, HLD/LLD, data flow, sequence diagrams | anything that changes behaviour the user sees: latency, offline/caching, sync, background work, auth/session, limits (one connection, page sizes, rate limits), failure modes, data freshness, platform constraints |
 | **Design** | UX, UI, wireframes, mockups, flows, style guide, brand, design system, screenshots, Figma links | screens and flows already drawn, visual direction, brand colours and type, components they expect, tone of voice |
-| **API** | OpenAPI/Swagger, GraphQL schema, proto, API.md, contracts | entities and fields (for realistic mock data), error codes (for error states), pagination, which calls are slow |
+| **API** | OpenAPI/Swagger, GraphQL schema, proto, API.md, contracts | entities and fields (for realistic content in the sketch), error codes (for error states), pagination, which calls are slow |
 | **Other** | research notes, analytics, support tickets, competitor screenshots, regulatory notes | constraints and evidence; treat as supporting, never authoritative unless the user says so |
 
 `scripts/discover-inputs.mjs` classifies by file name, folder and the first headings of text files.
@@ -52,7 +52,7 @@ Use ✔ (found), ~ (partial), ✗ (none).
 | Spec | nothing defines the product | ask the user for a short written description of the feature, its users and its main journey; write it to `notes/INPUTS.md` as the working spec and get it approved before Phase 2 |
 | Architecture | behaviour under latency, offline and failure is unknown | move question-bank topics T1–T5 and S3–S7 into Phase 3 (usually class D) |
 | Design | no visual direction | nothing to do for the sketch, which is deliberately plain; record it as class E. The look is settled in the optional design phase, starting from the platform baseline (Material 3 neutral palette; iOS system colours with a neutral tint) |
-| API | mock data must be invented | derive entities from the spec; make mock data realistic (real-looking names, dates, units, lengths); record it as an assumption |
+| API | the content shown on screens must be invented | derive entities from the spec; make the content realistic (real-looking names, dates, units, lengths); record it as an assumption |
 
 ## Reading rules
 

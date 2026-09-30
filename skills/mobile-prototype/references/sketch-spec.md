@@ -112,6 +112,9 @@ Every frame except the first needs at least one flow leading to it.
 - numbering in flow order, on every frame title, map box and page tab;
 - one route per arrow: straight to the next frame, straight up or down to a branch, and
   otherwise along a free lane between the rows. `--check` fails if two arrows would overlap;
+- nothing drawn over a screen: `--check` fails if an arrow would run through a frame or into the
+  page title, or if two frames would land on the same place. When it fails, move a screen
+  (`below`, or the order) or split the journey into two;
 - it never overwrites a diagram that was edited by hand without `--force` (and then keeps a
   `.bak`).
 

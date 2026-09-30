@@ -1,7 +1,7 @@
 # Reviewing the sketch before the user sees it
 
 `node scripts/sketch.mjs --check` covers the mechanics (valid spec, every frame reachable, no
-overlapping arrows). This list covers what a script can't judge. Go through it against
+overlapping arrows, no arrow over a screen, no two screens on the same place). This list covers what a script can't judge. Go through it against
 `flow.json`, fix what fails, regenerate, and only then show the sketch (gate C).
 
 ## Coverage
@@ -24,6 +24,10 @@ overlapping arrows). This list covers what a script can't judge. Go through it a
 - Back is drawn wherever leaving loses something (a half-filled form, a task in progress), with
   the confirmation the decisions call for.
 - A branch hangs under the screen it interrupts (`below`), not at the end of the row.
+- Arrow labels are short (a few words; break a longer one with `\n`). The script keeps lines and
+  frames apart, but it doesn't measure label text: a long label can sit over a neighbouring frame
+  or another label.
+- If `--check` reports many crossings on one page, the journey is doing too much: split it.
 
 ## Content
 

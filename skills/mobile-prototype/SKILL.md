@@ -28,18 +28,23 @@ Paths in this file are relative to this skill's directory (`scripts/…`, `refer
    HTML, and never place shapes or route arrows yourself.
 4. **Rough on purpose.** The sketch uses plain boxes in a hand-drawn style. No brand colours, no
    real components, no pixel decisions before the flow is locked.
-5. **Stop at every gate, and say what to read.** At each stop, end your turn: don't start the
+5. **Numbered and untangled.** Every screen frame carries a serial number (S1, S2, … in flow
+   order), and people refer to screens by it everywhere: chat, notes, the final-look screens, the
+   handoff. No two arrows share a line, no arrow runs over a screen, and no two screens sit on
+   top of each other. `sketch.mjs` enforces all of this and refuses to draw otherwise; never show
+   a sketch that didn't pass `--check`, and fix a failure in `flow.json`, not in the diagram.
+6. **Stop at every gate, and say what to read.** At each stop, end your turn: don't start the
    next phase ahead of the approval. Update `prototype/README.md` and close the message with the
    reading guide (see *Stops and the reading guide*).
-6. **Stop at a locked flow.** Deliver the sketch and a handoff package. Do not build a clickable
+7. **Stop at a locked flow.** Deliver the sketch and a handoff package. Do not build a clickable
    app, and do not generate Compose, SwiftUI, Kotlin, Swift or production web code.
-7. **Each platform behaves like itself.** Ask which platforms are in scope (P5). The sketch is one
+8. **Each platform behaves like itself.** Ask which platforms are in scope (P5). The sketch is one
    flow for all of them; where Android and iOS differ (back, dialogs versus sheets, permission
    rules) note it on the screen. Follow `references/platforms/<platform>/conventions.md`.
-8. **Everything lands in files** under `prototype/`, so a fresh session can resume.
-9. **First how it works, then how it looks.** The design phase is optional, starts only after the
-   flow is locked (gate C) and only when the user chooses it, and never blocks the handoff.
-10. **draw.io tooling helps; it never blocks.** Setup installs the draw.io MCP server. If its
+9. **Everything lands in files** under `prototype/`, so a fresh session can resume.
+10. **First how it works, then how it looks.** The design phase is optional, starts only after
+    the flow is locked (gate C) and only when the user chooses it, and never blocks the handoff.
+11. **draw.io tooling helps; it never blocks.** Setup installs the draw.io MCP server. If its
     tools aren't loaded in this session, say so in one line and carry on: the scripts write and
     open the diagram without it.
 
@@ -206,7 +211,7 @@ items), go straight on to Phase 4.
    `node scripts/sketch.mjs --style <wireflow|click-through|both>` writes `prototype/flow.drawio`.
    Screens are numbered S1, S2, … in flow order, and every arrow gets its own route.
 3. **Check it** before showing it: `node scripts/sketch.mjs --check` must pass (it validates the
-   spec and that no two arrows overlap), then go through `references/sketch-review.md`. Fix
+   spec, and that no two arrows overlap and nothing is drawn over a screen), then go through `references/sketch-review.md`. Fix
    `flow.json` and generate again; don't show a sketch with warnings you haven't looked at.
 4. **Show it**: `node scripts/sketch.mjs --style <style> --open` opens it in draw.io Desktop if
    installed, otherwise in the browser viewer. Give the user the file path too (it opens in the

@@ -137,6 +137,11 @@ const edgeXml = (e) => {
 const page = (id, name, cells) =>
   `<diagram id="${id}" name="${esc(name)}"><mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" math="0" shadow="0"><root><mxCell id="0"/><mxCell id="1" parent="0"/>\n${cells.join('\n').replace(/\u0001/g, '&lt;b&gt;').replace(/\u0002/g, '&lt;/b&gt;')}\n</root></mxGraphModel></diagram>`;
 const headerCell = (text, w) => vertex(nid('h'), text, `${SK}text;align=left;fontSize=20;fontStyle=1;strokeColor=none;fillColor=none;`, 140, 0, w, 34);
+const titleOf = (s) => s.title || `${s.screen} · ${s.state}`;
+// The serial number, as a dark tag in the top-left corner of a frame or map box: easy to find
+// and to refer to.
+const BADGE = 46;
+const badge = (s, x, y, h, parent) => vertex(nid('n'), bold(s.sid), `${SK}rounded=1;arcSize=20;fontSize=17;fillColor=#333333;fillStyle=solid;strokeColor=#333333;fontColor=#ffffff;`, x, y, BADGE, h, parent);
 const label = (s) => `${s.sid} · ${s.title || `${s.screen} · ${s.state}`}`;
 
 // ---------- one phone frame ----------
@@ -216,7 +221,8 @@ function measure(s) {
 function frame(s, m, x, y, H, linkFor = () => null) {
   const out = [], ctl = {};
   const f = nid('f');
-  out.push(vertex(f, label(s), `${SK}swimlane;startSize=${HEAD};rounded=1;arcSize=8;container=1;collapsible=0;strokeWidth=2;align=left;spacingLeft=10;fontSize=13;fontStyle=1;fillColor=#ffffff;swimlaneFillColor=${isOverlay(s) ? '#ececec' : '#ffffff'};`, x, y, FW, H));
+  out.push(vertex(f, titleOf(s), `${SK}swimlane;startSize=${HEAD};rounded=1;arcSize=8;container=1;collapsible=0;strokeWidth=2;align=left;spacingLeft=${BADGE + 8};fontSize=13;fontStyle=1;fillColor=#ffffff;swimlaneFillColor=${isOverlay(s) ? '#ececec' : '#ffffff'};`, x, y, FW, H));
+  out.push(badge(s, 0, 0, HEAD, f));
   const put = (b, bx, by, bw) => {
     const id = nid('c');
     out.push(vertex(id, b.text, SK + b.st, bx, by, bw, b.h, f, b.key ? linkFor(b.key) : null));
@@ -557,7 +563,8 @@ function mapPage(j) {
   const cells = [], nodes = {};
   for (const s of j.screens) {
     const g = at(s), id = nid('m');
-    cells.push(vertex(id, `${bold(s.sid)}\n${s.title || `${s.screen} · ${s.state}`}`, `${SK}rounded=1;fontSize=13;fillColor=${isOverlay(s) ? '#ececec' : '#ffffff'};strokeWidth=2;`, g.x, g.y, BW, BH, '1', link(s.id)));
+    cells.push(vertex(id, titleOf(s), `${SK}rounded=1;fontSize=13;spacingTop=18;fillColor=${isOverlay(s) ? '#ececec' : '#ffffff'};strokeWidth=2;`, g.x, g.y, BW, BH, '1', link(s.id)));
+    cells.push(badge(s, g.x, g.y, 28, '1'));
     nodes[s.id] = { ...g, id, ctl: {} };
   }
   const edges = arrows(j, nodes, GAPX, GAPY, 'map');

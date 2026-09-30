@@ -36,6 +36,9 @@ what a script can't judge. Go through it against
 - Texts fit their boxes. If a label is cut off in the diagram, shorten it.
 - Nothing suggests a visual decision: no colours, fonts or icon choices beyond what the script
   draws.
+- Review markup stays outside the screens. The S-number sits above each frame; remarks go in a
+  frame's `note`. Don't add tags, badges or plain-font text by hand: if something the reviewer
+  needs is missing or hard to read, change the script or the spec so every sketch gets it.
 
 ## Platforms
 

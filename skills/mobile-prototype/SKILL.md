@@ -29,8 +29,11 @@ Paths in this file are relative to this skill's directory (`scripts/…`, `refer
 4. **Rough on purpose.** The sketch uses plain boxes in a hand-drawn style. No brand colours, no
    real components, no pixel decisions before the flow is locked.
 5. **Numbered and untangled.** Every screen frame carries a serial number (S1, S2, … in flow
-   order, shown as a dark tag in its top-left corner), and people refer to screens by it everywhere: chat, notes, the final-look screens, the
-   handoff. No two arrows share a line or cross each other, no arrow runs over a screen, no two
+   order). It is written above the frame's top-left corner in the sketch font, outside the
+   screen, so it can't be taken for an app control or cover the back arrow. People refer to
+   screens by it everywhere: chat, notes, the final-look screens, the handoff. Anything you add
+   for the reviewer (a number, a remark) goes outside the phone frame or in the frame's `note`,
+   in the same sketch style; nothing inside a frame may be review markup. No two arrows share a line or cross each other, no arrow runs over a screen, no two
    screens sit on top of each other, and every arrow label sits clear of screens, arrows and
    other labels. `sketch.mjs` finds such a drawing or refuses to draw; never show a sketch that
    didn't pass `--check`, and fix a failure in `flow.json` (see "When the check fails" in

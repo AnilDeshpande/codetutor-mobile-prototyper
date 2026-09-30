@@ -109,8 +109,9 @@ Every frame except the first needs at least one flow leading to it.
 
 ## What the script guarantees
 
-- numbering in flow order: a dark tag with the number (S1, S2, …) in the top-left corner of
-  every frame and map box, and the number in every page tab;
+- numbering in flow order: the number (S1, S2, …) above the top-left corner of every frame and
+  map box, as plain text in the sketch font, and in every page tab. It sits outside the screen,
+  and arrows and arrow labels keep clear of it;
 - a clean drawing, or none. Each arrow goes straight to the next frame or straight up or down to
   a branch where it can; otherwise the script tries the routes it knows (around the side, along
   a lane between the rows, the long way round the page) and keeps one that lies on no other

@@ -19,8 +19,9 @@ Idea / PRD → clarify flow and decisions → rough screens + state branches →
   - **Click-through**: a small map, then one page per screen; clicking a button jumps to the
     screen it leads to.
   - **Both** in one file.
-- Every screen state carries a **number tag in flow order** (S1, S2, …), used everywhere a
-  screen is mentioned: in chat, in the notes, on the final-look screens and in the handoff.
+- Every screen state carries a **number in flow order** (S1, S2, …), written above its frame
+  and used everywhere a screen is mentioned: in chat, in the notes, on the final-look screens
+  and in the handoff.
 - The drawing is **untangled, or it isn't drawn**: no two arrows overlap or cross, no arrow runs
   over a screen, and every arrow label sits clear of screens, arrows and other labels.
 - The file opens in draw.io Desktop, the draw.io extension for VS Code, or app.diagrams.net. Edit

@@ -139,10 +139,11 @@ const page = (id, name, cells) =>
   `<diagram id="${id}" name="${esc(name)}"><mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" math="0" shadow="0"><root><mxCell id="0"/><mxCell id="1" parent="0"/>\n${cells.join('\n').replace(/\u0001/g, '&lt;b&gt;').replace(/\u0002/g, '&lt;/b&gt;')}\n</root></mxGraphModel></diagram>`;
 const headerCell = (text, w) => vertex(nid('h'), text, `${SK}text;align=left;fontSize=20;fontStyle=1;strokeColor=none;fillColor=none;`, 140, 0, w, 34);
 const titleOf = (s) => s.title || `${s.screen} · ${s.state}`;
-// The serial number, as a dark tag in the top-left corner of a frame or map box: easy to find
-// and to refer to.
-const BADGE = 46;
-const badge = (s, x, y, h, parent) => vertex(nid('n'), bold(s.sid), `${SK}rounded=1;arcSize=20;fontSize=17;fillColor=#333333;fillStyle=solid;strokeColor=#333333;fontColor=#ffffff;`, x, y, BADGE, h, parent);
+// The serial number sits above the top-left corner of a frame or map box, as plain text in the
+// sketch font: outside the screen, so it can't be mistaken for an app control or hide the back
+// arrow, and readable in every viewer. Arrows and arrow labels keep clear of it.
+const NUM_W = 38, NUM_H = 22, NUM_UP = 26;
+const number = (s, x, y, parent) => vertex(nid('n'), bold(s.sid), `${SK}text;align=left;verticalAlign=middle;fontSize=16;strokeColor=none;fillColor=none;`, x, y, NUM_W + 12, NUM_H, parent);
 const label = (s) => `${s.sid} · ${s.title || `${s.screen} · ${s.state}`}`;
 
 // ---------- one phone frame ----------
@@ -222,8 +223,8 @@ function measure(s) {
 function frame(s, m, x, y, H, linkFor = () => null) {
   const out = [], ctl = {};
   const f = nid('f');
-  out.push(vertex(f, titleOf(s), `${SK}swimlane;startSize=${HEAD};rounded=1;arcSize=8;container=1;collapsible=0;strokeWidth=2;align=left;spacingLeft=${BADGE + 8};fontSize=13;fontStyle=1;fillColor=#ffffff;swimlaneFillColor=${isOverlay(s) ? '#ececec' : '#ffffff'};`, x, y, FW, H));
-  out.push(badge(s, 0, 0, HEAD, f));
+  out.push(vertex(f, titleOf(s), `${SK}swimlane;startSize=${HEAD};rounded=1;arcSize=8;container=1;collapsible=0;strokeWidth=2;align=left;spacingLeft=10;fontSize=13;fontStyle=1;fillColor=#ffffff;swimlaneFillColor=${isOverlay(s) ? '#ececec' : '#ffffff'};`, x, y, FW, H));
+  out.push(number(s, 2, -NUM_UP, f));
   const put = (b, bx, by, bw) => {
     const id = nid('c');
     out.push(vertex(id, b.text, SK + b.st, bx, by, bw, b.h, f, b.key ? linkFor(b.key) : null));
@@ -292,6 +293,7 @@ const wrapText = (text, max) => String(text).split('\n').map((line) => {
 
 function routeEdges(nodes, flows, gapx, gapy) {
   const rects = Object.entries(nodes).map(([id, n]) => ({ id, l: n.x, t: n.y, r: n.x + n.w, b: n.y + n.h }));
+  const numbers = Object.entries(nodes).map(([id, n]) => ({ id: `the number of ${id}`, l: n.x, t: n.y - NUM_UP, r: n.x + NUM_W, b: n.y - NUM_UP + NUM_H }));
   const nT = tracksIn(gapx), nL = tracksIn(gapy);
   const used = {};
   const slot = (...ends) => {
@@ -311,6 +313,7 @@ function routeEdges(nodes, flows, gapx, gapy) {
     for (const s of segs) {
       if (s.y1 < TITLE) out.push('the page title');
       for (const r of rects) if (boxHits(s, r, r.id === f.from || r.id === f.to ? -2 : 8)) out.push(r.id);
+      for (const r of numbers) if (boxHits(s, r, 3)) out.push(r.id);
     }
     return [...new Set(out)];
   };
@@ -474,7 +477,7 @@ function routeEdges(nodes, flows, gapx, gapy) {
               const cx = s.p[0] + Math.sign(s.q[0] - s.p[0]) * d, cy = s.p[1] + Math.sign(s.q[1] - s.p[1]) * d;
               const box = { l: cx - w / 2, r: cx + w / 2, t: cy - h / 2, b: cy + h / 2 };
               const asSeg = { x1: box.l, x2: box.r, y1: box.t, y2: box.b };
-              if (box.t < TITLE || rects.some((r) => boxHits(asSeg, r, 4)) || placed.some((r) => boxHits(asSeg, r, 4))) continue;
+              if (box.t < TITLE || [...rects, ...numbers].some((r) => boxHits(asSeg, r, 4)) || placed.some((r) => boxHits(asSeg, r, 4))) continue;
               if (edges.some((o, n) => o.segs.some((g) => (n !== i || g.k !== s.k) && boxHits(g, box, n === i ? 1 : 4)))) continue;
               return { text, box, rel: ((s.before + d) / total) * 2 - 1 };
             }
@@ -511,7 +514,7 @@ function routeEdges(nodes, flows, gapx, gapy) {
       }
       if (!moved) break;
     }
-    const edges = [...fixed.map((e) => ({ ...e, bad: 0 })), ...free.map((f) => at.get(f))];
+    const edges = [...fixed.map((e) => ({ ...e, bad: hits(e.segs, e).length })), ...free.map((f) => at.get(f))];
     const problems = judge(edges);
     const fails = problems.length ? [] : label(edges);
     const total = problems.length * 1000 + fails.length;
@@ -564,8 +567,8 @@ function mapPage(j) {
   const cells = [], nodes = {};
   for (const s of j.screens) {
     const g = at(s), id = nid('m');
-    cells.push(vertex(id, titleOf(s), `${SK}rounded=1;fontSize=13;spacingTop=18;fillColor=${isOverlay(s) ? '#ececec' : '#ffffff'};strokeWidth=2;`, g.x, g.y, BW, BH, '1', link(s.id)));
-    cells.push(badge(s, g.x, g.y, 28, '1'));
+    cells.push(vertex(id, titleOf(s), `${SK}rounded=1;fontSize=13;fillColor=${isOverlay(s) ? '#ececec' : '#ffffff'};strokeWidth=2;`, g.x, g.y, BW, BH, '1', link(s.id)));
+    cells.push(number(s, g.x + 2, g.y - NUM_UP, '1'));
     nodes[s.id] = { ...g, id, ctl: {} };
   }
   const edges = arrows(j, nodes, GAPX, GAPY, 'map');

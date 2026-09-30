@@ -19,8 +19,10 @@ Idea / PRD → clarify flow and decisions → rough screens + state branches →
   - **Click-through**: a small map, then one page per screen; clicking a button jumps to the
     screen it leads to.
   - **Both** in one file.
-- Every screen state has a **number in flow order** (S1, S2, …), and every arrow has **its own
-  route**, so no two lines lie on top of each other.
+- Every screen state carries a **number tag in flow order** (S1, S2, …), used everywhere a
+  screen is mentioned: in chat, in the notes, on the final-look screens and in the handoff.
+- The drawing is **untangled, or it isn't drawn**: no two arrows overlap or cross, no arrow runs
+  over a screen, and every arrow label sits clear of screens, arrows and other labels.
 - The file opens in draw.io Desktop, the draw.io extension for VS Code, or app.diagrams.net. Edit
   it by hand if you like: the skill won't overwrite your edits, and carries them back into the
   flow.
@@ -35,6 +37,40 @@ It does not build a clickable web app, and it does not write Compose, SwiftUI, K
 
 Works with **Claude Code**, **Codex**, and any agent that reads `SKILL.md` folders (the open Agent
 Skills format).
+
+## What you get
+
+These pictures are the skill's own output for one example, *Pair a meter* from a glucose
+companion app: 11 screen states and 17 arrows. The files are in
+[`docs/examples/pair-a-meter/`](docs/examples/pair-a-meter/): the flow as data
+([`flow.json`](docs/examples/pair-a-meter/flow.json)) and the two diagrams generated from it,
+which you can open in draw.io.
+
+**Wireflow**: the whole journey on one page. The main path runs left to right (S1 to S6);
+branches such as "permission denied" hang under the screen they interrupt. Grey frames are
+overlays (a dialog or a system prompt) on the screen before them.
+
+![Wireflow of the Pair a meter journey: eleven numbered phone frames joined by labelled arrows](docs/examples/pair-a-meter/wireflow.png)
+
+**Click-through**: the same flow as a small map. Clicking a box opens that screen's page.
+
+![Click-through map: eleven numbered boxes joined by labelled arrows](docs/examples/pair-a-meter/click-through-map.png)
+
+On a screen's page, the blue controls jump to the screen they lead to, and a note lists where
+you can go from here.
+
+![The page for screen S3, the Bluetooth permission prompt, with a note listing its two exits](docs/examples/pair-a-meter/click-through-screen.png)
+
+**Final-look screens** (optional design phase): the same numbered screens in Material 3 and in
+the iOS system look, in light and dark.
+
+![Screens S6 and S10 in the Android look and in the iOS look](docs/examples/pair-a-meter/final-look.png)
+
+To regenerate the diagrams from the example flow:
+
+```bash
+node skills/mobile-prototype/scripts/sketch.mjs --spec docs/examples/pair-a-meter/flow.json --out docs/examples/pair-a-meter/wireflow.drawio --style wireflow
+```
 
 ```
 Spec · Architecture · Design · API docs
@@ -66,9 +102,24 @@ state, and one labelled transition per arrow. A script turns that into the diagr
 node skills/mobile-prototype/scripts/sketch.mjs --style wireflow --open
 ```
 
-The script does the numbering, the layout and the arrow routes, so two runs of the same flow
-give the same picture, and it fails rather than draw arrows that overlap, cross or run over a screen, or a label that sits on something else. The same
-`flow.json` later feeds the design phase, so the final-look screens always match the locked flow.
+The script does the numbering, the layout, the arrow routes and the label placement, so two runs
+of the same flow give the same picture:
+
+- Each arrow goes straight to the next screen, or straight down to a branch, where it can.
+  Otherwise the script tries the routes it knows (around the side, along a lane between the
+  rows, the long way round the page) and keeps a set in which no two arrows overlap or cross
+  and none runs over a screen.
+- Each label is wrapped and moved along its arrow until it is clear of everything else.
+- An arrow starts at the control that triggers it. When no clean route exists from there, it
+  starts at the frame's edge instead.
+- If the layout allows no such drawing, the script names the arrows or the label in the way and
+  writes nothing. The agent then changes the layout in `flow.json` (moves a screen, shortens a
+  label or splits the journey) and never shows a sketch that didn't pass.
+- It doesn't overwrite a diagram you edited by hand: the agent carries your edits into
+  `flow.json` first, and your version is kept as a `.bak`.
+
+The same `flow.json` later feeds the design phase, so the final-look screens always match the
+locked flow.
 
 ## Optional design phase
 

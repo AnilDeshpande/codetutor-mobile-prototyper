@@ -16,6 +16,7 @@ register first (Phase 2), and ask the user only if it remains class C or D (Phas
 | P3 | Which feature, journeys and screens are in scope for *this* prototype, and what is explicitly out? | yes | — |
 | P4 | How will we know the experience works (task completed, time, errors avoided)? | no | "the primary journey completes without help" |
 | P5 | Which platforms does this prototype target: Android, iOS or both? | yes | — (propose from the documents and the project's build files; never assume both) |
+| P6 | How should the sketch be laid out: a **wireflow** (every screen and arrow on one page), **click-through** (a map, then one page per screen with clickable buttons), or both? | no, but always ask: it is the user's preference | wireflow |
 
 ## J — Journeys
 
@@ -81,9 +82,9 @@ register first (Phase 2), and ask the user only if it remains class C or D (Phas
 
 | ID | Question | Blocking | Default if open |
 |---|---|---|---|
-| V1 | Brand colours, typeface, logo? | no | platform baseline: Material 3 neutral palette; iOS system colours with a neutral tint. A documented brand colour is applied in Phase 5 with `theme.mjs --brand`; everything else about the look waits for the optional design phase |
+| V1 | Brand colours, typeface, logo? | no | none in the sketch, which is deliberately plain. Record a documented brand colour or typeface as a decision; it is used in the optional design phase |
 | V2 | An existing app or screens to stay consistent with? | no | none |
-| V3 | Is dark theme in scope? | no | yes: check both themes |
+| V3 | Is dark theme in scope? | no | yes: the design phase shows both themes |
 | V4 | Information density: compact and data-heavy, or airy and guided? | no | from P1 (stressful context → guided) |
 
 ## X — Accessibility and compliance

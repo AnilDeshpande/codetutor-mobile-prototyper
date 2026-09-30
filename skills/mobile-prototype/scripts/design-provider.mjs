@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// The optional design provider for Phase 9: find, install, run or remove the ui-ux-pro-max skill
+// The optional design provider for the design phase: find, install, run or remove the ui-ux-pro-max skill
 // (MIT, © Next Level Builder). The prototype workflow never needs it; without it (or without
-// Python 3) Phase 9 uses the built-in baseline provider.
+// Python 3) the design phase uses the built-in baseline provider.
 //
 //   node design-provider.mjs --check [--json]                  is it installed and usable?
 //   node design-provider.mjs --install --host claude [--json]  install the pinned release (hosts: claude, codex, cursor, gemini, agents)

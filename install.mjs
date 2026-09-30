@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Install the mobile-prototype skill into one or more coding agents and make sure the Playwright MCP
-// server (a hard dependency) is configured for them. Zero dependencies; Node 18+.
+// Install the mobile-prototype skill into one or more coding agents and configure the official
+// draw.io MCP server (@drawio/mcp) for them. Zero dependencies; Node 18+.
 //
 //   node install.mjs                               install for every agent found (user scope)
 //   node install.mjs --agent claude,codex          specific agents: claude, codex, cursor, gemini, agents
@@ -90,20 +90,20 @@ if (flag('with-design')) {
 }
 
 if (flag('skip-mcp')) {
-  console.log('\nSkipped Playwright MCP configuration (--skip-mcp). The skill needs it for verification.');
+  console.log('\nSkipped the draw.io MCP server (--skip-mcp). The skill still writes and opens the sketch without it.');
   process.exit(0);
 }
 
 const mcpHosts = [...new Set(agents.map((a) => TARGETS[a].mcpHost).filter(Boolean))];
 if (!mcpHosts.length) {
-  console.log('\nConfigure the Playwright MCP server in your agent (it is required for verification):');
-  console.log(JSON.stringify({ mcpServers: { playwright: { command: 'npx', args: ['-y', '@playwright/mcp@latest', '--isolated'] } } }, null, 2));
+  console.log('\nTo open sketches in the draw.io editor from your agent, add the draw.io MCP server to it (optional):');
+  console.log(JSON.stringify({ mcpServers: { drawio: { command: 'npx', args: ['-y', '@drawio/mcp'] } } }, null, 2));
   process.exit(0);
 }
 
-console.log(`\nPlaywright MCP (required dependency) for: ${mcpHosts.join(', ')}`);
-const checker = path.join(SOURCE, 'scripts', 'check-playwright-mcp.mjs');
+console.log(`\ndraw.io MCP server for: ${mcpHosts.join(', ')}`);
+const checker = path.join(SOURCE, 'scripts', 'check-drawio-mcp.mjs');
 const checkArgs = [checker, '--host', mcpHosts.join(','), '--scope', scope, ...(scope === 'user' ? ['--global-only'] : []), ...(dryRun ? [] : ['--configure'])];
 const r = spawnSync(process.execPath, checkArgs, { stdio: 'inherit' });
-if (!dryRun) console.log(`\nDone. Restart your agent, then ask it to "prototype <feature> from <your docs>".`);
+if (!dryRun) console.log(`\nDone. Restart your agent, then ask it to "sketch the <feature> flow from <your docs>".`);
 process.exit(r.status ?? 0);

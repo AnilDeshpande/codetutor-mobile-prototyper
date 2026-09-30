@@ -59,7 +59,8 @@ draft copy marked as draft (C1).
 
 Close the message with the reading guide (SKILL.md, *Stops and the reading guide*): the table is
 the thing to review; `CLARIFICATIONS.md` is optional detail and `INPUTS.md` is only for checking a
-citation. Don't draft the flow or the scenarios in the same turn.
+citation. Under the table, ask which sketch style the user prefers (P6): wireflow, click-through
+or both. Don't write `flow.json` or draw anything in the same turn.
 
 Then wait. Treat silence or "looks good" as approval of the whole table only if the user clearly
 means it; if they correct IDs, update just those.

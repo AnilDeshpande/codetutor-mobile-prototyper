@@ -1,28 +1,30 @@
 #!/usr/bin/env node
-// Turn a design direction (the ```theme block in DESIGN.md) into platform tokens for the prototype,
-// check every text/background pair for contrast, and stop without writing anything if one fails.
+// Turn a design direction (the ```theme block in DESIGN.md) into platform tokens for the final-look
+// screens (docs/prototypes/look/, made by screens.mjs), check every text/background pair for contrast,
+// and stop without writing anything if one fails.
 //
-//   node theme.mjs --design prototype/notes/DESIGN.md [--out prototype]      apply to the prototype
-//   node theme.mjs --design <file> --option b                                 preview only: design/b/, for the style tile
+//   node theme.mjs --design docs/prototypes/notes/DESIGN.md [--out <folder>]      apply to the screens
+//   node theme.mjs --design <file> --option b                                 preview only: look/design/b/, for the style tile
 //   node theme.mjs --brand "#0B6E4F" [--font Inter]                           just the documented brand (V1), defaults for the rest
 //   node theme.mjs --design <file> --export design-system/<app>               also write material-theme.json + ios-theme.json
-//   node theme.mjs --remove                                                   back to the template baseline
-//   options: --platform android,ios (default: the platforms index.html links)  --offline  --no-fonts  --json
+//   node theme.mjs --remove                                                   back to the platform baseline
+//   options: --platform android,ios (default: the platforms look/index.html links)  --offline  --no-fonts  --json
 //
 // Android: the full Material 3 colour scheme from the brand colour, with Google's Material Color
 // Utilities (Apache-2.0, downloaded once to a cache on first use). Offline, a CIELAB approximation
 // with the same tones is used and flagged. iOS: the brand colour becomes the tint; system
-// backgrounds and labels stay. Writes tokens/<platform>.theme.css (linked after tokens/<platform>.css),
-// notes/THEME-REPORT.md and style-tile.html. Exit code 1 when a pair fails or the input is invalid.
+// backgrounds and labels stay. Writes look/tokens/<platform>.theme.css (linked after tokens/<platform>.css),
+// notes/THEME-REPORT.md and look/style-tile.html. Exit code 1 when a pair fails or the input is invalid.
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as C from './lib/color.mjs';
+import { workspace } from './lib/workspace.mjs';
 import { cacheDir, download, untar } from './lib/fetch-archive.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const TEMPLATE = path.join(HERE, '..', 'assets', 'prototype-template');
+const TEMPLATE = path.join(HERE, '..', 'assets', 'design-kit');
 const MCU = {
   version: '0.3.0',
   url: 'https://registry.npmjs.org/@material/material-color-utilities/-/material-color-utilities-0.3.0.tgz',
@@ -37,18 +39,19 @@ if (flag('help') || flag('h')) {
   console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 17).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
   process.exit(0);
 }
-const out = path.resolve(opt('out') || 'prototype');
+const out = workspace(opt('out'));
 const asJson = flag('json');
 const option = opt('option');
 const warnings = [];
 const fail = (msg) => { if (asJson) console.log(JSON.stringify({ ok: false, error: msg }, null, 2)); else console.error(`✗ ${msg}`); process.exit(1); };
 if (option && !/^[\w-]+$/.test(option)) fail('--option takes a short name: letters, digits, - and _');
 
-const indexFile = path.join(out, 'index.html');
+const kit = path.join(out, 'look'); // the final-look screens live here; notes stay in <out>/notes
+const indexFile = path.join(kit, 'index.html');
 const indexHtml = fs.existsSync(indexFile) ? fs.readFileSync(indexFile, 'utf8') : '';
 const linked = [...new Set([...indexHtml.matchAll(/href="tokens\/([\w-]+)\.css" data-platform/g)].map((m) => m[1]))];
 const platforms = opt('platform') ? opt('platform').replace('both', 'android,ios').split(',').map((s) => s.trim()) : linked;
-if (!platforms.length) fail(`No platforms: ${path.relative(process.cwd(), indexFile)} links none. Scaffold the prototype first, or pass --platform.`);
+if (!platforms.length) fail(`No platforms: ${path.relative(process.cwd(), indexFile)} links none. Run screens.mjs first, or pass --platform.`);
 for (const p of platforms) if (!['android', 'ios'].includes(p)) fail(`Unknown platform "${p}" (android, ios)`);
 
 const rel = (p) => path.relative(process.cwd(), p) || '.';
@@ -57,13 +60,13 @@ const themeLink = (p) => `<link rel="stylesheet" href="tokens/${p}.theme.css" da
 if (flag('remove')) {
   const removed = [];
   for (const p of platforms) {
-    const f = path.join(out, 'tokens', `${p}.theme.css`);
+    const f = path.join(kit, 'tokens', `${p}.theme.css`);
     if (fs.existsSync(f)) { fs.rmSync(f); removed.push(rel(f)); }
   }
-  for (const f of [indexFile, path.join(out, 'style-tile.html')]) {
+  for (const f of [indexFile, path.join(kit, 'style-tile.html')]) {
     if (fs.existsSync(f)) fs.writeFileSync(f, fs.readFileSync(f, 'utf8').replace(/\n?[ \t]*<link [^>]*data-theme-link>/g, ''));
   }
-  console.log(removed.length ? `Removed ${removed.join(', ')} and their links; the prototype uses the template baseline again.` : 'No theme files to remove.');
+  console.log(removed.length ? `Removed ${removed.join(', ')} and their links; the screens use the platform baseline again.` : 'No theme files to remove.');
   process.exit(0);
 }
 
@@ -410,7 +413,7 @@ function checkPairs(platform, effective) {
 async function fetchFonts(families, fontDir) {
   const faces = [];
   if (flag('no-fonts') || flag('offline') || process.env.MOBILE_PROTOTYPE_OFFLINE) {
-    if (families.length) warnings.push(`Fonts not downloaded (${families.join(', ')}): the prototype shows them only where they are installed.`);
+    if (families.length) warnings.push(`Fonts not downloaded (${families.join(', ')}): the screens show them only where they are installed.`);
     return faces;
   }
   for (const family of families) {
@@ -477,7 +480,7 @@ const notes = [];
 const errors = [];
 
 for (const platform of platforms) {
-  const baseFile = fs.existsSync(path.join(out, 'tokens', `${platform}.css`)) ? path.join(out, 'tokens', `${platform}.css`) : path.join(TEMPLATE, 'tokens', `${platform}.css`);
+  const baseFile = fs.existsSync(path.join(kit, 'tokens', `${platform}.css`)) ? path.join(kit, 'tokens', `${platform}.css`) : path.join(TEMPLATE, 'tokens', `${platform}.css`);
   const base = parseTokens(fs.readFileSync(baseFile, 'utf8'));
   const vars = { light: {}, dark: {} };
   let info = {};
@@ -521,8 +524,8 @@ const reportMd = [
   '',
 ].filter((l) => l !== null).join('\n');
 
-const destDir = option ? path.join(out, 'design', option) : path.join(out, 'tokens');
-const reportFile = option ? path.join(out, 'design', option, 'THEME-REPORT.md') : path.join(out, 'notes', 'THEME-REPORT.md');
+const destDir = option ? path.join(kit, 'design', option) : path.join(kit, 'tokens');
+const reportFile = option ? path.join(kit, 'design', option, 'THEME-REPORT.md') : path.join(out, 'notes', 'THEME-REPORT.md');
 fs.mkdirSync(path.dirname(reportFile), { recursive: true });
 fs.writeFileSync(reportFile, reportMd);
 
@@ -538,7 +541,7 @@ if (errors.length || failures.length) {
 
 // Fonts, then the CSS files.
 const families = [...new Set([design['font.display'], design['font.text']].filter((f) => f !== 'platform'))];
-const fontDir = path.join(out, 'fonts');
+const fontDir = path.join(kit, 'fonts');
 const faces = families.length ? await fetchFonts(families, fontDir) : [];
 const written = [];
 for (const [platform, { vars, info }] of Object.entries(perPlatform)) {
@@ -567,7 +570,7 @@ if (!option && indexHtml) {
 if (indexHtml) {
   const current = fs.readFileSync(indexFile, 'utf8');
   const tile = current
-    .replace(/<title>([^<]*?)(?: — prototype)?<\/title>/, '<title>$1 — style tile</title>')
+    .replace(/<title>([^<]*?)(?: — (?:prototype|screens))?<\/title>/, '<title>$1 — style tile</title>')
     .replace(/(\s*)<script src="core\.js"><\/script>/, `$1<script>
     // ?option=<name> previews design/<name>/<platform>.theme.css instead of the applied theme.
     // Only the active platform's preview is added: a script-inserted stylesheet can't be
@@ -585,10 +588,10 @@ if (indexHtml) {
       active.after(n);
     })();
   </script>$1<script src="core.js"></script>`)
-    .replace(/\s*<script src="mock-data\.js"><\/script>/, '')
-    .replace(/<script src="screens\.js"><\/script>/, '<script src="style-tile.js"></script>');
-  fs.writeFileSync(path.join(out, 'style-tile.html'), tile);
-  fs.copyFileSync(path.join(HERE, '..', 'assets', 'style-tile', 'style-tile.js'), path.join(out, 'style-tile.js'));
+    .replace(/\s*<script src="flow-data\.js"><\/script>/, '')
+    .replace(/<script src="flow-screens\.js"><\/script>/, '<script src="style-tile.js"></script>');
+  fs.writeFileSync(path.join(kit, 'style-tile.html'), tile);
+  fs.copyFileSync(path.join(HERE, '..', 'assets', 'style-tile', 'style-tile.js'), path.join(kit, 'style-tile.js'));
 }
 
 // Design-system level: data exports for the native team (no code).
@@ -633,5 +636,5 @@ if (asJson) {
   for (const n of [...notes, ...warnings]) console.log(`  ! ${n}`);
   console.log(`  wrote: ${written.join(', ')}`);
   console.log(`  report: ${rel(reportFile)}`);
-  console.log(`  style tile: ${rel(path.join(out, 'style-tile.html'))}${option ? `?option=${option}` : ''} (add &platform=<p>&theme=dark)`);
+  console.log(`  style tile: ${rel(path.join(kit, 'style-tile.html'))}${option ? `?option=${option}` : ''} (add &platform=<p>&theme=dark)`);
 }

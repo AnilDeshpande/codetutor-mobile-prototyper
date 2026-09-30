@@ -1,6 +1,6 @@
 # {{APP_NAME}} prototype — start here
 
-This folder holds a clickable UX prototype and the notes behind it. You only need the files in
+This folder holds a draw.io sketch of the app's screens and flow, and the notes behind it. You only need the files in
 **Read now**; the rest are there for reference or for the agent to resume from.
 
 ## Where we are
@@ -23,14 +23,11 @@ Waiting on you: confirm the documents
 | `notes/DECISIONS.md` | reference | What is agreed so far, and who decided it. |
 | `notes/INPUTS.md` | reference | The documents used and the facts taken from them, with citations. Open it to check where a proposal came from. |
 | `notes/STATE.md` | agent | Phase, gates passed and next step, so a new session can resume. You don't need to read it. |
+| `flow.json` | agent | The flow as data. The sketch is generated from it; tell the agent what to change rather than editing it. |
 <!-- Rows added by later stops, in this order:
-| `notes/FLOW.md` | you | Screens, navigation and the states each screen can be in. |
-| `scenarios/<journey>.md` | you | One journey step by step: what you do, what you should see. |
-| `index.html` (served URL) | you | The clickable prototype. |
-| `storyboard.html` | you | Every screen and state on one page. |
-| `notes/VERIFICATION.md` | reference | The browser test log: what was checked and the results. |
-| `screenshots/` | reference | Screenshots taken during verification. |
-| `style-tile.html` | you | The design directions to choose from (design phase only). |
+| `flow.drawio` | you | The sketch: every screen (S1, S2, …) and the arrows between them. Opens in draw.io Desktop, the draw.io VS Code extension or app.diagrams.net. |
+| `look/style-tile.html` | you | The design directions to choose from (design phase only). |
+| `look/screens.html` | you | Every screen in the final Android / iOS look (design phase only). |
 | `notes/DESIGN.md` | you | The chosen look, written down (design phase only). |
 | `notes/THEME-REPORT.md` | reference | Colours and contrast results for the theme. |
 | `HANDOFF.md` | you + native team | The final package for building the app. |

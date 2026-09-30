@@ -8,8 +8,8 @@
     {
       "name": "mobile-prototyper",
       "source": "./",
-      "description": "Spec + architecture + design docs -> verified, clickable Android / iOS UX prototype (bundles Playwright MCP).",
-      "version": "0.3.0"
+      "description": "Spec + architecture + design docs -> draw.io sketch of the Android / iOS flow, then an optional design phase (bundles the draw.io MCP server).",
+      "version": "0.4.0"
     }
   ]
 }

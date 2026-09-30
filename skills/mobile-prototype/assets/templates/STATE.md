@@ -7,13 +7,12 @@ Started: {{DATE}}
 | Phase | 1 — Discover inputs |
 | Gates passed | none |
 | Waiting on user | — (the stop the agent is paused at, and what it needs) |
-| Playwright MCP | unknown (check in Phase 0) |
-| Platforms | {{PLATFORMS}} |
+| draw.io MCP | unknown (check in Phase 0; the skill works without it) |
+| Platforms | not confirmed yet (settled at gate A) |
+| Sketch style | not chosen yet (asked at gate A): wireflow, click-through or both |
 | Scope | (feature / journeys being prototyped) |
-| Windows | phone first (compact / iphone); tablet sizes checked for breakage |
-| Themes | light, dark |
-| Verification round | 0 |
-| Design | none — optional after gate D: visual direction or design system (Phase 9) |
+| Flow | not drawn yet (`flow.json` → `flow.drawio`, locked at gate C) |
+| Design | none — optional after gate C: visual direction or design system (Phase 5) |
 | Design provider | — |
 
 ## Next step

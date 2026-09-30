@@ -9,10 +9,10 @@
       "expectations": [
         "Runs discover-inputs (or equivalent) and shows an availability table covering Spec, Architecture, Design and API",
         "Lists docs/PRD.md as spec, docs/ARCHITECTURE.md and docs/adr/0003-ble-pairing.md as architecture, design/ux-notes.md as design",
-        "Marks API as missing and says how that will be handled (mock data derived from the spec, recorded as an assumption)",
+        "Marks API as missing and says how that will be handled (not needed for a sketch; any data shown is example copy from the spec, recorded as an assumption)",
         "Reports the platform signals and suggests Android, citing ARCHITECTURE.md / ADR 0003 (Companion Device Manager), and asks the user to confirm the target platform instead of assuming both",
         "Asks the user to confirm the inputs before proposing answers",
-        "Does not write any prototype HTML in this turn"
+        "Does not write flow.json or draw anything in this turn"
       ]
     },
     {
@@ -24,7 +24,8 @@
         "Includes at least: primary users (adults with type 2 diabetes, many over 60), units (mmol/L), max 3 meters, skip-pairing option, brand colour #0B6E4F / Inter",
         "Distinguishes documented (A) from inferred (B) answers, e.g. offline behaviour of the readings list is documented by ARCHITECTURE.md",
         "Asks the user to approve all or correct by ID, and does not treat proposals as decided before approval",
-        "Mentions cosmetic defaults (class E) in one line rather than asking about them"
+        "Mentions cosmetic defaults (class E) in one line rather than asking about them",
+        "Asks, in one line under the table, which sketch style the user prefers (wireflow, click-through or both) and does not write flow.json or draw anything before approval"
       ]
     },
     {
@@ -43,7 +44,7 @@
       "id": 4,
       "name": "missing-spec-asks-for-description",
       "cwd": "an empty directory",
-      "prompt": "Make me a clickable prototype of a habit tracker app.",
+      "prompt": "Sketch the screens of a habit tracker app for me.",
       "expectations": [
         "Reports that no spec, architecture or design documents were found",
         "Asks for (or drafts from the prompt and asks to confirm) a short feature description: users, goal, main journey",
@@ -52,41 +53,42 @@
     },
     {
       "id": 5,
-      "name": "playwright-mcp-missing",
-      "setup": "Run in an agent session with no Playwright MCP tools available.",
+      "name": "drawio-mcp-missing-does-not-block",
+      "setup": "Run in an agent session with no draw.io MCP tools available.",
       "prompt": "Prototype the meter pairing onboarding from the docs.",
       "expectations": [
-        "Notices that browser_navigate / browser_snapshot tools are not available",
-        "Runs check-playwright-mcp.mjs and shows the result",
-        "Asks for permission before running it with --configure",
-        "Explains that a session restart is needed and records it in prototype/notes/STATE.md",
-        "Continues with input discovery and clarifications instead of stopping",
-        "Does not silently use a different browser tool for verification"
+        "Notices that no open_drawio_xml tool is available in the session and runs check-drawio-mcp.mjs for this agent only",
+        "Shows the result and asks before changing the agent's configuration; does not configure it without approval",
+        "Says in one line that a newly configured server loads after a restart, and that the skill works without it",
+        "Carries on with input discovery and the proposals in the same run; does not stop or wait for the tools",
+        "Records the draw.io MCP status in prototype/notes/STATE.md"
       ]
     },
     {
       "id": 6,
-      "name": "verifies-with-playwright-mcp",
-      "setup": "Playwright MCP available; clarifications already answered in prototype/notes (prepare by running evals 1–3 to completion).",
-      "prompt": "Build and verify the prototype now.",
+      "name": "draws-the-sketch-from-the-spec",
+      "setup": "Gates A and B have passed for the Android meter pairing prototype (decisions in prototype/notes/DECISIONS.md, including the 60 s lock conflict resolved as a confirm dialog); the user chose the wireflow style.",
+      "prompt": "Carry on.",
       "expectations": [
-        "Writes scenario files under prototype/scenarios/ with Given/When/Then before or alongside the screens",
-        "Serves the prototype with serve.mjs and drives it with Playwright MCP browser_* tools (resize, navigate, snapshot, click)",
-        "Exercises system back and runs window.__prototypeAudit()",
-        "Covers the permission-denied / Bluetooth-off path required by acceptance criterion 2",
-        "Saves screenshots under prototype/screenshots/android/<window>/<theme>/ and logs results in prototype/notes/VERIFICATION.md",
-        "Does not claim a scenario passes without a Playwright MCP run"
+        "Writes prototype/flow.json: one journey, one frame per screen state (including the empty Devices state, the Bluetooth rationale, the system permission prompt, permission denied, scanning, no meter found, pairing, the stop-pairing dialog and the paired state), and a labelled flow for every transition",
+        "Branches (the permission-denied state, the stop-pairing dialog) use \"below\" to hang under the screen they interrupt; flows start from a control key",
+        "Generates prototype/flow.drawio with sketch.mjs; does not hand-write draw.io XML or place shapes itself",
+        "Runs sketch.mjs --check and it passes (no overlapping arrows); looks at any warnings before showing the sketch",
+        "Opens or points to the diagram (sketch.mjs --open, or the file path), gives a short text outline with S-numbers, lists decisions made on the user's behalf and assumptions, and stops for the user to lock the flow",
+        "Does not create HTML, a look/ folder, scenarios or a verification log, and does not start the design phase"
       ]
     },
     {
       "id": 7,
       "name": "stops-at-handoff",
-      "setup": "Prototype verified; user has approved it.",
-      "prompt": "Looks great, approved.",
+      "setup": "The Android sketch has been shown; the design phase has not been discussed.",
+      "prompt": "Looks great, the flow is locked. No design pass, just give me the handoff.",
       "expectations": [
-        "Writes prototype/HANDOFF.md with screen inventory, navigation graph, per-screen state model, M3 component mapping, copy, decisions (assumptions listed first) and verification summary",
-        "Sets STATE.md to complete",
-        "Does not generate Jetpack Compose, Kotlin, SwiftUI or Swift code"
+        "Records the gate C approval in STATE.md and DECISIONS.md",
+        "Writes prototype/HANDOFF.md with the screen inventory by S-number, navigation graph, per-screen state model, Material 3 component mapping, copy, decisions with sources, open questions and the sketch as the visual reference",
+        "Says in the theme section that visual design was not done, rather than inventing one",
+        "Says plainly what was not checked: nothing was run as an app",
+        "Writes no Compose, SwiftUI, Kotlin or Swift code and stops after the handoff"
       ]
     },
     {
@@ -97,54 +99,52 @@
         "Records the target platform as iOS from the user's instruction (P5), citing the prompt",
         "Notices that ARCHITECTURE.md and ADR 0003 describe Android-specific pairing (Companion Device Manager) and asks how pairing works on iOS, rather than copying the Android behaviour",
         "Plans the Bluetooth permission the iOS way: optional pre-prompt, one system alert with a purpose string, one denial is final with an Open Settings path",
-        "Scaffolds with --platform ios and follows references/platforms/ios/conventions.md (navigation bar back button and large titles, no FAB, alerts / action sheets, tab bar)",
-        "Plans verification at iphone 393×852 and iphone-se 375×667 (and ipad if in scope), with the largest Dynamic Type pass",
-        "Does not build Android screens or generate SwiftUI code"
+        "Follows references/platforms/ios/conventions.md when planning the flow (navigation bar back button, no FAB, alerts / action sheets, tab bar, modal tasks with Cancel)",
+        "Records iOS as the platform in STATE.md and, later, in flow.json (\"platforms\": [\"ios\"])",
+        "Does not write flow.json before gate A, and does not generate SwiftUI code"
       ]
     },
     {
       "id": 10,
-      "name": "verifies-both-platforms",
-      "setup": "Playwright MCP available; clarifications answered with P5 = both Android and iOS (prepare by running evals 1–3 and answering 'both').",
-      "prompt": "Build and verify the prototype now.",
+      "name": "one-sketch-for-both-platforms",
+      "setup": "Gates A and B have passed with P5 = both Android and iOS; the user chose click-through.",
+      "prompt": "Carry on and draw it.",
       "expectations": [
-        "Scaffolds one prototype with --platform both and writes each screen once (no separate Android and iOS screen code)",
-        "Runs every journey on both platforms via ?platform=android and ?platform=ios, at the required windows for each (Android compact/medium/expanded, iOS iphone/iphone-se/ipad as scoped)",
-        "Checks back per platform, including the root: Android System back leaves the app; iOS back button or edge swipe, nothing at a tab's root",
-        "Covers the Bluetooth permission paths per platform: Android blocks after the second denial; iOS is blocked after one denial and offers Open Settings, with a purpose string",
-        "Saves screenshots under prototype/screenshots/android/… and prototype/screenshots/ios/…, and VERIFICATION.md has a Platform column",
-        "Treats a platform-foreign pattern (a FAB on iOS, an iOS-style back label on Android) as a major review finding"
+        "Writes one flow.json with platforms [android, ios]: a single shared flow, not one per platform",
+        "Notes platform differences on the frames that have them (for example: iOS permission denial is final and offers Open Settings; Android can ask a second time; Android system back versus iOS back button or Cancel)",
+        "Generates the sketch with --style click-through: a map page plus one page per screen",
+        "sketch.mjs --check passes and the user is asked to lock the flow"
       ]
     },
     {
       "id": 11,
       "name": "handoff-both-platforms",
-      "setup": "Two-platform prototype verified; user has approved it.",
-      "prompt": "Approved for both platforms, thanks.",
+      "setup": "Two-platform sketch locked at gate C; the design phase was declined.",
+      "prompt": "Locked for both platforms, thanks. Handoff please.",
       "expectations": [
         "HANDOFF.md has a component mapping for Android (Material 3) and for iOS (SwiftUI), marking components with no native equivalent (such as the undo toast) as custom",
         "Lists the intended SF Symbol for each icon and each iOS permission purpose string in the copy section",
         "Describes where navigation differs between the platforms (system back and leaving the app vs back button, edge swipe and modal Cancel)",
-        "Shows verification results per platform",
+        "Says what was checked (sketch.mjs --check, who locked the flow) and what was not (nothing was run as an app), and that visual design was not done",
         "Does not generate Compose, SwiftUI, Kotlin or Swift code"
       ]
     },
     {
       "id": 12,
       "name": "design-phase-offered-not-forced",
-      "setup": "Android prototype verified; no brand colour in the documents; the user has not mentioned visual design.",
-      "prompt": "Looks good, I approve the flow.",
+      "setup": "Android sketch shown; no brand colour in the documents; the user has not mentioned visual design.",
+      "prompt": "Looks good, lock the flow.",
       "expectations": [
-        "Records gate D as passed",
+        "Records gate C as passed (flow locked)",
         "Offers the optional design phase in one line (visual direction, design system, or straight to the handoff) and does not start it without the user's choice",
         "Did not run theme.mjs, create DESIGN.md or a style tile, or consult a design skill at any earlier phase",
-        "If the user declines, writes the handoff with the platform baseline look and says so in the theme section"
+        "If the user declines, writes the handoff, saying in the theme section that visual design was not done"
       ]
     },
     {
       "id": 13,
       "name": "design-phase-falls-back-without-python",
-      "setup": "Two-platform prototype approved at gate D; the user chose a visual direction; ui-ux-pro-max is not installed and Python 3 is not available on the machine.",
+      "setup": "Two-platform sketch locked at gate C; the user chose a visual direction; ui-ux-pro-max is not installed and Python 3 is not available on the machine.",
       "prompt": "Yes, give it a visual direction. It's a medical app for people managing diabetes.",
       "expectations": [
         "Runs design-provider.mjs --check, then tries --install; it reports that Python 3 is missing and installs nothing",
@@ -152,15 +152,15 @@
         "Proposes density, expressiveness and motion in plain language with reasons from the documents (for example restrained and minimal for a medical context) and asks in one round",
         "Writes two DESIGN.md options with the theme block filled and a rationale for each value",
         "Runs scripts/theme.mjs --option for each option; both contrast reports pass",
-        "Captures style-tile screenshots for each option on Android and iOS, light and dark, and asks the user to pick",
-        "After the pick, applies it with theme.mjs, changes only the look (no screens, states, navigation or approved copy change) and re-runs the full verification including the lowContrast audit",
-        "Asks for approval of the look (gate E2) and records the design mode and provider in STATE.md"
+        "Runs screens.mjs so look/ exists, and gives the user the style-tile links for each option on Android and iOS, light and dark, asking them to pick (gate D1)",
+        "After the pick, applies it with theme.mjs; the flow (screens, states, navigation, approved copy) is unchanged, and the user is asked to open look/screens.html and report its summary line",
+        "Asks for approval of the look (gate D2) and records the design mode and provider in STATE.md"
       ]
     },
     {
       "id": 14,
       "name": "design-theme-fails-contrast",
-      "setup": "Two-platform prototype approved at gate D; the user chose a visual direction.",
+      "setup": "Two-platform sketch locked at gate C; the user chose a visual direction.",
       "prompt": "Use our brand yellow, #FFCC00, as the main colour.",
       "expectations": [
         "Runs theme.mjs with brand #ffcc00; it stops because the iOS tint would be 1.3:1 and writes no theme files",
@@ -172,7 +172,7 @@
     {
       "id": 15,
       "name": "design-provider-installs-and-is-used",
-      "setup": "Android prototype approved at gate D; Python 3 is available; ui-ux-pro-max is not installed; network access is available.",
+      "setup": "Android sketch locked at gate C; Python 3 is available; ui-ux-pro-max is not installed; network access is available.",
       "prompt": "Let's do a design system for the build.",
       "expectations": [
         "Runs design-provider.mjs --install for this agent and shows the user the notice: ui-ux-pro-max v2.15.0, MIT licence, source repository, destination folder, only that one skill, how to remove it",
@@ -187,23 +187,37 @@
       "name": "stops-at-gate-a-with-reading-guide",
       "prompt": "Prototype the meter pairing onboarding. The docs in docs/ and design/ are authoritative; nothing else to add.",
       "expectations": [
-        "Creates the notes with scaffold.mjs --notes-only: prototype/README.md plus notes/STATE.md, INPUTS.md, CLARIFICATIONS.md and DECISIONS.md, and no other note files",
-        "Presents the A/B proposals table and ends the turn there: no notes/FLOW.md, no scenarios/*.md, no state inventory and no notes/VERIFICATION.md, not even as drafts",
-        "Ends the message with a short reading guide: how many files were created, what to review now in order (the table first, CLARIFICATIONS.md as optional detail), what is reference only (INPUTS.md, DECISIONS.md) and what is agent notes (STATE.md)",
+        "Creates the workspace with scaffold.mjs: prototype/README.md, flow.json (still the empty template) and notes/STATE.md, INPUTS.md, CLARIFICATIONS.md, DECISIONS.md, and no other files",
+        "Presents the A/B proposals table and ends the turn there: flow.json is not filled in and no flow.drawio exists",
+        "Ends the message with a short reading guide: how many files were created, what to review now in order (the table first, CLARIFICATIONS.md as optional detail), what is reference only (INPUTS.md, DECISIONS.md) and what is agent notes (STATE.md, flow.json)",
         "prototype/README.md names the current stop (gate A), what the user is asked to do, and marks each file as you / reference / agent",
         "STATE.md records the stop under Waiting on user"
       ]
     },
     {
       "id": 17,
-      "name": "gate-c-writes-flow-and-scenarios",
-      "setup": "Gates A and B have passed for the Android meter pairing prototype (decisions in prototype/notes/DECISIONS.md, including the 60 s lock conflict resolved as a confirm dialog).",
-      "prompt": "Carry on.",
+      "name": "hand-edited-diagram-is-not-overwritten",
+      "setup": "prototype/flow.drawio was generated and the user then moved frames and added a screen by hand in draw.io.",
+      "prompt": "I added a 'Rename meter' screen after pairing in the diagram. Also change 'Add device' to 'Pair meter'.",
       "expectations": [
-        "Copies the FLOW.md template to prototype/notes/FLOW.md and fills in the navigation map, screen list, state inventory with mock scenarios, back behaviour and what is out of scope",
-        "Writes one scenarios/<journey>.md per journey from the SCENARIO.md template, including the pairing cancellation and permission-denied paths",
-        "Shows the flow in chat as a short text diagram plus the screen list and stops for confirmation without scaffolding or writing HTML",
-        "The reading guide puts the diagram in chat first, then notes/FLOW.md, then the scenarios with the primary journey first; README.md is updated for gate C with the new files added to All files"
+        "sketch.mjs refuses to overwrite the hand-edited diagram; the agent does not reach for --force first",
+        "Reads the user's flow.drawio and carries their change (the new Rename meter screen and its arrows) into flow.json, asking if something about it is unclear",
+        "Applies the copy change in flow.json, not in the XML",
+        "Regenerates with --force, keeping the user's version as flow.drawio.bak, and says so",
+        "Shows the new sketch and asks again for the flow to be locked"
+      ]
+    },
+    {
+      "id": 18,
+      "name": "design-phase-renders-final-look-screens",
+      "setup": "Android sketch locked at gate C; the user chose a visual direction and picked option A at gate D1.",
+      "prompt": "Go with A.",
+      "expectations": [
+        "Applies the direction with theme.mjs; it writes look/tokens/android.theme.css and notes/THEME-REPORT.md and every contrast pair passes",
+        "The final-look screens come from screens.mjs and the locked flow.json: look/screens.html shows every screen state with the same S-numbers as the sketch; nothing in look/ is edited by hand",
+        "Does not change the flow: no screens, states or transitions are added or removed in flow.json",
+        "Tells the user how to open look/screens.html (serve.mjs) and what the summary line should say, and asks them to report it instead of claiming the checks passed",
+        "Stops at gate D2 for the user's approval of the look"
       ]
     },
     {

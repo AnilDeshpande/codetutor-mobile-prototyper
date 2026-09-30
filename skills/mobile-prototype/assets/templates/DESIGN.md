@@ -8,7 +8,7 @@
 | Platforms | android, ios · minimum OS: … |
 | Status | proposed · approved <date> by <name> |
 
-This file is the contract between a design provider and the prototype: the provider fills it in,
+This file is the contract between a design provider and the final-look screens: the provider fills it in,
 `scripts/theme.mjs` turns the `theme` block into platform tokens, and nothing else changes the
 look. Every value needs a reason in *Rationale*; everything below the theme block is guidance for
 screens and for the native team.

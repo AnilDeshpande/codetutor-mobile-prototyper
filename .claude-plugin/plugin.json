@@ -1,7 +1,7 @@
 {
   "name": "mobile-prototyper",
-  "version": "0.3.0",
-  "description": "Turn a spec, architecture and design docs into a verified, clickable HTML prototype of a native mobile app (Android, iOS or both). Answers what the documents already answer (with your approval), asks you the rest, verifies every journey with the Playwright MCP server, and offers an optional design pass once the UX is approved.",
+  "version": "0.4.0",
+  "description": "Turn a spec, architecture and design docs into a rough draw.io prototype of a native mobile app (Android, iOS or both): numbered screens, their states and the arrows between them. Answers what the documents already answer (with your approval), asks you the rest, draws the flow as an editable .drawio file, and offers an optional design phase (design system and final-look screens) once the flow is locked.",
   "author": {
     "name": "Anil Deshpande"
   },
@@ -14,7 +14,8 @@
     "ios",
     "mobile",
     "ux",
-    "playwright",
+    "drawio",
+    "wireframe",
     "agent-skills"
   ],
   "skills": "./skills/",

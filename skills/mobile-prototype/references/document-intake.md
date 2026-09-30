@@ -51,7 +51,7 @@ Use ✔ (found), ~ (partial), ✗ (none).
 |---|---|---|
 | Spec | nothing defines the product | ask the user for a short written description of the feature, its users and its main journey; write it to `notes/INPUTS.md` as the working spec and get it approved before Phase 2 |
 | Architecture | behaviour under latency, offline and failure is unknown | move question-bank topics T1–T5 and S3–S7 into Phase 3 (usually class D) |
-| Design | no visual direction | use the platform baseline (`tokens/android.css`: Material 3 neutral palette; `tokens/ios.css`: system colours with a neutral tint); record it as class E; ask V1–V2 only if the user cares about the look for this round |
+| Design | no visual direction | nothing to do for the sketch, which is deliberately plain; record it as class E. The look is settled in the optional design phase, starting from the platform baseline (Material 3 neutral palette; iOS system colours with a neutral tint) |
 | API | mock data must be invented | derive entities from the spec; make mock data realistic (real-looking names, dates, units, lengths); record it as an assumption |
 
 ## Reading rules

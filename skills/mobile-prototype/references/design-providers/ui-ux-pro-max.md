@@ -68,7 +68,7 @@ put private project data (names of people, internal codenames, figures) in a que
 | `colors.destructive`, `background`, `card`, `muted`, `border`, `ring`, all `on_*` | — | ignored: Material 3 derives surfaces and on-colours from the brand, and iOS keeps its system colours |
 | `typography.heading` / `body` | `font.display` / `font.text` | only if the font is on Google Fonts (it links them) and suits body text at small sizes; keep `platform` for body on iOS unless the brand needs it |
 | `style.name`, `keywords` | *Intent*, `expressiveness`, `shape` | e.g. minimal/Swiss → restrained + rounded or square; playful/soft → soft |
-| `constraints` containing `wcag-aaa` | `contrast: high` | also add it to *Accessibility commitments*, and verify with `__prototypeAudit({ minContrast: 7 })` |
+| `constraints` containing `wcag-aaa` | `contrast: high` | also add it to *Accessibility commitments*; `theme.mjs` and `look/screens.html` then check at 7:1 |
 | `anti_patterns`, `decision_rules` | *Colour use* / *Components and emphasis* | as don'ts, where they apply to an app |
 | `category` | *Intent* | cite it: "Provider category: Healthcare App" |
 | `spacing_scale`, `dials` | — | our density choice already sets spacing |
@@ -92,5 +92,5 @@ Keep the raw output for provenance, not as a second source of truth:
   `--format markdown` instead of `--json`). Don't use its `--persist`: it writes a `MASTER.md`
   that its own skill treats as the master, which would compete with the approved `DESIGN.md`.
 
-Everything after this — style tiles, `theme.mjs`, the re-verification and the approvals — is the
+Everything after this — style tiles, `theme.mjs`, the check and the approvals — is the
 same as with the baseline provider (`references/design-phase.md`).

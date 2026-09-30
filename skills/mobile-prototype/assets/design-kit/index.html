@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>{{APP_NAME}} — prototype</title>
+  <title>{{APP_NAME}} — screens</title>
   <link rel="stylesheet" href="base.css">
   <!-- One tokens + one shell stylesheet per platform in scope. core.js keeps the active platform
        (?platform=…, otherwise the first one listed) and disables the others. -->
@@ -14,8 +14,9 @@
   <!-- The platform adapter draws the device chrome into #app; screens render into <main id="screen">. -->
   <div class="app" id="app"></div>
 
-  <script src="mock-data.js"></script>
+  <!-- flow-data.js is the approved flow (window.FLOW), written by scripts/screens.mjs. -->
+  <script src="flow-data.js"></script>
 {{PLATFORM_SCRIPTS}}
-  <script src="screens.js"></script>
+  <script src="flow-screens.js"></script>
 </body>
 </html>

@@ -1,16 +1,16 @@
-/* Prototype runtime, shared by every platform: back stack, screen states, mock API, overlays,
-   debug panel and the audit. The platform look and behaviour (device chrome, how components,
-   dialogs and permission prompts look and act, what back does at the root) comes from
-   platform/<name>.js, which registers itself with App.registerPlatform().
-   Screens are defined in screens.js with App.start({...}); data lives in mock-data.js.
-   You normally don't need to edit this file.
+/* Design-kit runtime, shared by every platform: it draws one screen state of the flow in the
+   platform's look, with its overlays, and runs the audit. The platform look (device chrome, how
+   components, dialogs and permission prompts look) comes from platform/<name>.js, which
+   registers itself with App.registerPlatform(). Screens come from flow-screens.js, which reads
+   the flow spec in flow-data.js. Generated into prototype/look/ by scripts/screens.mjs; the
+   style tile (style-tile.js) uses it too. Don't edit the copies in look/.
 
    URL parameters
      platform=<android|ios>  which platform to show when the prototype has more than one
      scenario=<id>      mock scenario from mock-data.js (default: "default")
      latency=<fast|normal|slow|ms>
      screen=<id>&state=<state>&params=<json>   open a screen directly, optionally forcing a state
-     theme=<light|dark> force a theme (otherwise follows the browser / browser_emulate_media)
+     theme=<light|dark> force a theme (otherwise follows the browser)
      fontScale=<n>      text size multiplier, e.g. 2 for 200 %
      chrome=off|on      hide or show the simulated status and system bars (default: shown, except
                         on a touch device such as a real phone, which has its own)
@@ -181,7 +181,7 @@
     if (!P) throw new Error(`No platform adapter for "${platformName}". Is platform/${platformName}.js loaded?`);
     Object.assign(ICONS, P.icons || {});
     Object.assign(UI, P.ui || {});
-    document.title = `${def.appName || 'App'} — prototype`;
+    document.title = `${def.appName || 'App'} — screens`;
 
     const app = $('#app');
     app.innerHTML = P.chrome({ appName: def.appName || 'App', esc, icon });
@@ -196,7 +196,7 @@
     wireEvents();
     if (cfg.debug) buildDebugPanel();
 
-    // Browser back (and Playwright's browser_navigate_back) acts as the platform's back.
+    // Browser back acts as the platform's back.
     history.replaceState({ app: 'base' }, '');
     history.pushState({ app: 'trap' }, '');
     addEventListener('popstate', () => { back(); history.pushState({ app: 'trap' }, ''); });
@@ -509,7 +509,7 @@
     document.body.append(toggle, panel);
   }
 
-  // ---------- audit for Playwright MCP: browser_evaluate(() => window.__prototypeAudit()) ----------
+  // ---------- audit: look/screens.html calls window.__prototypeAudit() on every screen ----------
   // Pass { minContrast: 7 } when the product commits to WCAG AAA (DESIGN.md "contrast: high").
   window.__prototypeAudit = function ({ minContrast = 4.5 } = {}) {
     const minTarget = P?.minTarget || 48;

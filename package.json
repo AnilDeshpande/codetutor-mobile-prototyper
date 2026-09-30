@@ -1,7 +1,7 @@
 {
   "name": "codetutor-mobile-prototyper",
-  "version": "0.3.0",
-  "description": "Agent skill: turn a spec, architecture and design docs into a verified, clickable Android / iOS UX prototype (Playwright MCP).",
+  "version": "0.4.0",
+  "description": "Agent skill: turn a spec, architecture and design docs into a rough draw.io prototype of an Android / iOS flow, with an optional design phase.",
   "type": "module",
   "bin": {
     "mobile-prototype-install": "install.mjs"
@@ -25,7 +25,7 @@
     "prototype",
     "android",
     "ios",
-    "playwright",
+    "drawio",
     "mcp"
   ],
   "author": "Anil Deshpande",

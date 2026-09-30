@@ -1,6 +1,6 @@
 # Handoff — {{APP_NAME}}
 
-Approved by: <name> on <date> · Platforms: <android / ios> (min OS: <…>) · Prototype: `prototype/index.html` · Storyboard: `prototype/storyboard.html`
+Flow locked by: <name> on <date> · Platforms: <android / ios> (min OS: <…>) · Sketch: `prototype/flow.drawio` · Final look: <`prototype/look/screens.html` / not done>
 
 ## 1. Summary
 
@@ -9,8 +9,8 @@ Approved by: <name> on <date> · Platforms: <android / ios> (min OS: <…>) · P
 |---|---|
 
 ## 3. Screen inventory
-| Screen id | Title | Purpose | Entry points | Destination |
-|---|---|---|---|---|
+| S-number(s) | Screen id | Title | Purpose | Entry points | Destination |
+|---|---|---|---|---|---|
 
 ## 4. Navigation graph
 ```
@@ -23,19 +23,21 @@ Approved by: <name> on <date> · Platforms: <android / ios> (min OS: <…>) · P
 ```
 <ScreenName>UiState = Loading | Content(…) | Empty | Error(message, canRetry) | Offline(cached)
 ```
-| Screen | State | Trigger | What the user sees |
-|---|---|---|---|
+| Screen | State | S-number | Trigger | What the user sees |
+|---|---|---|---|---|
 
 ## 6. Component mapping
 ### Android (Material 3)
-| Prototype element | M3 component | Variant / notes |
+| Sketch element | M3 component | Variant / notes |
 |---|---|---|
 ### iOS (SwiftUI)
-| Prototype element | SwiftUI component | Variant / notes (custom? SF Symbol) |
+| Sketch element | SwiftUI component | Variant / notes (custom? SF Symbol) |
 |---|---|---|
 
 ## 7. Theme
-Look: <platform baseline | visual direction A, approved <date> | design system `design-system/<app>/`> · Source: `notes/DESIGN.md` · Contrast: `notes/THEME-REPORT.md` (<n>/<n> pairs pass)
+Look: <visual design not done: platform baseline | visual direction A, approved <date> | design system `design-system/<app>/`> · Source: `notes/DESIGN.md` · Contrast: `notes/THEME-REPORT.md` (<n>/<n> pairs pass)
+
+(If the design phase didn't run, leave the tables below out.)
 ### Android (Material 3 colour scheme)
 Seed <#hex> · variant <tonal-spot…> · dynamic colour <off / on> · <material-theme.json if a design system>
 | Role | Light | Dark |
@@ -64,14 +66,19 @@ AccentColor <#light> / <#dark> · other colours: system semantic colours · mate
 | ID | Question | Owner |
 |---|---|---|
 
-## 11. Verification
-| Scenario | Android: compact | medium | expanded | iOS: iphone | iphone-se | ipad | dark |
-|---|---|---|---|---|---|---|---|
-Not verified:
+## 11. What was checked
+| Check | Result |
+|---|---|
+| `sketch.mjs --check` (spec valid, every screen reachable, no overlapping arrows) | |
+| Flow locked by the user (gate C) | |
+| Theme contrast (`THEME-REPORT.md`), if the design phase ran | |
+| `look/screens.html` checks, as reported by the user, if the design phase ran | |
+
+Not checked: behaviour (nothing was run as an app).
 
 ## 12. Visual references
-| Screen · state | Screenshot |
-|---|---|
+| Journey | Page in `flow.drawio` | Screens (S-numbers) | Final look (if done) |
+|---|---|---|---|
 
-## 13. Faked in the prototype
+## 13. Out of scope for the prototype
 -

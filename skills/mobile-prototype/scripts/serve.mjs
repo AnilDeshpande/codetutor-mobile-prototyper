@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// Zero-dependency static server for the prototype. Prints a local URL (for Playwright MCP) and a
-// LAN URL (to open the prototype on a real phone on the same Wi-Fi).
+// Zero-dependency static server for the design phase's final-look screens (prototype/look/, made
+// by screens.mjs). Prints the local URL; with --host 0.0.0.0 also a LAN URL, to open the screens
+// on a real phone on the same Wi-Fi.
 //
-//   node serve.mjs [--dir prototype] [--port 4173] [--host 0.0.0.0]
+//   node serve.mjs [--dir prototype/look] [--port 4173] [--host 127.0.0.1]
 //
 // If the port is busy it tries the next ones. Files are served with no-cache headers so every
 // reload shows the latest edit.
@@ -14,12 +15,12 @@ import path from 'node:path';
 
 const args = process.argv.slice(2);
 const opt = (name, def) => { const i = args.indexOf(`--${name}`); return i >= 0 ? args[i + 1] : def; };
-const dir = path.resolve(opt('dir', 'prototype'));
+const dir = path.resolve(opt('dir', 'prototype/look'));
 let port = Number(opt('port', 4173));
-const host = opt('host', '0.0.0.0');
+const host = opt('host', '127.0.0.1');
 
 if (!fs.existsSync(path.join(dir, 'index.html'))) {
-  console.error(`No index.html in ${dir}. Run scaffold.mjs first, or pass --dir.`);
+  console.error(`No index.html in ${dir}. Run screens.mjs first (design phase), or pass --dir.`);
   process.exit(1);
 }
 
@@ -50,7 +51,7 @@ server.on('error', (e) => {
 server.listen(port, host, () => {
   const lan = Object.values(os.networkInterfaces()).flat().find((i) => i && i.family === 'IPv4' && !i.internal)?.address;
   console.log(`Serving ${path.relative(process.cwd(), dir) || '.'}`);
-  console.log(`  Local:  http://localhost:${port}/`);
-  if (lan && host === '0.0.0.0') console.log(`  Phone:  http://${lan}:${port}/   (same Wi-Fi network)`);
-  console.log(`  Storyboard: http://localhost:${port}/storyboard.html`);
+  console.log(`  All screens: http://localhost:${port}/screens.html`);
+  if (fs.existsSync(path.join(dir, 'style-tile.html'))) console.log(`  Style tile:  http://localhost:${port}/style-tile.html`);
+  if (lan && host === '0.0.0.0') console.log(`  Phone:       http://${lan}:${port}/   (same Wi-Fi network)`);
 });

@@ -1,15 +1,18 @@
 #!/usr/bin/env node
-// Check whether the Playwright MCP server is configured for the coding agents on this machine,
-// and optionally configure it. Never prints env values, headers or other secrets from config files.
+// Check whether the official draw.io MCP server (@drawio/mcp) is configured for the coding agents
+// on this machine, and optionally configure it. It also reports whether draw.io Desktop is
+// installed. Never prints env values, headers or other secrets from config files.
 //
-//   node check-playwright-mcp.mjs                         report for every agent found
-//   node check-playwright-mcp.mjs --host claude,codex     report for specific agents
-//   node check-playwright-mcp.mjs --configure --host codex [--scope user|project] [--headless]
-//   node check-playwright-mcp.mjs --smoke                 also start the server once and list its tools
-//   node check-playwright-mcp.mjs --json                  machine-readable output
-//   node check-playwright-mcp.mjs --global-only           ignore project-level config (for user-wide installs)
+//   node check-drawio-mcp.mjs                         report for every agent found
+//   node check-drawio-mcp.mjs --host claude,codex     report for specific agents
+//   node check-drawio-mcp.mjs --configure --host codex [--scope user|project]
+//   node check-drawio-mcp.mjs --smoke                 also start the server once and list its tools
+//   node check-drawio-mcp.mjs --json                  machine-readable output
+//   node check-drawio-mcp.mjs --global-only           ignore project-level config (for user-wide installs)
 //
-// Exit code: 0 when every requested agent has Playwright MCP, 2 when some don't, 1 on usage errors.
+// The skill works without the server (sketch.mjs writes and opens the .drawio file itself); the
+// server adds tools that open a diagram in the draw.io editor.
+// Exit code: 0 when every requested agent has the server, 2 when some don't, 1 on usage errors.
 
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -17,22 +20,22 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const SERVER_NAME = 'playwright';
-const PACKAGE = '@playwright/mcp@latest';
+const SERVER_NAME = 'drawio';
+const PACKAGE = '@drawio/mcp';
 const ALL_HOSTS = ['claude', 'codex', 'cursor', 'gemini'];
 const HOME = os.homedir();
 const CWD = process.cwd();
 
 const opts = parseArgs(process.argv.slice(2));
 if (opts.help) {
-  console.log(fs.readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 12).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
+  console.log(fs.readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 15).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
   process.exit(0);
 }
 
-const serverArgs = ['-y', PACKAGE, '--isolated', ...(opts.headless ? ['--headless'] : [])];
+const serverArgs = ['-y', PACKAGE];
 const serverEntry = { command: 'npx', args: serverArgs };
 
-const report = { node: checkNode(), hosts: [], smoke: null };
+const report = { node: checkNode(), desktop: checkDesktop(), hosts: [], smoke: null };
 const hosts = resolveHosts(opts.host);
 
 for (const host of hosts) {
@@ -58,7 +61,7 @@ process.exit(missing.length || (report.smoke && !report.smoke.ok) ? 2 : 0);
 // ---------------------------------------------------------------------------
 
 function parseArgs(argv) {
-  const o = { host: 'auto', scope: 'user', configure: false, smoke: false, json: false, headless: false, globalOnly: false, help: false };
+  const o = { host: 'auto', scope: 'user', configure: false, smoke: false, json: false, globalOnly: false, help: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--host') o.host = argv[++i];
@@ -68,7 +71,6 @@ function parseArgs(argv) {
     else if (a === '--configure') o.configure = true;
     else if (a === '--smoke') o.smoke = true;
     else if (a === '--json') o.json = true;
-    else if (a === '--headless') o.headless = true;
     else if (a === '--global-only') o.globalOnly = true;
     else if (a === '--help' || a === '-h') o.help = true;
     else { console.error(`Unknown option: ${a}`); process.exit(1); }
@@ -110,10 +112,10 @@ function readJson(file) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return null; }
 }
 
-function isPlaywright(name, entry = {}) {
-  if (/playwright/i.test(name)) return true;
+function isDrawio(name, entry = {}) {
+  if (/draw\.?io|diagrams\.net/i.test(name)) return true;
   const shape = JSON.stringify({ c: entry.command, a: entry.args, u: entry.url });
-  return shape.includes('@playwright/mcp');
+  return shape.includes('@drawio/mcp') || shape.includes('drawio-mcp') || shape.includes('mcp.draw.io');
 }
 
 function describeEntry(entry = {}) {
@@ -124,7 +126,7 @@ function describeEntry(entry = {}) {
 function fromMcpServers(obj, where) {
   const servers = obj && typeof obj === 'object' ? obj : {};
   return Object.entries(servers)
-    .filter(([name, entry]) => isPlaywright(name, entry))
+    .filter(([name, entry]) => isDrawio(name, entry))
     .map(([name, entry]) => ({ name, where, command: describeEntry(entry) }));
 }
 
@@ -164,7 +166,7 @@ function detectClaude() {
     const r = spawnSync('claude', ['mcp', 'list'], { encoding: 'utf8', timeout: 60_000 });
     for (const line of (r.stdout || '').split(/\r?\n/)) {
       const m = line.match(/^(\S+):\s+(.*?)(?:\s+-\s+[✔✗!].*)?$/);
-      if (m && isPlaywright(m[1], { command: m[2] })) found.push({ name: m[1], where: 'claude mcp list', command: m[2] });
+      if (m && isDrawio(m[1], { command: m[2] })) found.push({ name: m[1], where: 'claude mcp list', command: m[2] });
     }
   }
   return dedupe(found);
@@ -186,7 +188,7 @@ function tomlServers(file, where) {
     const args = body.match(/^\s*args\s*=\s*\[([^\]]*)\]/m)?.[1];
     const url = body.match(/^\s*url\s*=\s*"([^"]*)"/m)?.[1];
     const entry = { command, url, args: args ? [...args.matchAll(/"([^"]*)"/g)].map((x) => x[1]) : [] };
-    if (isPlaywright(h.name, entry)) found.push({ name: h.name, where, command: describeEntry(entry) });
+    if (isDrawio(h.name, entry)) found.push({ name: h.name, where, command: describeEntry(entry) });
   });
   return found;
 }
@@ -245,7 +247,7 @@ function configureClaude(scope) {
     return { ok: r.status === 0, message: `claude ${args.join(' ')}`, output: (r.stdout + r.stderr).trim() };
   }
   if (scope === 'project') return mergeJsonConfig(path.join(CWD, '.mcp.json'));
-  return { ok: false, message: 'The claude CLI is not on PATH. Install the mobile-prototyper plugin (it bundles Playwright MCP), or re-run with --scope project to write ./.mcp.json.' };
+  return { ok: false, message: 'The claude CLI is not on PATH. Install the mobile-prototyper plugin (it bundles the draw.io MCP server), or re-run with --scope project to write ./.mcp.json.' };
 }
 
 function configureCodex(scope) {
@@ -283,9 +285,15 @@ function checkNode() {
   return { version: process.versions.node, ok: major >= 18, npx: !!which('npx') };
 }
 
+/** draw.io Desktop opens .drawio files offline and exports PNG/SVG/PDF; optional. */
+function checkDesktop() {
+  const mac = process.platform === 'darwin' && fs.existsSync('/Applications/draw.io.app');
+  return { installed: mac || !!which('drawio') || !!which('draw.io') };
+}
+
 function smokeTest() {
   return new Promise((resolve) => {
-    const child = spawn('npx', [...new Set([...serverArgs, '--headless'])], { stdio: ['pipe', 'pipe', 'pipe'], shell: process.platform === 'win32' });
+    const child = spawn('npx', serverArgs, { stdio: ['pipe', 'pipe', 'pipe'], shell: process.platform === 'win32' });
     let out = '';
     let err = '';
     const done = (result) => { clearTimeout(timer); child.kill(); resolve(result); };
@@ -297,7 +305,7 @@ function smokeTest() {
           const msg = JSON.parse(line);
           if (msg.id === 2) {
             const tools = (msg.result?.tools || []).map((t) => t.name);
-            const need = ['browser_navigate', 'browser_snapshot', 'browser_click', 'browser_take_screenshot', 'browser_resize', 'browser_evaluate'];
+            const need = ['open_drawio_xml'];
             const lacking = need.filter((n) => !tools.includes(n));
             done({ ok: lacking.length === 0, tools: tools.length, lacking });
           }
@@ -324,9 +332,10 @@ function hintFor(stderr) {
 
 function printReport(r, o) {
   const tick = (b) => (b ? '✔' : '✗');
-  console.log(`Node ${r.node.version} ${tick(r.node.ok)}${r.node.ok ? '' : ' (Playwright MCP needs Node 18+)'}   npx ${tick(r.node.npx)}`);
+  console.log(`Node ${r.node.version} ${tick(r.node.ok)}${r.node.ok ? '' : ' (needs Node 18+)'}   npx ${tick(r.node.npx)}`);
+  console.log(`draw.io Desktop ${r.desktop.installed ? '✔' : '–  not installed (optional: diagrams open in the browser viewer instead; https://www.drawio.com)'}`);
   console.log('');
-  console.log('Playwright MCP by agent');
+  console.log('draw.io MCP server by agent');
   for (const h of r.hosts) {
     if (!h.present) { console.log(`  ${h.host.padEnd(7)} –  not installed on this machine`); continue; }
     if (h.configured) {
@@ -350,6 +359,6 @@ function printReport(r, o) {
     console.log(JSON.stringify({ mcpServers: { [SERVER_NAME]: serverEntry } }, null, 2));
   }
   if (r.hosts.some((h) => h.configureResult?.ok)) {
-    console.log('Restart the agent session so it loads the new MCP server.');
+    console.log('Restart the agent session so it loads the new MCP server. The sketch works meanwhile.');
   }
 }

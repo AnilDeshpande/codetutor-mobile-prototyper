@@ -1,6 +1,6 @@
 # Android visual language (Material 3) for the design phase
 
-Read in Phase 9 only. `conventions.md` in this folder covers behaviour; this file covers the
+Read in the design phase (Phase 5) only. `conventions.md` in this folder covers behaviour; this file covers the
 look, and how the dials in `DESIGN.md` map onto Material 3. `scripts/theme.mjs` does the colour
 maths; your job is to choose the inputs and use the roles well.
 
@@ -28,7 +28,7 @@ Screens use roles, never raw colours.
   that must be exact). `auto` picks neutral / tonal-spot / vibrant from expressiveness.
 - **Dynamic colour** (Android 12+): the system can replace the brand scheme with one from the
   wallpaper. Record a decision: off for brand-critical or regulated products (the usual choice),
-  on for utilities that should feel part of the phone. The prototype always shows the brand scheme.
+  on for utilities that should feel part of the phone. The final-look screens always show the brand scheme.
 - **Custom colours** (success, domain states such as in range / low / high) are *harmonised*
   towards the brand hue so they sit in the same scheme; each gets the same four roles. State is
   never colour alone.
@@ -61,7 +61,7 @@ when the product wants a bold, playful look and the target OS supports it.
 - **Icons**: Material Symbols (Apache-2.0), one style throughout (outlined or rounded), 24 dp,
   weight matching the text.
 - **Edge-to-edge** is the default from Android 15: content draws behind the status and
-  navigation bars with insets; the prototype's simulated bars show where.
+  navigation bars with insets; the simulated bars on the final-look screens show where.
 
 ## How the DESIGN.md dials map
 

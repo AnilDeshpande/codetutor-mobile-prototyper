@@ -344,6 +344,11 @@ system, rendering the final-look screens, and a prompt that should *not* trigger
 run against `evals/fixtures/glucose-companion`, which contains a deliberate conflict between the
 PRD and an architecture decision record.
 
+`evals/trigger-evals.json` checks the skill's description on its own: ten prompts that should load
+the skill and ten near misses that shouldn't (Compose or SwiftUI code, a clickable web prototype,
+other draw.io diagrams, PRD reviews). Run it with skill-creator's `run_eval.py` whenever the
+description changes.
+
 ## License
 
 [MIT](LICENSE) © Anil Deshpande

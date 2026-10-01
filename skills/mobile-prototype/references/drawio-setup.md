@@ -50,6 +50,13 @@ user in one line and carry on.
 slow for a real flow. So show the sketch with `sketch.mjs --open`, and use the tool only when the
 user wants the browser *editor* and has no Desktop app or editor extension.
 
+**Installed as a plugin.** In Claude Code, the `mobile-prototyper` plugin's bundled server shows
+its tools with a plugin prefix, so look for a name that *ends in* `open_drawio_xml`.
+
+**The official draw.io skill** (jgraph/drawio-mcp) is a good companion for other diagrams, but
+don't use it for the prototype: `sketch.mjs` is what keeps the numbering, the layout and the
+arrow routes consistent.
+
 ## Troubleshooting
 
 | Symptom | What to do |

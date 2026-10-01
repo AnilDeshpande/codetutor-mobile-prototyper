@@ -322,7 +322,8 @@ skills/mobile-prototype/
 ├── SKILL.md           the workflow
 ├── references/        intake, question bank, clarification protocol, the flow spec, sketch
 │                      review, draw.io setup, platform conventions and visual language
-│                      (platforms/android, platforms/ios), design phase and providers, handoff
+│                      (platforms/android, platforms/ios), stops and the reading guide, design
+│                      phase and providers, handoff
 ├── scripts/           discover-inputs, scaffold, sketch (flow.json → flow.drawio),
 │                      check-drawio-mcp, and for the design phase: screens, theme,
 │                      design-provider, serve

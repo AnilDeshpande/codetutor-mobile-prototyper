@@ -57,7 +57,7 @@ Defaults I'll use unless you object: Material 3 neutral palette (V1), portrait o
 draft copy marked as draft (C1).
 ```
 
-Close the message with the reading guide (SKILL.md, *Stops and the reading guide*): the table is
+Close the message with the reading guide (`references/stops-and-reading-guide.md`): the table is
 the thing to review; `CLARIFICATIONS.md` is optional detail and `INPUTS.md` is only for checking a
 citation. Under the table, ask which sketch style the user prefers (P6): wireflow, click-through
 or both. Don't write `flow.json` or draw anything in the same turn.

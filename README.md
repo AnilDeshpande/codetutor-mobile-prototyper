@@ -347,7 +347,8 @@ PRD and an architecture decision record.
 `evals/trigger-evals.json` checks the skill's description on its own: ten prompts that should load
 the skill and ten near misses that shouldn't (Compose or SwiftUI code, a clickable web prototype,
 other draw.io diagrams, PRD reviews). Run it with skill-creator's `run_eval.py` whenever the
-description changes.
+description changes, with `--num-workers 1`: parallel runs share one `.claude/commands` folder,
+see each other's copies of the skill and get counted as misses.
 
 ## License
 

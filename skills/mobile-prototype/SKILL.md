@@ -1,6 +1,6 @@
 ---
 name: mobile-prototype
-description: Turn a product spec, architecture and design docs into a rough, hand-drawn draw.io prototype of a native Android or iOS app — numbered screens, their states and the arrows between them — so the flow can be agreed before anything is designed or built. Use when the user wants to prototype, sketch, wireframe, mock up or map the screens or user flow of a mobile app or feature, or turn a PRD, spec or user stories into screens, even if they never say "prototype" or "draw.io". Also resumes a prototype folder that has notes/STATE.md. Does not write Compose, SwiftUI or other app code.
+description: Turn a product spec, architecture and design docs into a rough, hand-drawn draw.io prototype of a native Android or iOS app — numbered screens, their states and the arrows between them — so the flow can be agreed before anything is designed or built. Use when the user wants to prototype, sketch, wireframe, mock up or map the screens or user flow of a mobile app or feature, or turn a PRD, spec, user stories, UX notes or architecture docs into screens and a flow, even if they never say "prototype" or "draw.io". Also resumes a prototype folder that has notes/STATE.md. Does not write Compose, SwiftUI or other app code.
 ---
 
 # Mobile Prototype
@@ -39,8 +39,8 @@ Paths in this file are relative to this skill's directory (`scripts/…`, `refer
 7. **Stop at a locked flow.** Deliver the sketch and a handoff package. Do not build a clickable
    app, and do not generate Compose, SwiftUI, Kotlin, Swift or production web code.
 8. **Each platform behaves like itself.** The sketch is one flow for every platform in scope
-   (P5); where Android and iOS differ (back, dialogs versus sheets, permission rules) note it on
-   the screen. Follow `references/platforms/<platform>/conventions.md`.
+   (P5); where Android and iOS differ (back, dialogs versus sheets, permission rules) say so in
+   the frame's `note`. Follow `references/platforms/<platform>/conventions.md`.
 9. **Everything lands in files** in one prototype folder inside the project, chosen by the user
    before the first file is written, so a fresh session can resume.
 10. **First how it works, then how it looks.** The design phase is optional, starts only after
@@ -51,9 +51,10 @@ Paths in this file are relative to this skill's directory (`scripts/…`, `refer
 ## Workspace (in the user's project)
 
 This document calls the prototype folder `docs/prototypes/` (the recommended location); wherever
-you read that path, use the folder the user chose in Phase 1. It must be inside the project: if the user names a path outside it (another
-repository, the home folder, `/tmp`), say the files have to stay in this project so they travel
-with it, and ask again. `scaffold.mjs` refuses such a path too.
+you read that path, use the folder the user chose in Phase 1. It must be inside the project: if
+the user names a path outside it (another repository, the home folder, `/tmp`), say the files
+have to stay in this project so they travel with it, and ask again. `scaffold.mjs` refuses such
+a path too.
 
 ```
 docs/prototypes/
@@ -95,14 +96,15 @@ each stop and the exact form of the guide. Everything the user must decide goes 
    `prototype/notes/STATE.md`, or a `notes/STATE.md` next to a `flow.json` elsewhere in the
    project. If there is one, that is the prototype folder: don't ask for it again. Read
    `STATE.md` and every file in `notes/`, tell the user in two lines where things stand, and
-   continue from the recorded next step. If that stop is still waiting on the user, repeat what
-   it needs rather than moving on.
+   continue from the recorded next step; if that stop still waits on the user, repeat what it
+   needs.
 2. Check whether the draw.io MCP tools are available **in this session**: a tool whose name ends
    in `open_drawio_xml` (for example `mcp__drawio__open_drawio_xml`).
 3. If they are missing, run `node scripts/check-drawio-mcp.mjs --host <this agent>` and show the
-   result. **Ask** before changing the user's configuration (`--configure`). A new server loads
-   only after a restart: say so, record it in `STATE.md`, and **carry on**. Details:
-   `references/drawio-setup.md`.
+   result. **Ask** before changing the user's configuration, then run
+   `--configure --host <this agent>` (without `--host` it configures every agent installed). A
+   new server loads only after a restart: say so, record it in `STATE.md`, and **carry on**.
+   Details: `references/drawio-setup.md`.
 
 ## Phase 1 — Discover the inputs
 
@@ -116,10 +118,10 @@ each stop and the exact form of the guide. Everything the user must decide goes 
    > doesn't exist). Reply "ok" for that, or give another folder in this project.
 
    In the same message show the **availability table** — Spec / Architecture / Design / API /
-   Other, plus the platform suggestion — with the files found for each, and ask the user to
-   confirm which are authoritative, which to ignore, and whether anything is missing (a design
-   folder elsewhere, a Figma link). Leave the table out when the user named the files and there
-   is nothing to ask about them. End your turn.
+   Other, plus the platform suggestion — with the files found for each. Ask the user to confirm
+   the **target platform** (don't assume both), which documents are authoritative, which to
+   ignore, and whether anything is missing (a design folder, a Figma link). Leave the table out
+   when the user named the files and there is nothing to ask about them. End your turn.
 3. "ok", "yes" or no preference means `docs/prototypes`. A relative path is relative to the
    project root; an absolute one must be inside the project (see *Workspace*). Then run
    `node scripts/scaffold.mjs --out <folder> --name "<App>"` and record the folder in
@@ -186,8 +188,7 @@ items), go straight on to Phase 4.
    - one **flow** per transition, labelled with what the user does ("tap Save", "Back with
      changes"), starting from the control that triggers it.
 
-   Use realistic copy from the documents, not lorem ipsum. Where the platforms differ, say so in
-   the frame's `note`.
+   Use realistic copy from the documents, not lorem ipsum.
 2. **Generate and check**: `node scripts/sketch.mjs --style <wireflow|click-through|both>` writes
    `docs/prototypes/flow.drawio`; `node scripts/sketch.mjs --check` must pass. Then go through
    `references/sketch-review.md`. Fix `flow.json` and generate again; don't show a sketch with

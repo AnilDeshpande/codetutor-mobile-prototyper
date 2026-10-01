@@ -329,25 +329,27 @@ skills/mobile-prototype/
 │                      design-provider, serve
 └── assets/            templates (reading guide, flow spec, notes, design, handoff) and, for the
                        design phase, the design kit (Android and iOS shells) and the style tile
-evals/                 evals.json + a fixture project with a spec, architecture, ADR and design notes
+evals/                 evals.json (behaviour), trigger-evals.json (description) and a fixture project
+                       with a spec, architecture, ADR and design notes
 ```
 
 ## Evals
 
-`evals/evals.json` describes eighteen cases: input discovery (with the platform suggestion),
+`evals/evals.json` describes twenty cases: input discovery (with the platform suggestion),
 proposals for approval with the sketch-style question, stopping at gate A with a reading guide,
 surfacing a document conflict, a missing spec, a missing draw.io MCP server that doesn't block,
 drawing the sketch from the flow spec, not overwriting a hand-edited diagram, an iOS target on an
 Android-specific architecture, one sketch for both platforms, handoffs for one and two platforms,
 the design phase being offered but not forced, falling back to the built-in provider without
 Python, a brand colour that fails contrast, installing and using ui-ux-pro-max for a design
-system, rendering the final-look screens, and a prompt that should *not* trigger the skill. They
+system, rendering the final-look screens, asking for the prototype folder and using it, refusing a folder
+outside the project, and a prompt that should *not* trigger the skill. They
 run against `evals/fixtures/glucose-companion`, which contains a deliberate conflict between the
 PRD and an architecture decision record.
 
-`evals/trigger-evals.json` checks the skill's description on its own: ten prompts that should load
-the skill and ten near misses that shouldn't (Compose or SwiftUI code, a clickable web prototype,
-other draw.io diagrams, PRD reviews). Run it with skill-creator's `run_eval.py` whenever the
+`evals/trigger-evals.json` checks the skill's description on its own: thirteen prompts that should
+load the skill and eleven near misses that shouldn't (Compose or SwiftUI code, a clickable web or
+HTML prototype, other draw.io diagrams, PRD reviews). Run it with skill-creator's `run_eval.py` whenever the
 description changes, with `--num-workers 1`: parallel runs share one `.claude/commands` folder,
 see each other's copies of the skill and get counted as misses.
 

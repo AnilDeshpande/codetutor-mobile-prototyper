@@ -9,6 +9,9 @@
  {"query": "storyboard the onboarding for our kotlin app, including the offline and permission-denied states", "should_trigger": true},
  {"query": "resume my mobile prototype, the notes are in docs/prototypes/notes/STATE.md", "should_trigger": true},
  {"query": "draw the screen flow for the settings feature of our android app in draw.io so the team can discuss it", "should_trigger": true},
+ {"query": "Use requirements.md to show every screen and transition for our mobile feature.", "should_trigger": true},
+ {"query": "Turn these Android UX notes and architecture constraints into screens and a flow for review.", "should_trigger": true},
+ {"query": "Resume the prototype in design/prototype-pairing; its notes/STATE.md says gate C is awaiting approval.", "should_trigger": true},
  {"query": "Fix the NullPointerException in DeviceRepository.kt when the meter disconnects.", "should_trigger": false},
  {"query": "Build the login screen in Jetpack Compose with email and password fields and inline validation", "should_trigger": false},
  {"query": "Write the SwiftUI view for the settings screen: a list with notifications toggle, units picker and sign out button", "should_trigger": false},
@@ -18,5 +21,6 @@
  {"query": "Review this PRD for gaps and contradictions before we hand it to engineering: docs/PRD.md", "should_trigger": false},
  {"query": "Generate a Material 3 colour theme for our Android app from brand colour #0B6E4F", "should_trigger": false},
  {"query": "Our iOS app crashes on launch on iOS 18 with EXC_BAD_ACCESS in AppDelegate, how do I debug it?", "should_trigger": false},
- {"query": "Write user stories with acceptance criteria for a habit tracker mobile app", "should_trigger": false}
+ {"query": "Write user stories with acceptance criteria for a habit tracker mobile app", "should_trigger": false},
+ {"query": "Build a clickable HTML prototype of our Android onboarding that I can interact with in a browser.", "should_trigger": false}
 ]

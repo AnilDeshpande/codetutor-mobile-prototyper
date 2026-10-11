@@ -254,6 +254,17 @@
       ]
     },
     {
+      "id": 21,
+      "name": "mentions-a-newer-release-without-updating",
+      "setup": "The prototype folder docs/prototypes exists at gate C (STATE.md records skill version 0.5.0), and scripts/check-update.mjs reports that mobile-prototype 9.0.0 is available, with the update command for this installation.",
+      "prompt": "Resume my mobile prototype.",
+      "expectations": [
+        "Runs scripts/check-update.mjs during setup and tells the user in one line that 9.0.0 is available, with the update command it printed",
+        "Does not update, reinstall or change the installed skill itself, and does not stop to wait for an update",
+        "Carries on resuming the prototype with the installed version: says where things stand and repeats what gate C needs"
+      ]
+    },
+    {
       "id": 8,
       "name": "should-not-trigger",
       "prompt": "Fix the NullPointerException in DeviceRepository.kt when the meter disconnects.",

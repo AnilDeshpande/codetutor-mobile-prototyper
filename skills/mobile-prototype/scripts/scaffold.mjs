@@ -19,7 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { workspace } from './lib/workspace.mjs';
-import { fillReferences } from './lib/references.mjs';
+import { fillReferences, SKILL_DIR } from './lib/references.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const templates = path.join(here, '..', 'assets', 'templates');
@@ -28,7 +28,9 @@ const opt = (name, def) => { const i = args.indexOf(`--${name}`); return i >= 0 
 const out = workspace(opt('out'));
 const appName = opt('name', 'App');
 
-const vars = { '{{APP_NAME}}': appName, '{{DATE}}': new Date().toISOString().slice(0, 10) };
+let skillVersion = 'unknown';
+try { skillVersion = JSON.parse(fs.readFileSync(path.join(SKILL_DIR, 'assets', 'skill.json'), 'utf8')).version; } catch { /* an old copy */ }
+const vars = { '{{APP_NAME}}': appName, '{{DATE}}': new Date().toISOString().slice(0, 10), '{{SKILL_VERSION}}': skillVersion };
 const created = [], kept = [], upgraded = [];
 /** A template with its placeholders filled for dest; links to the skill's references are resolved here. */
 function render(src, dest) {

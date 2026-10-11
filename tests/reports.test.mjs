@@ -29,8 +29,8 @@ test('the legend explains numbers, grouped IDs, ranges, origin, and what the IDs
 });
 
 test('every template reference points at a file in the skill, and at the same path in the repository', () => {
-  const source = JSON.parse(read('assets', 'source.json'));
-  assert.equal(path.resolve(ROOT, source.skillPath), SKILL, 'source.json skillPath is where the skill lives in this repository');
+  const source = JSON.parse(read('assets', 'skill.json'));
+  assert.equal(path.resolve(ROOT, source.skillPath), SKILL, 'skill.json skillPath is where the skill lives in this repository');
   assert.match(source.repository, /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+$/);
   const refs = templates.flatMap((t) => [...read('assets', 'templates', t).matchAll(/\{\{REF:([^|}]+)/g)].map((m) => m[1]));
   assert.ok(refs.includes('references/question-bank.md'));

@@ -99,9 +99,13 @@ each stop and the exact form of the guide. Everything the user must decide goes 
    continue from the recorded next step; if that stop still waits on the user, repeat what it
    needs. A `flow.json` without `appScreens` predates screen names: migrate it before drawing
    again (*Migrating an older flow.json* in `references/sketch-spec.md`).
-2. Check whether the draw.io MCP tools are available **in this session**: a tool whose name ends
+2. Run `node scripts/check-update.mjs`. If it reports a newer release, pass on its one line and
+   update command, and carry on with the installed version; don't update unless the user asks.
+   A prototype whose `STATE.md` records an older skill version may need migrating (`CHANGELOG.md`
+   in the skill's repository says what changed).
+3. Check whether the draw.io MCP tools are available **in this session**: a tool whose name ends
    in `open_drawio_xml` (for example `mcp__drawio__open_drawio_xml`).
-3. If they are missing, run `node scripts/check-drawio-mcp.mjs --host <this agent>` and show the
+4. If they are missing, run `node scripts/check-drawio-mcp.mjs --host <this agent>` and show the
    result. **Ask** before changing the user's configuration, then run
    `--configure --host <this agent>` (without `--host` it configures every agent installed). A
    new server loads only after a restart: say so, record it in `STATE.md`, and **carry on**.

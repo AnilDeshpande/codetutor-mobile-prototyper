@@ -85,6 +85,13 @@ To regenerate the diagrams from the example flow:
 node skills/mobile-prototype/scripts/sketch.mjs --spec docs/examples/pair-a-meter/flow.json --out docs/examples/pair-a-meter/wireflow.drawio --style wireflow
 ```
 
+To redraw both diagrams and re-export the pictures above (needs draw.io Desktop; on macOS
+`brew install --cask drawio`):
+
+```bash
+node tools/example-pictures.mjs
+```
+
 ```
 Spec · Architecture · Design · API docs
                 │
@@ -271,6 +278,29 @@ npx skills add AnilDeshpande/codetutor-mobile-prototyper --skill mobile-prototyp
 
 The draw.io MCP server is optional with this route (next section).
 
+## Updating
+
+The skill knows its version (`skills/mobile-prototype/assets/skill.json`). At the start of a
+session the agent checks, at most once a day, whether a newer release is out, and if so tells you
+in one line how to update the copy you have. It never updates by itself. To check yourself:
+
+```bash
+node <skill folder>/scripts/check-update.mjs --force
+```
+
+How to update depends on how you installed it:
+
+| Installed with | Update with |
+|---|---|
+| Claude Code plugin | `claude plugin marketplace update codetutor`, then `claude plugin update mobile-prototyper@codetutor`, and restart |
+| Codex plugin | `codex plugin marketplace upgrade codetutor`, then `codex plugin add mobile-prototyper@codetutor`, and restart |
+| `install.mjs`, `npx github:…` or `npx skills add` (a copied folder) | `npx -y github:AnilDeshpande/codetutor-mobile-prototyper#v<version> -- --update`: it finds every installed copy (Claude Code, Codex, Cursor, Gemini CLI, `~/.agents`, in your home folder and the current project) and replaces it; add `--dry-run` to see what it would do |
+| `install.mjs --link` (a clone) | `git pull` in the clone |
+
+`node install.mjs --version` prints the version a checkout would install. What changed in each
+version, and anything to do about it, is in [`CHANGELOG.md`](CHANGELOG.md). Set
+`MOBILE_PROTOTYPE_NO_UPDATE_CHECK=1` to turn the check off.
+
 ## draw.io MCP server
 
 The official server from the draw.io team ([jgraph/drawio-mcp](https://github.com/jgraph/drawio-mcp))
@@ -347,16 +377,41 @@ skills/mobile-prototype/
 │                      phase and providers, handoff
 ├── scripts/           discover-inputs, scaffold, sketch (flow.json → flow.drawio), handoff
 │                      (flow.json → the handoff's inventory, and the cross-check), migrate-flow,
-│                      check-drawio-mcp, and for the design phase: screens, theme,
-│                      design-provider, serve
-└── assets/            templates (reading guide, flow spec, notes, design, handoff), source.json
-                       (where the skill's repository is, for links to its references) and, for
-                       the design phase, the design kit (Android and iOS shells) and the style tile
+│                      check-update (is a newer release out?), check-drawio-mcp, and for the
+│                      design phase: screens, theme, design-provider, serve
+└── assets/            templates (reading guide, flow spec, notes, design, handoff), skill.json
+                       (the skill's version and repository, for updates and links to its
+                       references) and, for the design phase, the design kit (Android and iOS
+                       shells) and the style tile
 tests/                 node --test: screen names across spec, diagram and handoff; the reports'
-                       ID legend, reference links and viewing instructions (npm test)
+                       ID legend, reference links and viewing instructions; versions and
+                       updates (npm test)
+tools/                 release.mjs (set the version, publish a release), example-pictures.mjs
+CHANGELOG.md           what changed in each version
 evals/                 evals.json (behaviour), trigger-evals.json (description) and a fixture project
                        with a spec, architecture, ADR and design notes
 ```
+
+## Releasing
+
+A release is a git tag `v<version>` with a GitHub Release; installed copies compare themselves
+with the latest one. Plugin marketplaces install from `main`, so release right after merging.
+
+```bash
+node tools/release.mjs 0.6.0
+```
+
+sets the version in all five files that carry it (`package.json`, both plugin manifests, the
+marketplace entry and `assets/skill.json`) and opens a `CHANGELOG.md` section to fill in. Merge
+that in a PR, then on an up-to-date `main`:
+
+```bash
+node tools/release.mjs --publish
+```
+
+It checks that the versions agree, the CHANGELOG has notes and the tests pass, then tags, pushes
+the tag and creates the GitHub Release with the CHANGELOG section as its notes.
+`node tools/release.mjs --check` runs only the checks.
 
 ## Tests
 
@@ -372,16 +427,16 @@ in the generated notes.
 
 ## Evals
 
-`evals/evals.json` describes twenty cases: input discovery (with the platform suggestion),
+`evals/evals.json` describes twenty-one cases: input discovery (with the platform suggestion),
 proposals for approval with the sketch-style question, stopping at gate A with a reading guide,
 surfacing a document conflict, a missing spec, a missing draw.io MCP server that doesn't block,
 drawing the sketch from the flow spec, not overwriting a hand-edited diagram, an iOS target on an
 Android-specific architecture, one sketch for both platforms, handoffs for one and two platforms,
 the design phase being offered but not forced, falling back to the built-in provider without
 Python, a brand colour that fails contrast, installing and using ui-ux-pro-max for a design
-system, rendering the final-look screens, asking for the prototype folder and using it, refusing a folder
-outside the project, and a prompt that should *not* trigger the skill. They
-run against `evals/fixtures/glucose-companion`, which contains a deliberate conflict between the
+system, rendering the final-look screens, asking for the prototype folder and using it,
+refusing a folder outside the project, mentioning a newer release without updating, and a prompt
+that should *not* trigger the skill. They run against `evals/fixtures/glucose-companion`, which contains a deliberate conflict between the
 PRD and an architecture decision record.
 
 `evals/trigger-evals.json` checks the skill's description on its own: thirteen prompts that should

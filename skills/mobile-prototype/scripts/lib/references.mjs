@@ -4,7 +4,7 @@
 // A template writes {{REF:references/question-bank.md|Question bank}}. It becomes a link to that
 // file in the installed skill, resolved from where this script runs (never a fixed home folder):
 // relative when the skill is installed inside the project, so the link travels with the
-// repository, absolute otherwise. When assets/source.json names the skill's repository, an online
+// repository, absolute otherwise. When assets/skill.json names the skill's repository, an online
 // copy follows for readers without the installation; tests/references.test.mjs checks that every
 // referenced file exists at that path in the repository.
 
@@ -16,7 +16,7 @@ import { insideProject } from './workspace.mjs';
 export const SKILL_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 function source() {
-  try { return JSON.parse(fs.readFileSync(path.join(SKILL_DIR, 'assets', 'source.json'), 'utf8')); } catch { return null; }
+  try { return JSON.parse(fs.readFileSync(path.join(SKILL_DIR, 'assets', 'skill.json'), 'utf8')); } catch { return null; }
 }
 
 const encode = (p) => p.split('/').map(encodeURIComponent).join('/');

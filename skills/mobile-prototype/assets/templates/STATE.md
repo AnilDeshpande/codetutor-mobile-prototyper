@@ -4,6 +4,7 @@ Started: {{DATE}}
 
 | Field | Value |
 |---|---|
+| Skill version | {{SKILL_VERSION}} (mobile-prototype; the version that started this prototype; update it when a newer one resumes it) |
 | Prototype folder | (the folder the user chose, relative to the project root; recommended `docs/prototypes`) |
 | Phase | 1 — Discover inputs |
 | Gates passed | none |

@@ -13,6 +13,25 @@ required to create it. The tools below make it nicer to look at and edit.
 The diagram never leaves the machine through these: the MCP server and the viewer link carry it
 in the URL fragment, which browsers don't send to a server.
 
+## For the user: opening the sketch
+
+Say this when you hand over the sketch (gate C) and in the README's *Opening the sketch*; give
+`flow.drawio` as a link. `sketch.mjs` prints a version with this diagram's page names.
+
+- **VS Code** (or Cursor) with the *Draw.io Integration* extension (`hediet.vscode-drawio`): open
+  the file and it shows as a diagram.
+- **draw.io Desktop**, free for macOS, Windows and Linux (https://www.drawio.com): File › Open.
+- **A browser**, nothing to install: https://app.diagrams.net, File › Open from › Device.
+- **Android Studio**: don't count on a draw.io plugin (one didn't work in a pilot); use one of the
+  above alongside it.
+
+The pages are the tabs along the bottom: one wireflow page per journey, or with click-through a
+*Map* page per journey; with click-through or both, also one page per screen state ("S1 Overview
+— Empty"), whose blue controls link to the screen they lead to and whose "↩ Back to the
+overview" returns. In an editor a click selects a shape: follow a link from the hint draw.io
+shows under the selected shape, or use the page tabs. In the browser viewer (`--url`) a click
+follows the link.
+
 ## The MCP server
 
 Check and configure it for the agent that is running:

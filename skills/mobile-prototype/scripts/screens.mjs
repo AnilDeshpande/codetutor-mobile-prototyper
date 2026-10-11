@@ -16,6 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { workspace } from './lib/workspace.mjs';
+import { frameTitle } from './lib/flow.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const kit = path.join(here, '..', 'assets', 'design-kit');
@@ -74,8 +75,8 @@ const sections = journeys.map((j) => `<section>
 <h2>${esc(j.title || j.id)}</h2>
 <div class="grid">
 ${(j.screens || []).map((s) => `<figure data-screen="${esc(s.screen)}" data-state="${esc(s.state)}">
-  <div class="device"><iframe title="${esc(`${s.sid} ${s.title || s.screen}`)}" loading="lazy"></iframe></div>
-  <figcaption><b>${esc(s.sid)}</b> · ${esc(s.title || `${s.screen} · ${s.state}`)} <span class="check" hidden></span><ul class="issues" hidden></ul></figcaption>
+  <div class="device"><iframe title="${esc(`${s.sid} ${frameTitle(spec, s)}`)}" loading="lazy"></iframe></div>
+  <figcaption><b>${esc(s.sid)}</b> · ${esc(frameTitle(spec, s))} <span class="check" hidden></span><ul class="issues" hidden></ul></figcaption>
 </figure>`).join('\n')}
 </div>
 </section>`).join('\n');

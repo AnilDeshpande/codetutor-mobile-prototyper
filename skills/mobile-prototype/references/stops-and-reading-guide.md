@@ -8,7 +8,7 @@ then end your turn.
 | Inputs | Phase 1, before any file is created | the availability table in chat | choose the prototype folder (recommended: `docs/prototypes`); confirm the documents and the platform suggestion |
 | Gate A | Phase 2 | the proposals table in chat → `notes/CLARIFICATIONS.md` for detail → `notes/INPUTS.md` only to check a citation | approve all, or correct by ID; choose the sketch style |
 | Gate B | each Phase 3 round (only if C/D items exist) | the questions in chat | answer them |
-| Gate C | Phase 4 | `flow.drawio`, screen by screen in S-number order → the list of assumptions in chat | lock the flow, or say what to change |
+| Gate C | Phase 4 | `flow.drawio` (linked, with how to open it and which pages to look at), screen by screen in S-number order → the list of assumptions in chat | lock the flow, or say what to change |
 | D1 / D2 | Phase 5 | `look/style-tile.html` → `look/screens.html` → `notes/DESIGN.md` | pick a direction / approve the look |
 | Handoff | Phase 6 | `HANDOFF.md` | nothing: the work is done |
 

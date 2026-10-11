@@ -26,6 +26,7 @@ import zlib from 'node:zlib';
 import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { workspace } from './lib/workspace.mjs';
+import { hasAppScreens, checkScreenNames, screenName, stateName, frameTitle, frameLabel } from './lib/flow.mjs';
 
 const args = process.argv.slice(2);
 const opt = (n, d) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : d; };
@@ -52,6 +53,9 @@ if (!journeys.length) errors.push('The spec has no journeys.');
 const tabs = Array.isArray(spec.tabs) ? spec.tabs : [];
 const seenIds = new Set(), seenStates = new Set();
 let counter = 0;
+// Screen identity: one canonical name per screen (appScreens), state and entry condition apart.
+const v2 = hasAppScreens(spec);
+{ const names = checkScreenNames(spec); errors.push(...names.errors); warnings.push(...names.warnings); }
 
 /** Every control a frame offers, by key (buttons, list items, dialog actions …). */
 function keysOf(screen) {
@@ -71,6 +75,7 @@ for (const j of journeys) {
   if (!Array.isArray(j.screens) || !j.screens.length) { errors.push(`${where} has no screens.`); continue; }
   const local = new Map();
   for (const s of j.screens) {
+    s.sid = `S${++counter}`; // every frame is numbered, as lib/flow.mjs numbers them
     if (!s.id) { errors.push(`${where}: a screen has no id.`); continue; }
     if (seenIds.has(s.id)) errors.push(`Screen id "${s.id}" is used twice; ids must be unique in the file.`);
     seenIds.add(s.id);
@@ -79,7 +84,6 @@ for (const j of journeys) {
     if (seenStates.has(ss)) errors.push(`${s.id}: screen "${s.screen}" already has a frame for state "${s.state}".`);
     seenStates.add(ss);
     for (const el of s.elements || []) if (!ELEMENTS.includes(el.type)) errors.push(`${s.id}: unknown element type "${el.type}" (known: ${ELEMENTS.join(', ')}).`);
-    s.sid = `S${++counter}`;
     local.set(s.id, s);
   }
   const cells = new Map();
@@ -123,12 +127,17 @@ const SK = `sketch=1;curveFitting=1;jiggle=2;hachureGap=4;${FONT}html=1;whiteSpa
 const BLUE = '#1e5aa8', RED = '#c0392b';
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/\n/g, '&lt;br&gt;');
 const bold = (s) => `\u0001${s}\u0002`; // markers survive esc(); turned into <b> when the page is assembled
+const small = (s) => `\u0003${s}\u0004`; // likewise, into smaller text
 let n = 0;
 const nid = (p) => `${p}-${++n}`;
 const r3 = (v) => Math.round(v * 1000) / 1000;
-const vertex = (id, value, st, x, y, w, h, parent = '1', link = null) => {
-  const cell = `<mxCell${link ? '' : ` id="${id}" value="${esc(value)}"`} style="${st}" vertex="1" parent="${parent}"><mxGeometry x="${Math.round(x)}" y="${Math.round(y)}" width="${Math.round(w)}" height="${Math.round(h)}" as="geometry"/></mxCell>`;
-  return link ? `<UserObject id="${id}" label="${esc(value)}" link="${link}">${cell}</UserObject>` : cell;
+// data: attributes kept on the shape (draw.io: Edit Data), so a frame's S-number, screen and state
+// can be read back from the diagram (handoff.mjs --check does).
+const vertex = (id, value, st, x, y, w, h, parent = '1', link = null, data = null) => {
+  const obj = link || data;
+  const cell = `<mxCell${obj ? '' : ` id="${id}" value="${esc(value)}"`} style="${st}" vertex="1" parent="${parent}"><mxGeometry x="${Math.round(x)}" y="${Math.round(y)}" width="${Math.round(w)}" height="${Math.round(h)}" as="geometry"/></mxCell>`;
+  const attrs = Object.entries(data || {}).filter(([, v]) => v != null && v !== '').map(([k, v]) => ` ${k}="${esc(v)}"`).join('');
+  return obj ? `<UserObject id="${id}" label="${esc(value)}"${link ? ` link="${link}"` : ''}${attrs}>${cell}</UserObject>` : cell;
 };
 const edgeXml = (e) => {
   const ends = `exitX=${r3(e.exit[0])};exitY=${r3(e.exit[1])};exitDx=0;exitDy=0;entryX=${r3(e.entry[0])};entryY=${r3(e.entry[1])};entryDx=0;entryDy=0;`;
@@ -136,26 +145,32 @@ const edgeXml = (e) => {
   return `<mxCell id="${nid('e')}" value="${esc(e.text || '')}" style="${SK}edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=${BLUE};fontColor=${BLUE};fontSize=13;labelBackgroundColor=#ffffff;whiteSpace=nowrap;${ends}" edge="1" parent="1" source="${e.src}" target="${e.dst}"><mxGeometry x="${r3(e.rel || 0)}" relative="1" as="geometry">${pts}</mxGeometry></mxCell>`;
 };
 const page = (id, name, cells) =>
-  `<diagram id="${id}" name="${esc(name)}"><mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" math="0" shadow="0"><root><mxCell id="0"/><mxCell id="1" parent="0"/>\n${cells.join('\n').replace(/\u0001/g, '&lt;b&gt;').replace(/\u0002/g, '&lt;/b&gt;')}\n</root></mxGraphModel></diagram>`;
+  `<diagram id="${id}" name="${esc(name)}"><mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" math="0" shadow="0"><root><mxCell id="0"/><mxCell id="1" parent="0"/>\n${cells.join('\n').replace(/\u0001/g, '&lt;b&gt;').replace(/\u0002/g, '&lt;/b&gt;').replace(/\u0003/g, '&lt;span style=&quot;font-size:11px&quot;&gt;').replace(/\u0004/g, '&lt;/span&gt;')}\n</root></mxGraphModel></diagram>`;
 const headerCell = (text, w) => vertex(nid('h'), text, `${SK}text;align=left;fontSize=20;fontStyle=1;strokeColor=none;fillColor=none;`, 140, 0, w, 34);
-const titleOf = (s) => s.title || `${s.screen} · ${s.state}`;
+const titleOf = (s) => frameTitle(spec, s);
+// Format 2: the frame's header names the screen, then, smaller, the state and the entry condition.
+// (Bold alone doesn't show: the sketch font has a single weight.)
+const stateLines = (s) => `${stateName(s)}${s.entry ? `\nEntry: ${s.entry}` : ''}`;
+const headerOf = (s) => (v2 ? `${bold(screenName(spec, s))}\n${small(stateLines(s))}` : titleOf(s));
+const dataOf = (s) => (v2 ? { sid: s.sid, screen: s.screen, screenName: screenName(spec, s), state: s.state, stateName: stateName(s), entry: s.entry } : null);
 // The serial number sits above the top-left corner of a frame or map box, as plain text in the
 // sketch font: outside the screen, so it can't be mistaken for an app control or hide the back
 // arrow, and readable in every viewer. Arrows and arrow labels keep clear of it.
 const NUM_W = 38, NUM_H = 22, NUM_UP = 26;
 const number = (s, x, y, parent) => vertex(nid('n'), bold(s.sid), `${SK}text;align=left;verticalAlign=middle;fontSize=16;strokeColor=none;fillColor=none;`, x, y, NUM_W + 12, NUM_H, parent);
-const label = (s) => `${s.sid} · ${s.title || `${s.screen} · ${s.state}`}`;
+const label = (s) => frameLabel(spec, s);
 
 // ---------- one phone frame ----------
 const FW = 230, HEAD = 32, PAD = 14, MINH = 400;
 const lines = (text, w, px = 7) => String(text ?? '').split('\n').reduce((a, l) => a + Math.max(1, Math.ceil((l.length * px) / w)), 0);
+const headOf = (s) => (v2 ? 16 + 18 * lines(screenName(spec, s), FW - 20, 9) + 14 * lines(stateLines(s), FW - 20, 6.5) : HEAD);
 const isOverlay = (s) => !!s.overlay || (s.elements || []).some((e) => e.type === 'dialog' || e.type === 'sheet');
 const isTab = (s) => tabs.some((t) => t.screen === s.screen);
 
 /** Lays out a frame's elements. Returns boxes relative to the frame, and the height they need. */
 function measure(s) {
   const flow = [], bottom = []; // bottom: stacked upwards from the frame's bottom edge
-  let cy = HEAD + 12;
+  let cy = headOf(s) + 12;
   const box = (text, st, h, { inset = PAD, key, x, w } = {}) => {
     flow.push({ text, st, x: x ?? inset, y: cy, w: w ?? FW - inset * 2, h, key });
     cy += h + 8;
@@ -223,7 +238,7 @@ function measure(s) {
 function frame(s, m, x, y, H, linkFor = () => null) {
   const out = [], ctl = {};
   const f = nid('f');
-  out.push(vertex(f, titleOf(s), `${SK}swimlane;startSize=${HEAD};rounded=1;arcSize=8;container=1;collapsible=0;strokeWidth=2;align=left;spacingLeft=10;fontSize=13;fontStyle=1;fillColor=#ffffff;swimlaneFillColor=${isOverlay(s) ? '#ececec' : '#ffffff'};`, x, y, FW, H));
+  out.push(vertex(f, headerOf(s), `${SK}swimlane;startSize=${headOf(s)};rounded=1;arcSize=8;container=1;collapsible=0;strokeWidth=2;align=left;spacingLeft=10;${v2 ? 'fontSize=14;fontStyle=0;' : 'fontSize=13;fontStyle=1;'}fillColor=#ffffff;swimlaneFillColor=${isOverlay(s) ? '#ececec' : '#ffffff'};`, x, y, FW, H, '1', null, dataOf(s)));
   out.push(number(s, 2, -NUM_UP, f));
   const put = (b, bx, by, bw) => {
     const id = nid('c');
@@ -567,7 +582,7 @@ function mapPage(j) {
   const cells = [], nodes = {};
   for (const s of j.screens) {
     const g = at(s), id = nid('m');
-    cells.push(vertex(id, titleOf(s), `${SK}rounded=1;fontSize=13;fillColor=${isOverlay(s) ? '#ececec' : '#ffffff'};strokeWidth=2;`, g.x, g.y, BW, BH, '1', link(s.id)));
+    cells.push(vertex(id, headerOf(s), `${SK}rounded=1;fontSize=13;fillColor=${isOverlay(s) ? '#ececec' : '#ffffff'};strokeWidth=2;`, g.x, g.y, BW, BH, '1', link(s.id), dataOf(s)));
     cells.push(number(s, g.x + 2, g.y - NUM_UP, '1'));
     nodes[s.id] = { ...g, id, ctl: {} };
   }
@@ -589,7 +604,7 @@ function screenPages(j, home) {
       vertex(nid('n'), `From ${s.sid} you can\n${notes}`, `${SK}shape=note;size=14;align=left;verticalAlign=top;spacing=10;fontSize=13;fillColor=#fff8c4;`, 340, 60, 400, 60 + 22 * Math.max(1, flowsOut.length)),
       vertex(nid('b'), '↩ Back to the overview', `${SK}rounded=1;fontSize=12;fillColor=#ffffff;`, 340, 140 + 22 * Math.max(1, flowsOut.length), 170, 32, '1', `data:page/id,${home}`)];
     if (style === 'click-through') stats.frames++;
-    return page(pid(s.id), `${s.sid} ${s.title || s.screen}`, cells);
+    return page(pid(s.id), `${s.sid} ${v2 ? titleOf(s) : s.title || s.screen}`, cells);
   });
 }
 
@@ -624,6 +639,18 @@ fs.mkdirSync(path.dirname(outFile), { recursive: true });
 fs.writeFileSync(outFile, xml);
 fs.writeFileSync(stamp, `${sha(xml)}\n`);
 console.log(`✓ ${rel(outFile)} (${style}): ${summary}`);
+
+// How to open and read it, for the README and the message that hands the sketch over.
+const first = (j) => j.screens[0].sid, last = (j) => j.screens[j.screens.length - 1].sid;
+const pageList = journeys.map((j) => style === 'click-through'
+  ? `"Map · ${j.title || j.id}", then one page per screen, "${first(j)} ${titleOf(j.screens[0])}" … ${last(j)}`
+  : `"${j.title || j.id}" (${first(j)}–${last(j)})${style === 'both' ? `, then one page per screen, "${first(j)} ${titleOf(j.screens[0])}" … ${last(j)}` : ''}`);
+console.log(`  To view it: open ${rel(outFile)} in VS Code with the "Draw.io Integration" extension (hediet.vscode-drawio),
+  in draw.io Desktop, or at https://app.diagrams.net (File › Open from › Device; the file stays on this computer).
+  Don't rely on a draw.io plugin in Android Studio; use one of these instead.
+  Pages (tabs along the bottom of the window): ${pageList.join('; ')}.${style === 'wireflow' ? '' : `
+  ${style === 'both' ? 'On a wireflow page, and on each screen page, the blue controls link to the screen they lead to' : 'On the map, a box links to that screen\'s page; on a screen page, the blue controls link onward'}; "↩ Back to the overview" returns.
+  In an editor a click selects the shape: follow the link from the hint draw.io shows under it, or use the page tabs.`}`);
 
 const viewerUrl = () => `https://viewer.diagrams.net/?nav=1&layers=1&highlight=0000ff#R${encodeURIComponent(zlib.deflateRawSync(Buffer.from(encodeURIComponent(xml))).toString('base64'))}`;
 if (flag('url')) {

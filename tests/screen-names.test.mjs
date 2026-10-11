@@ -106,8 +106,11 @@ test('handoff --check names the S-number when the diagram, the inventory or the 
   assert.match(r.out, /S1: flow\.drawio names it "Overview" .* but flow\.json says "Today"/);
 });
 
+// The pair-a-meter example as it was before appScreens (0.4.0), with the diagrams 0.4.0 drew.
+const LEGACY = path.join(ROOT, 'tests', 'fixtures', 'legacy-pair-a-meter');
+
 test('older specs (no appScreens) still draw exactly as before, with a migration hint', () => {
-  const dir = path.join(ROOT, 'docs', 'examples', 'pair-a-meter');
+  const dir = LEGACY;
   for (const style of ['wireflow', 'click-through']) {
     const p = project();
     const out = p.file(`${style}.drawio`);
@@ -124,7 +127,7 @@ test('older specs (no appScreens) still draw exactly as before, with a migration
 });
 
 test('migrate-flow gives an older spec one name per screen and keeps the old titles as states', () => {
-  const p = project(fs.readFileSync(path.join(ROOT, 'docs', 'examples', 'pair-a-meter', 'flow.json'), 'utf8'));
+  const p = project(fs.readFileSync(path.join(LEGACY, 'flow.json'), 'utf8'));
   const r = run('migrate-flow.mjs', [], p.dir);
   assert.equal(r.code, 0, r.out);
   assert.ok(fs.existsSync(p.file('flow.json.bak')));
@@ -149,4 +152,19 @@ test('the committed habit-overview example is what sketch.mjs draws from the fix
   const out = p.file('flow.drawio');
   assert.equal(run('sketch.mjs', ['--spec', path.join(dir, 'flow.json'), '--out', out, '--style', 'both'], p.dir).code, 0);
   assert.equal(fs.readFileSync(out, 'utf8'), fs.readFileSync(path.join(dir, 'flow.drawio'), 'utf8'));
+});
+
+test('the committed pair-a-meter example uses appScreens and is what sketch.mjs draws from it today', () => {
+  const dir = path.join(ROOT, 'docs', 'examples', 'pair-a-meter');
+  const spec = JSON.parse(fs.readFileSync(path.join(dir, 'flow.json'), 'utf8'));
+  assert.deepEqual(Object.fromEntries(Object.entries(spec.appScreens).map(([k, v]) => [k, v.name])), { devices: 'Devices', pairing: 'Add device', readings: 'Readings' });
+  assert.ok(spec.journeys.flatMap((j) => j.screens).every((s) => !('title' in s)));
+  for (const style of ['wireflow', 'click-through']) {
+    const p = project();
+    const out = p.file(`${style}.drawio`);
+    const r = run('sketch.mjs', ['--spec', path.join(dir, 'flow.json'), '--out', out, '--style', style], p.dir);
+    assert.equal(r.code, 0, r.out);
+    assert.doesNotMatch(r.out, /^!/m, 'no warnings');
+    assert.equal(fs.readFileSync(out, 'utf8'), fs.readFileSync(path.join(dir, `${style}.drawio`), 'utf8'), `${style}.drawio is up to date`);
+  }
 });

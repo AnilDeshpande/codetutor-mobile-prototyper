@@ -10,7 +10,7 @@ write the spec; the scripts do the drawing, the numbering, the layout and the ar
   "platforms": ["android"],
   "appScreens": {
     "devices": { "name": "Devices", "purpose": "See paired meters and add one." },
-    "pairing": { "name": "Pair meter", "purpose": "Find and pair a meter.", "location": "Devices → Pair meter" },
+    "pairing": { "name": "Add device", "purpose": "Find a meter nearby and pair it.", "location": "Devices → Add device" },
     "readings": { "name": "Readings" }
   },
   "tabs": [
@@ -50,7 +50,7 @@ write the spec; the scripts do the drawing, the numbering, the layout and the ar
 |---|---|
 | `app` | the app's name |
 | `platforms` | `["android"]`, `["ios"]` or both; the approved P5 decision. Used by the design phase |
-| `appScreens` | every app screen, by id: its canonical `name` (required), and optionally its `purpose` (one line, for the handoff) and `location`, where it sits in the app's navigation ("Devices → Pair meter", "Sheet over Overview"; default: its tab, or the chain of `parent` screens). An entry can be just the name: `"readings": "Readings"`. See *Screen, state and entry condition* |
+| `appScreens` | every app screen, by id: its canonical `name` (required), and optionally its `purpose` (one line, for the handoff) and `location`, where it sits in the app's navigation ("Devices → Add device", "Sheet over Overview"; default: its tab, or the chain of `parent` screens). An entry can be just the name: `"readings": "Readings"`. See *Screen, state and entry condition* |
 | `tabs` | optional: the top-level destinations (bottom navigation on Android, tab bar on iOS). Each has a `label`, the `screen` it opens and an optional `icon`. Frames of those screens show the tab strip |
 | `journeys` | one per user goal in scope. Each becomes a page (wireflow) or a map plus pages (click-through) |
 
@@ -74,7 +74,7 @@ so list them in the order the user meets them.
 | `note` | optional: a remark for the reader, such as a platform difference. Shown as a yellow note on the frame; keep it to a line or two |
 
 The frame's title is generated, never written: the screen's name, then the state,
-"Pair meter — Stop pairing?". It heads the frame, names its page and is what the handoff and the
+"Add device — Stop pairing?". It heads the frame, names its page and is what the handoff and the
 final-look screens show, so each S-number has one name everywhere.
 
 **Layout rules.** Main-path frames sit in one row in file order. A frame with `below` sits one

@@ -79,7 +79,9 @@
         "Generates docs/prototypes/flow.drawio with sketch.mjs; does not hand-write draw.io XML or place shapes itself",
         "Runs sketch.mjs --check and it passes (no arrow overlaps or crosses another or runs over a screen, every label in the clear); looks at any warnings before showing the sketch",
         "Opens or points to the diagram (sketch.mjs --open, or the file path), gives a short text outline with S-numbers, lists decisions made on the user's behalf and assumptions, and stops for the user to lock the flow",
-        "Does not create HTML, a look/ folder, scenarios or a verification log, and does not start the design phase"
+        "Does not create HTML, a look/ folder, scenarios or a verification log, and does not start the design phase",
+        "Names every screen once in appScreens (for example Devices, and the pairing screen), and gives each frame a screen, a state and, where it matters, an entry condition (\"First launch\" on the empty Devices frame) instead of a free-text title",
+        "Links flow.drawio in the message and says how to open it (VS Code with the draw.io extension, draw.io Desktop or app.diagrams.net) without relying on an Android Studio plugin, and says which pages to look at"
       ]
     },
     {
@@ -92,7 +94,10 @@
         "Writes docs/prototypes/HANDOFF.md with the screen inventory by S-number, navigation graph, per-screen state model, Material 3 component mapping, copy, decisions with sources, open questions and the sketch as the visual reference",
         "Says in the theme section that visual design was not done, rather than inventing one",
         "Says plainly what was not checked: nothing was run as an app",
-        "Writes no Compose, SwiftUI, Kotlin or Swift code and stops after the handoff"
+        "Writes no Compose, SwiftUI, Kotlin or Swift code and stops after the handoff",
+        "Generates the screen inventory, transitions and page list with handoff.mjs rather than writing them by hand; the inventory has an \"App screen / navigation location\" column (no \"Destination\" column) and next screens appear only in the transitions table",
+        "Runs handoff.mjs --check and it passes: every S-number names the same screen in flow.json, flow.drawio and HANDOFF.md",
+        "Section 12 links flow.drawio and says how to open it and find the journey page and any screen pages"
       ]
     },
     {
@@ -195,7 +200,8 @@
         "Presents the A/B proposals table and ends the turn there: flow.json is not filled in and no flow.drawio exists",
         "Ends the message with a short reading guide: how many files were created, what to review now in order (the table first, CLARIFICATIONS.md as optional detail), what is reference only (INPUTS.md, DECISIONS.md) and what is agent notes (STATE.md, flow.json)",
         "docs/prototypes/README.md names the current stop (gate A), what the user is asked to do, and marks each file as you / reference / agent",
-        "STATE.md records the stop under Waiting on user"
+        "STATE.md records the stop under Waiting on user",
+        "notes/CLARIFICATIONS.md keeps the template's \"How to read the IDs\" legend (prefixes P/J/N/S/A/T/C/V/X, numbers aren't priorities, P1/P2 and J1–J3, IDs come from the question bank, not to be confused with classes or frame numbers) and its Sources section linking the installed references/question-bank.md"
       ]
     },
     {
@@ -245,6 +251,17 @@
         "Does not create anything outside the project",
         "Explains that the prototype files have to stay inside this project, and asks again, offering docs/prototypes",
         "Creates no workspace until the user names a folder inside the project"
+      ]
+    },
+    {
+      "id": 21,
+      "name": "mentions-a-newer-release-without-updating",
+      "setup": "The prototype folder docs/prototypes exists at gate C (STATE.md records skill version 0.5.0), and scripts/check-update.mjs reports that mobile-prototype 9.0.0 is available, with the update command for this installation.",
+      "prompt": "Resume my mobile prototype.",
+      "expectations": [
+        "Runs scripts/check-update.mjs during setup and tells the user in one line that 9.0.0 is available, with the update command it printed",
+        "Does not update, reinstall or change the installed skill itself, and does not stop to wait for an update",
+        "Carries on resuming the prototype with the installed version: says where things stand and repeats what gate C needs"
       ]
     },
     {

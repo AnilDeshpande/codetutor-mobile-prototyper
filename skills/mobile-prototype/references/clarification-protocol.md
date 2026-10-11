@@ -35,6 +35,12 @@ Status: open → asked round 1 → decided
 Decision: Confirm dialog, with the 60 s lock explained (user, round 1)
 ```
 
+Keep the file's *How to read the IDs* and *Sources* sections (they come from the template, with
+the link to the installed question bank resolved by `scaffold.mjs`; an older file gets them from
+`scaffold.mjs --upgrade`). Write IDs the way the legend explains them: `P1/P2` for questions
+answered together, `J1–J3` for a range, the next free number for a question you add (marked
+*added*), and "frame S1" for a screen frame, so it isn't read as the States and data question S1.
+
 Status values: `proposed` → `approved` / `corrected` (A, B); `open` → `asked round n` →
 `decided` / `deferred` (C, D); `assumed` (E). Move each settled item to `DECISIONS.md` with its source:
 `document` (approved A), `assumption-approved` (B), `user` (C/D answers), `assumption` (E, and

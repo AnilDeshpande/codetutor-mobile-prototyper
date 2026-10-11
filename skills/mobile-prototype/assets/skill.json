@@ -1,0 +1,9 @@
+{
+  "name": "mobile-prototype",
+  "version": "0.5.0",
+  "repository": "https://github.com/AnilDeshpande/codetutor-mobile-prototyper",
+  "skillPath": "skills/mobile-prototype",
+  "ref": "main",
+  "plugin": "mobile-prototyper",
+  "marketplace": "codetutor"
+}

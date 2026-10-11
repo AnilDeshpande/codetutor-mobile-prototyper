@@ -22,11 +22,18 @@ Idea / PRD → clarify flow and decisions → rough screens + state branches →
 - Every screen state carries a **number in flow order** (S1, S2, …), written above its frame
   and used everywhere a screen is mentioned: in chat, in the notes, on the final-look screens
   and in the handoff.
+- **One name per screen.** Each frame is titled with its screen's name and its state ("Overview —
+  Empty"), with the entry condition ("First launch") apart from both. The diagram and the
+  handoff's screen inventory are generated from the same names, and a check fails if any
+  S-number names a different screen in either.
 - The drawing is **untangled, or it isn't drawn**: no two arrows overlap or cross, no arrow runs
   over a screen, and every arrow label sits clear of screens, arrows and other labels.
-- The file opens in draw.io Desktop, the draw.io extension for VS Code, or app.diagrams.net. Edit
+- The file opens in draw.io Desktop, the draw.io extension for VS Code, or app.diagrams.net (not
+  an Android Studio plugin: the prototype's README says how to open it and find its pages). Edit
   it by hand if you like: the skill won't overwrite your edits, and carries them back into the
   flow.
+- The notes explain themselves: the clarification report has a legend for its question IDs
+  (P1, `J1–J3`, …) and links to the question bank in the installed skill that defines them.
 - **First how it works, then how it looks.** Once you lock the flow, it offers an optional
   **design phase**: two directions as style tiles, a Material 3 colour scheme and an iOS tint
   with every text colour checked for contrast, and every screen of your flow rendered in the
@@ -67,10 +74,22 @@ the iOS system look, in light and dark.
 
 ![Screens S6 and S10 in the Android look and in the iOS look](docs/examples/pair-a-meter/final-look.png)
 
+A second, smaller example, [`docs/examples/habit-overview/`](docs/examples/habit-overview/), shows
+one screen in several states: *Overview* empty on first launch (S1), populated (S3) and saved
+(S5). Each frame is headed by its screen's name, then its state and entry condition, and its page
+is named the same way ("S1 Overview — Empty").
+
 To regenerate the diagrams from the example flow:
 
 ```bash
 node skills/mobile-prototype/scripts/sketch.mjs --spec docs/examples/pair-a-meter/flow.json --out docs/examples/pair-a-meter/wireflow.drawio --style wireflow
+```
+
+To redraw both diagrams and re-export the pictures above (needs draw.io Desktop; on macOS
+`brew install --cask drawio`):
+
+```bash
+node tools/example-pictures.mjs
 ```
 
 ```
@@ -97,8 +116,9 @@ the proposals table in the chat; the notes behind it are optional.
 
 ## How the sketch is made
 
-The agent writes the flow once, as data, in `docs/prototypes/flow.json`: journeys, one frame per screen
-state, and one labelled transition per arrow. A script turns that into the diagram:
+The agent writes the flow once, as data, in `docs/prototypes/flow.json`: every screen once with its
+name, journeys, one frame per screen state (with its entry condition where it matters), and one
+labelled transition per arrow. A script turns that into the diagram:
 
 ```bash
 node skills/mobile-prototype/scripts/sketch.mjs --style wireflow --open
@@ -121,7 +141,15 @@ of the same flow give the same picture:
   `flow.json` first, and your version is kept as a `.bak`.
 
 The same `flow.json` later feeds the design phase, so the final-look screens always match the
-locked flow.
+locked flow, and the handoff: `handoff.mjs` writes its screen inventory, transitions and page list,
+and `handoff.mjs --check` fails if an S-number names a different screen in `flow.json`,
+`flow.drawio` or `HANDOFF.md`.
+
+**Prototypes started with an earlier version** keep working: a `flow.json` without screen names
+(`appScreens`) draws exactly as before, with a warning. To get one name per screen, the agent
+runs `scripts/migrate-flow.mjs` and reviews the names with you, and `scripts/scaffold.mjs
+--upgrade` adds the ID legend, the sources and the viewing instructions to the older notes. The
+steps are in `references/sketch-spec.md`, *Migrating an older flow.json*.
 
 ## Optional design phase
 
@@ -250,6 +278,29 @@ npx skills add AnilDeshpande/codetutor-mobile-prototyper --skill mobile-prototyp
 
 The draw.io MCP server is optional with this route (next section).
 
+## Updating
+
+The skill knows its version (`skills/mobile-prototype/assets/skill.json`). At the start of a
+session the agent checks, at most once a day, whether a newer release is out, and if so tells you
+in one line how to update the copy you have. It never updates by itself. To check yourself:
+
+```bash
+node <skill folder>/scripts/check-update.mjs --force
+```
+
+How to update depends on how you installed it:
+
+| Installed with | Update with |
+|---|---|
+| Claude Code plugin | `claude plugin marketplace update codetutor`, then `claude plugin update mobile-prototyper@codetutor`, and restart |
+| Codex plugin | `codex plugin marketplace upgrade codetutor`, then `codex plugin add mobile-prototyper@codetutor`, and restart |
+| `install.mjs`, `npx github:…` or `npx skills add` (a copied folder) | `npx -y github:AnilDeshpande/codetutor-mobile-prototyper#v<version> -- --update`: it finds every installed copy (Claude Code, Codex, Cursor, Gemini CLI, `~/.agents`, in your home folder and the current project) and replaces it; add `--dry-run` to see what it would do |
+| `install.mjs --link` (a clone) | `git pull` in the clone |
+
+`node install.mjs --version` prints the version a checkout would install. What changed in each
+version, and anything to do about it, is in [`CHANGELOG.md`](CHANGELOG.md). Set
+`MOBILE_PROTOTYPE_NO_UPDATE_CHECK=1` to turn the check off.
+
 ## draw.io MCP server
 
 The official server from the draw.io team ([jgraph/drawio-mcp](https://github.com/jgraph/drawio-mcp))
@@ -324,27 +375,68 @@ skills/mobile-prototype/
 │                      review, draw.io setup, platform conventions and visual language
 │                      (platforms/android, platforms/ios), stops and the reading guide, design
 │                      phase and providers, handoff
-├── scripts/           discover-inputs, scaffold, sketch (flow.json → flow.drawio),
-│                      check-drawio-mcp, and for the design phase: screens, theme,
-│                      design-provider, serve
-└── assets/            templates (reading guide, flow spec, notes, design, handoff) and, for the
-                       design phase, the design kit (Android and iOS shells) and the style tile
+├── scripts/           discover-inputs, scaffold, sketch (flow.json → flow.drawio), handoff
+│                      (flow.json → the handoff's inventory, and the cross-check), migrate-flow,
+│                      check-update (is a newer release out?), check-drawio-mcp, and for the
+│                      design phase: screens, theme, design-provider, serve
+└── assets/            templates (reading guide, flow spec, notes, design, handoff), skill.json
+                       (the skill's version and repository, for updates and links to its
+                       references) and, for the design phase, the design kit (Android and iOS
+                       shells) and the style tile
+tests/                 node --test: screen names across spec, diagram and handoff; the reports'
+                       ID legend, reference links and viewing instructions; versions and
+                       updates (npm test)
+tools/                 release.mjs (set the version, publish a release), example-pictures.mjs
+CHANGELOG.md           what changed in each version
 evals/                 evals.json (behaviour), trigger-evals.json (description) and a fixture project
                        with a spec, architecture, ADR and design notes
 ```
 
+## Releasing
+
+A release is a git tag `v<version>` with a GitHub Release; installed copies compare themselves
+with the latest one. Plugin marketplaces install from `main`, so release right after merging.
+
+```bash
+node tools/release.mjs 0.6.0
+```
+
+sets the version in all five files that carry it (`package.json`, both plugin manifests, the
+marketplace entry and `assets/skill.json`) and opens a `CHANGELOG.md` section to fill in. Merge
+that in a PR, then on an up-to-date `main`:
+
+```bash
+node tools/release.mjs --publish
+```
+
+It checks that the versions agree, the CHANGELOG has notes and the tests pass, then tags, pushes
+the tag and creates the GitHub Release with the CHANGELOG section as its notes.
+`node tools/release.mjs --check` runs only the checks.
+
+## Tests
+
+```bash
+npm test
+```
+
+Runs the scripts against fixtures (no dependencies): screen identity, state and entry condition
+across `flow.json`, `flow.drawio` and `HANDOFF.md` (`tests/fixtures/overview-states`), the older
+flow format still drawing the committed example byte for byte, migration, the clarification
+report's ID legend against the question bank, and the reference links and viewing instructions
+in the generated notes.
+
 ## Evals
 
-`evals/evals.json` describes twenty cases: input discovery (with the platform suggestion),
+`evals/evals.json` describes twenty-one cases: input discovery (with the platform suggestion),
 proposals for approval with the sketch-style question, stopping at gate A with a reading guide,
 surfacing a document conflict, a missing spec, a missing draw.io MCP server that doesn't block,
 drawing the sketch from the flow spec, not overwriting a hand-edited diagram, an iOS target on an
 Android-specific architecture, one sketch for both platforms, handoffs for one and two platforms,
 the design phase being offered but not forced, falling back to the built-in provider without
 Python, a brand colour that fails contrast, installing and using ui-ux-pro-max for a design
-system, rendering the final-look screens, asking for the prototype folder and using it, refusing a folder
-outside the project, and a prompt that should *not* trigger the skill. They
-run against `evals/fixtures/glucose-companion`, which contains a deliberate conflict between the
+system, rendering the final-look screens, asking for the prototype folder and using it,
+refusing a folder outside the project, mentioning a newer release without updating, and a prompt
+that should *not* trigger the skill. They run against `evals/fixtures/glucose-companion`, which contains a deliberate conflict between the
 PRD and an architecture decision record.
 
 `evals/trigger-evals.json` checks the skill's description on its own: thirteen prompts that should

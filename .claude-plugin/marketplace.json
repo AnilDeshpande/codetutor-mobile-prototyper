@@ -9,7 +9,7 @@
       "name": "mobile-prototyper",
       "source": "./",
       "description": "Spec + architecture + design docs -> draw.io sketch of the Android / iOS flow, then an optional design phase (bundles the draw.io MCP server).",
-      "version": "0.4.0"
+      "version": "0.5.0"
     }
   ]
 }

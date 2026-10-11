@@ -1,0 +1,61 @@
+{
+  "app": "Habit Tracker",
+  "platforms": ["android"],
+  "appScreens": {
+    "overview": { "name": "Overview", "purpose": "See today's habits and points, and start recording.", "location": "Overview (start destination)" },
+    "create-habit": { "name": "Create habit", "purpose": "Enter a habit's name, target and schedule." },
+    "record-progress": { "name": "Record progress", "purpose": "Enter today's total for a habit.", "location": "Sheet over Overview" }
+  },
+  "tabs": [],
+  "journeys": [
+    {
+      "id": "first-use",
+      "title": "First use",
+      "screens": [
+        { "id": "overview-empty", "screen": "overview", "state": "empty", "entry": "First launch",
+          "elements": [
+            { "type": "bar", "text": "Habit Tracker" },
+            { "type": "empty", "title": "Create your first habit", "text": "Choose a target and record your progress.",
+              "action": { "text": "Create habit", "key": "create" } }
+          ] },
+        { "id": "create", "screen": "create-habit", "state": "filled", "parent": "overview",
+          "elements": [
+            { "type": "bar", "text": "Create habit", "back": true, "key": "leave" },
+            { "type": "field", "label": "Name", "value": "Drink water" },
+            { "type": "field", "label": "Target", "value": "2 litres" },
+            { "type": "button", "text": "Save habit", "key": "save" }
+          ] },
+        { "id": "overview-populated", "screen": "overview", "state": "populated", "entry": "After saving the first habit",
+          "elements": [
+            { "type": "bar", "text": "Habit Tracker" },
+            { "type": "card", "text": "Drink water\n0 / 2 litres · Daily" },
+            { "type": "button", "text": "Record progress", "key": "record" }
+          ] },
+        { "id": "progress", "screen": "record-progress", "state": "entered",
+          "elements": [
+            { "type": "sheet", "title": "Drink water: today's total", "items": [ { "text": "1.5 litres" }, { "text": "Save", "key": "save" } ] }
+          ] },
+        { "id": "overview-saved", "screen": "overview", "state": "saved", "entry": "After saving progress",
+          "elements": [
+            { "type": "bar", "text": "Habit Tracker" },
+            { "type": "card", "text": "Drink water\n1.5 / 2 litres · Daily" },
+            { "type": "snackbar", "text": "Progress saved" }
+          ] },
+        { "id": "discard", "screen": "create-habit", "state": "confirm-discard", "stateName": "Discard changes?", "below": "create",
+          "elements": [
+            { "type": "dialog", "title": "Discard changes?", "text": "Your habit isn't saved yet.",
+              "actions": [ { "text": "Keep editing", "key": "keep" }, { "text": "Discard", "key": "discard", "variant": "danger" } ] }
+          ] }
+      ],
+      "flows": [
+        { "from": "overview-empty", "key": "create", "to": "create", "label": "tap Create habit" },
+        { "from": "create", "key": "save", "to": "overview-populated", "label": "Save habit" },
+        { "from": "overview-populated", "key": "record", "to": "progress", "label": "tap Record progress" },
+        { "from": "progress", "key": "save", "to": "overview-saved", "label": "Save" },
+        { "from": "create", "key": "leave", "to": "discard", "label": "Back with changes" },
+        { "from": "discard", "key": "keep", "to": "create", "label": "Keep editing" },
+        { "from": "discard", "key": "discard", "to": "overview-empty", "label": "Discard" }
+      ]
+    }
+  ]
+}

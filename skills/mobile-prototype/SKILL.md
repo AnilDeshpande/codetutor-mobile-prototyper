@@ -23,9 +23,9 @@ Paths in this file are relative to this skill's directory (`scripts/…`, `refer
    the user approves it. Record who decided what.
 2. **Ask only what changes the experience.** Conflicts between documents and unknowns that change
    a journey, a state or navigation get asked. Cosmetic choices you decide yourself and record.
-3. **The flow lives in one file.** `docs/prototypes/flow.json` is the source of truth; the draw.io file
-   and the final-look screens are generated from it by scripts. Never hand-write draw.io XML or
-   HTML, and never place shapes or route arrows yourself.
+3. **The flow lives in one file.** `docs/prototypes/flow.json` is the source of truth; the draw.io
+   file, the handoff's screen inventory and the final-look screens are generated from it by
+   scripts. Never hand-write draw.io XML or HTML, and never place shapes or route arrows yourself.
 4. **Rough on purpose.** The sketch uses plain boxes in a hand-drawn style. No brand colours, no
    real components, no pixel decisions before the flow is locked.
 5. **Numbered and untangled.** Every screen frame carries a serial number (S1, S2, … in flow
@@ -97,10 +97,15 @@ each stop and the exact form of the guide. Everything the user must decide goes 
    project. If there is one, that is the prototype folder: don't ask for it again. Read
    `STATE.md` and every file in `notes/`, tell the user in two lines where things stand, and
    continue from the recorded next step; if that stop still waits on the user, repeat what it
-   needs.
-2. Check whether the draw.io MCP tools are available **in this session**: a tool whose name ends
+   needs. A `flow.json` without `appScreens` predates screen names: migrate it before drawing
+   again (*Migrating an older flow.json* in `references/sketch-spec.md`).
+2. Run `node scripts/check-update.mjs`. If it reports a newer release, pass on its one line and
+   update command, and carry on with the installed version; don't update unless the user asks.
+   A prototype whose `STATE.md` records an older skill version may need migrating (`CHANGELOG.md`
+   in the skill's repository says what changed).
+3. Check whether the draw.io MCP tools are available **in this session**: a tool whose name ends
    in `open_drawio_xml` (for example `mcp__drawio__open_drawio_xml`).
-3. If they are missing, run `node scripts/check-drawio-mcp.mjs --host <this agent>` and show the
+4. If they are missing, run `node scripts/check-drawio-mcp.mjs --host <this agent>` and show the
    result. **Ask** before changing the user's configuration, then run
    `--configure --host <this agent>` (without `--host` it configures every agent installed). A
    new server loads only after a restart: say so, record it in `STATE.md`, and **carry on**.
@@ -180,6 +185,9 @@ items), go straight on to Phase 4.
 
 1. **Write the flow** in `docs/prototypes/flow.json` (format and element list:
    `references/sketch-spec.md`):
+   - every app screen once in **`appScreens`**, with its one name. A frame gives its `screen`,
+     its `state` and, where it matters, its `entry` condition ("First launch"); it has no title of
+     its own, so a state or an entry condition never becomes a second name for a screen;
    - one **journey** per user goal in scope;
    - one **frame per screen state** the decisions require — the content state, and also empty,
      loading, error, offline, permission denied, validation error, and each dialog or sheet.
@@ -193,8 +201,9 @@ items), go straight on to Phase 4.
    `docs/prototypes/flow.drawio`; `node scripts/sketch.mjs --check` must pass. Then go through
    `references/sketch-review.md`. Fix `flow.json` and generate again; don't show a sketch with
    warnings you haven't looked at.
-3. **Show it**: `node scripts/sketch.mjs --style <style> --open`, and give the user the file
-   path (other viewers: `references/drawio-setup.md`).
+3. **Show it**: `node scripts/sketch.mjs --style <style> --open`. Give the user `flow.drawio` as
+   a link and how to open it and find its pages, as `sketch.mjs` prints it (VS Code with the
+   draw.io extension, draw.io Desktop or app.diagrams.net; not an Android Studio plugin).
 4. **Stop (gate C).** In chat, give a short text outline of the journey (S-numbers and the
    arrows), the decisions you made on the user's behalf and the flagged assumptions, and ask them
    to lock the flow or say what to change.
@@ -214,10 +223,11 @@ design phase changes how screens look, never the flow. If it is skipped or stopp
 
 ## Phase 6 — Handoff and stop
 
-Write `docs/prototypes/HANDOFF.md` following `references/handoff-package.md`, with the sketch as
-visual reference. Update `STATE.md` to `complete`, and `README.md` so *Read now* is
-`HANDOFF.md` alone. Tell the user where everything is and stop — native implementation is a
-separate task.
+Run `node scripts/handoff.mjs`: it creates `docs/prototypes/HANDOFF.md` and fills its screen
+inventory, transitions and pages from `flow.json`. Write the other sections following
+`references/handoff-package.md`; `node scripts/handoff.mjs --check` must pass. Update `STATE.md`
+to `complete`, and `README.md` so *Read now* is `HANDOFF.md` alone. Tell the user where
+everything is and stop — native implementation is a separate task.
 
 ## When guidance conflicts
 
